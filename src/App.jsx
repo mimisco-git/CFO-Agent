@@ -1,39 +1,42 @@
 import { useState, useRef, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import './App.css'
+import { SFX } from './lib/audio.js'
 import {
-  hasWallet, connectWallet, signSiwe, genNonce,
+  hasWallet, connectWallet, signSiwe,
   checkHasAgent, getAgentAddress, deployAgent,
-  getAgentStatus, getTotalAgents,
-  truncAddr, onAccountChange, onChainChange,
-  FACTORY_ADDR, CHAIN_ID,
+  getTotalAgents, truncAddr,
+  onAccountChange, FACTORY_ADDR,
 } from './lib/chain.js'
 
-// ---- SOUND ENGINE ----
-const SFX = {
-  ctx: null,
-  init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)() },
-  beep(freq=880,dur=0.04,vol=0.06,type='square') {
-    try {
-      this.init()
-      const o=this.ctx.createOscillator(), g=this.ctx.createGain()
-      o.connect(g); g.connect(this.ctx.destination)
-      o.type=type; o.frequency.value=freq
-      g.gain.setValueAtTime(vol,this.ctx.currentTime)
-      g.gain.exponentialRampToValueAtTime(0.001,this.ctx.currentTime+dur)
-      o.start(); o.stop(this.ctx.currentTime+dur)
-    } catch(e) {}
-  },
-  boot()   { this.beep(440,.06,.08); setTimeout(()=>this.beep(660,.04,.05),80) },
-  line()   { this.beep(600+Math.random()*200,.03,.04) },
-  lock()   { [880,740,620,520].forEach((f,i)=>setTimeout(()=>this.beep(f,.08,.06),i*80)) },
-  launch() { [440,550,660,880].forEach((f,i)=>setTimeout(()=>this.beep(f,.1,.07,'sine'),i*60)) },
-  key()    { this.beep(800+Math.random()*400,.025,.03) },
-  exec()   { this.beep(300,.15,.05,'sawtooth') },
-  done()   { [660,880,1100].forEach((f,i)=>setTimeout(()=>this.beep(f,.12,.05,'sine'),i*100)) },
-  deploy() { [220,330,440,660,880].forEach((f,i)=>setTimeout(()=>this.beep(f,.15,.07,'sine'),i*100)) },
-  err()    { [400,300,200].forEach((f,i)=>setTimeout(()=>this.beep(f,.1,.06,'square'),i*80)) },
+// ---- ANIMATION VARIANTS ----
+const fadeUp = {
+  hidden:  { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0,  transition: { duration: 0.4, ease: 'easeOut' } },
+  exit:    { opacity: 0, y: -8, transition: { duration: 0.2 } },
 }
 
+const fadeIn = {
+  hidden:  { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.5 } },
+  exit:    { opacity: 0, transition: { duration: 0.25 } },
+}
+
+const stagger = {
+  visible: { transition: { staggerChildren: 0.07 } },
+}
+
+const slideRight = {
+  hidden:  { opacity: 0, x: -20 },
+  visible: { opacity: 1, x: 0,  transition: { duration: 0.35, ease: 'easeOut' } },
+}
+
+const scaleIn = {
+  hidden:  { opacity: 0, scale: 0.96 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.35 } },
+}
+
+// ---- BOOT LINES ----
 function buildBoot(callsign, address, isNew) {
   return [
     { text: '...', type: 'dim' },
@@ -142,38 +145,34 @@ function useTime() {
 }
 
 export default function App() {
-  // auth
-  const [phase,setPhase]       = useState('callsign')
-  const [callsign,setCallsign] = useState('')
-  const [csTyped,setCsTyped]   = useState('')
-  const [address,setAddress]   = useState('')
-  const [agentAddr,setAgentAddr]= useState('')
-  const [isNew,setIsNew]       = useState(false)
-  const [authStep,setAuthStep] = useState('')
-  const [authMsg,setAuthMsg]   = useState('')
-  const [authErr,setAuthErr]   = useState('')
-  const [totalUsers,setTotalUsers]= useState(0n)
-
-  // boot
-  const [bootLines,setBootLines]= useState([])
-  const [bootIdx,setBootIdx]   = useState(0)
-  const [lines,setLines]       = useState([])
-  const [typed,setTyped]       = useState('')
-  const [locked,setLocked]     = useState(false)
-  const [sigText,setSigText]   = useState('SIGNAL : UNSTABLE')
-  const [progress,setProgress] = useState(0)
-  const [eraText,setEraText]   = useState('2140 / SYNC PENDING')
-
-  // app
-  const [nav,setNav]           = useState('dashboard')
-  const [agentOn,setAgentOn]   = useState(true)
-  const [rules,setRules]       = useState(INIT_RULES)
-  const [log,setLog]           = useState(INIT_LOG)
-  const [queue,setQueue]       = useState(INIT_QUEUE)
-  const [showAdd,setShowAdd]   = useState(false)
-  const [form,setForm]         = useState(BLANK)
-  const [appStat,setAppStat]   = useState('ONLINE')
-  const [sideOpen,setSideOpen] = useState(false)
+  const [phase,setPhase]         = useState('gate')     // gate -> callsign -> wallet -> glitch -> boot -> app
+  const [muted,setMuted]         = useState(false)
+  const [callsign,setCallsign]   = useState('')
+  const [csTyped,setCsTyped]     = useState('')
+  const [address,setAddress]     = useState('')
+  const [agentAddr,setAgentAddr] = useState('')
+  const [isNew,setIsNew]         = useState(false)
+  const [authStep,setAuthStep]   = useState('')
+  const [authMsg,setAuthMsg]     = useState('')
+  const [authErr,setAuthErr]     = useState('')
+  const [totalUsers,setTotalUsers]=useState(0n)
+  const [bootLines,setBootLines] = useState([])
+  const [bootIdx,setBootIdx]     = useState(0)
+  const [lines,setLines]         = useState([])
+  const [typed,setTyped]         = useState('')
+  const [locked,setLocked]       = useState(false)
+  const [sigText,setSigText]     = useState('SIGNAL : UNSTABLE')
+  const [progress,setProgress]   = useState(0)
+  const [eraText,setEraText]     = useState('2140 / SYNC PENDING')
+  const [nav,setNav]             = useState('dashboard')
+  const [agentOn,setAgentOn]     = useState(true)
+  const [rules,setRules]         = useState(INIT_RULES)
+  const [log,setLog]             = useState(INIT_LOG)
+  const [queue,setQueue]         = useState(INIT_QUEUE)
+  const [showAdd,setShowAdd]     = useState(false)
+  const [form,setForm]           = useState(BLANK)
+  const [appStat,setAppStat]     = useState('ONLINE')
+  const [sideOpen,setSideOpen]   = useState(false)
 
   const logId  = useRef(10)
   const jobId  = useRef(10)
@@ -181,12 +180,30 @@ export default function App() {
   const ping   = usePing()
   const time   = useTime()
 
-  useEffect(()=>{ bootRef.current?.scrollIntoView({behavior:'smooth'}) },[lines,bootLines])
+  useEffect(()=>{ bootRef.current?.scrollIntoView({behavior:'smooth'}) },[lines])
 
-  // watch wallet disconnects
   useEffect(()=>{
-    onAccountChange(acc => { if(!acc && phase==='app') { setPhase('callsign'); setCsTyped(''); } })
+    onAccountChange(acc=>{
+      if(!acc && phase==='app') { setPhase('callsign'); setCsTyped('') }
+    })
   },[phase])
+
+  // Toggle mute
+  function toggleMute() {
+    SFX.init()
+    const nowMuted = SFX.toggle()
+    setMuted(nowMuted)
+  }
+
+  // Entry gate
+  function enterGate() {
+    SFX.init()
+    SFX.initialize()
+    setTimeout(()=>{
+      SFX.startDrone()
+      setPhase('callsign')
+    }, 600)
+  }
 
   // Callsign input
   useEffect(()=>{
@@ -210,52 +227,42 @@ export default function App() {
   async function doAuth() {
     setAuthErr('')
     try {
-      // Step 1: wallet
       setAuthStep('connecting'); setAuthMsg('CONNECTING WALLET...')
       if(!hasWallet()) throw {code:'NO_WALLET',message:'NO WALLET DETECTED. INSTALL METAMASK.'}
       const addr = await connectWallet()
       setAddress(addr)
 
-      // Step 2: SIWE
       setAuthStep('signing'); setAuthMsg('SIGN MESSAGE TO AUTHENTICATE...')
       await signSiwe(addr)
 
-      // Step 3: check agent
       setAuthStep('checking'); setAuthMsg('CHECKING ON-CHAIN AGENT...')
-      const [has, total] = await Promise.all([
-        checkHasAgent(addr),
-        getTotalAgents(),
-      ])
+      const [has,total] = await Promise.all([checkHasAgent(addr), getTotalAgents()])
       setTotalUsers(total)
 
-      let agentAddress
-      let newUser = false
+      let agentAddress, newUser=false
 
       if(has) {
         agentAddress = await getAgentAddress(addr)
-        setAgentAddr(agentAddress || '')
+        setAgentAddr(agentAddress||'')
       } else {
-        // Step 4: deploy
         setIsNew(true); newUser=true
         setAuthStep('deploying'); setAuthMsg('DEPLOYING YOUR CFO AGENT ON ARBITRUM...')
         SFX.deploy()
-        if(FACTORY_ADDR && FACTORY_ADDR !== '') {
+        if(FACTORY_ADDR && FACTORY_ADDR!=='') {
           agentAddress = await deployAgent()
         } else {
-          // Demo mode: factory not deployed yet
-          await new Promise(r=>setTimeout(r,2000))
-          agentAddress = '0x' + Array.from(crypto.getRandomValues(new Uint8Array(20))).map(b=>b.toString(16).padStart(2,'0')).join('')
+          await new Promise(r=>setTimeout(r,2200))
+          agentAddress = '0x'+Array.from(crypto.getRandomValues(new Uint8Array(20))).map(b=>b.toString(16).padStart(2,'0')).join('')
         }
-        setAgentAddr(agentAddress || '')
+        setAgentAddr(agentAddress||'')
       }
 
-      // Boot
       setAuthStep('done'); setAuthMsg('')
-      SFX.boot()
+      SFX.glitch()
       setPhase('glitch')
       setTimeout(()=>{
         setPhase('boot')
-        setBootLines(buildBoot(callsign.trim().toUpperCase()||csTyped.toUpperCase(), addr, newUser))
+        setBootLines(buildBoot(callsign||csTyped.toUpperCase(), addr, newUser))
         setBootIdx(0)
       }, 900)
 
@@ -263,7 +270,6 @@ export default function App() {
       setAuthStep('error'); SFX.err()
       if(err.code==='NO_WALLET') setAuthErr(err.message)
       else if(err.code===4001) setAuthErr('SIGNATURE REJECTED. TRY AGAIN.')
-      else if(err.code===4902) setAuthErr('NETWORK ADD REJECTED.')
       else setAuthErr((err.message||'UNKNOWN ERROR').toUpperCase().slice(0,80))
     }
   }
@@ -312,7 +318,7 @@ export default function App() {
       if(t==='launch'){ SFX.launch(); setTimeout(()=>setPhase('app'),700) }
       else if(t==='simulate') simExec()
     } else {
-      setLines(l=>[...l,{text:`UNKNOWN: "${cmd.trim()}" — TYPE "HELP"`,type:'red'}])
+      setLines(l=>[...l,{text:`UNKNOWN: "${cmd.trim()}" - TYPE "HELP"`,type:'red'}])
     }
   }
 
@@ -342,218 +348,394 @@ export default function App() {
   const queueDepth=queue.filter(j=>j.status==='QUEUED'||j.status==='EXECUTING').length
   const statColor={ONLINE:'var(--acid)',EXECUTING:'var(--teal)'}[appStat]||'var(--acid)'
 
-  // SCREENS
-  if(phase==='callsign') return (
-    <div className="fullscreen crt" onClick={()=>document.getElementById('csIn')?.focus()}>
-      <div className="scanline"/>
-      <div className="cs-wrap">
-        <div className="cs-logo">CFO-AGENT</div>
-        <div className="cs-tag">ARBITRUM TREASURY OS // POWERED BY ZERODEV</div>
-        <div className="cs-label">ENTER YOUR CALLSIGN</div>
-        <div className="cs-row">
-          <span className="cs-prompt">&gt;</span>
-          <span className="cs-typed">{csTyped}</span>
-          <span className="cs-cur"/>
-        </div>
-        <div className="cs-hint">{csTyped.length>=2?'PRESS ENTER TO CONTINUE':'MIN 2 CHARACTERS'}</div>
-        <input id="csIn" className="real-input" autoFocus autoComplete="off" autoCapitalize="off" spellCheck="false" value={csTyped} onChange={()=>{}}/>
-      </div>
-    </div>
-  )
+  return (
+    <AnimatePresence mode="wait">
 
-  if(phase==='wallet') return (
-    <div className="fullscreen crt">
-      <div className="scanline"/>
-      <div className="cs-wrap">
-        <div className="cs-logo">CFO-AGENT</div>
-        <div className="cs-tag">CALLSIGN: {callsign||csTyped.toUpperCase()}</div>
+      {/* ---- ENTRY GATE ---- */}
+      {phase==='gate' && (
+        <motion.div key="gate" className="fullscreen crt gate-screen"
+          variants={fadeIn} initial="hidden" animate="visible" exit="exit">
+          <div className="scanline"/>
+          <div className="gate-grid"/>
+          <div className="gate-glow"/>
+          <motion.div className="gate-center"
+            variants={stagger} initial="hidden" animate="visible">
+            <motion.div className="gate-mark" variants={scaleIn}>
+              <div className="gate-mark-inner"/>
+            </motion.div>
+            <motion.div className="gate-title" variants={fadeUp}>
+              CFO AGENT
+            </motion.div>
+            <motion.div className="gate-sub" variants={fadeUp}>
+              ARBITRUM TREASURY OS
+            </motion.div>
+            <motion.div className="gate-sub2" variants={fadeUp}>
+              AUTONOMOUS PAYMENT EXECUTION ON-CHAIN
+            </motion.div>
+            <motion.button
+              className="gate-btn"
+              variants={scaleIn}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={enterGate}
+              onMouseEnter={()=>SFX.hover()}
+            >
+              <span className="gate-btn-glyph">&gt;</span>
+              INITIALIZE INTERFACE
+            </motion.button>
+            <motion.div className="gate-chain" variants={fadeUp}>
+              <span className="gate-dot"/>
+              ARBITRUM SEPOLIA // CHAIN 421614
+            </motion.div>
+          </motion.div>
 
-        {authStep==='' && (
-          <>
-            <div className="wallet-box">
-              <div className="wallet-box-label">AUTHENTICATION REQUIRED</div>
-              <div className="wallet-box-sub">
-                Connect your wallet. Sign a message to prove ownership.<br/>
-                Your personal CFO Agent will be deployed on Arbitrum.
-              </div>
-              <div className="wallet-steps">
-                {['01  CONNECT WALLET','02  SIGN MESSAGE (SIWE)','03  CHECK ON-CHAIN AGENT','04  DEPLOY IF NEW USER','05  LAUNCH'].map((s,i)=>(
-                  <div className="wallet-step" key={i}>
-                    <span className="step-text">&gt; {s}</span>
+          {/* Mute toggle even on gate */}
+          <button className="gate-mute" onClick={toggleMute} title={muted?'Unmute':'Mute'}>
+            {muted ? '[ MUTED ]' : '[ AUDIO ON ]'}
+          </button>
+        </motion.div>
+      )}
+
+      {/* ---- CALLSIGN ---- */}
+      {phase==='callsign' && (
+        <motion.div key="callsign" className="fullscreen crt"
+          variants={fadeIn} initial="hidden" animate="visible" exit="exit"
+          onClick={()=>document.getElementById('csIn')?.focus()}>
+          <div className="scanline"/>
+          <motion.div className="cs-wrap" variants={stagger} initial="hidden" animate="visible">
+            <motion.div className="cs-logo" variants={fadeUp}>CFO-AGENT</motion.div>
+            <motion.div className="cs-tag" variants={fadeUp}>
+              ARBITRUM TREASURY OS // POWERED BY ZERODEV
+            </motion.div>
+            <motion.div className="cs-label" variants={fadeUp}>ENTER YOUR CALLSIGN</motion.div>
+            <motion.div className="cs-row" variants={scaleIn}>
+              <span className="cs-prompt">&gt;</span>
+              <span className="cs-typed">{csTyped}</span>
+              <span className="cs-cur"/>
+            </motion.div>
+            <motion.div className="cs-hint" variants={fadeUp}>
+              {csTyped.length>=2?'PRESS ENTER TO CONTINUE':'MIN 2 CHARACTERS'}
+            </motion.div>
+            <input id="csIn" className="real-input" autoFocus autoComplete="off"
+              autoCapitalize="off" spellCheck="false" value={csTyped} onChange={()=>{}}/>
+          </motion.div>
+          <MuteBtn muted={muted} toggle={toggleMute}/>
+        </motion.div>
+      )}
+
+      {/* ---- WALLET ---- */}
+      {phase==='wallet' && (
+        <motion.div key="wallet" className="fullscreen crt"
+          variants={fadeIn} initial="hidden" animate="visible" exit="exit">
+          <div className="scanline"/>
+          <motion.div className="cs-wrap" variants={stagger} initial="hidden" animate="visible">
+            <motion.div className="cs-logo" variants={fadeUp}>CFO-AGENT</motion.div>
+            <motion.div className="cs-tag" variants={fadeUp}>
+              CALLSIGN: {callsign||csTyped.toUpperCase()}
+            </motion.div>
+
+            <AnimatePresence mode="wait">
+              {authStep==='' && (
+                <motion.div key="wallet-init" className="wallet-box"
+                  variants={scaleIn} initial="hidden" animate="visible" exit="exit">
+                  <div className="wallet-box-label">AUTHENTICATION REQUIRED</div>
+                  <div className="wallet-box-sub">
+                    Connect your wallet. Sign a message to prove ownership.<br/>
+                    Your personal CFO Agent will be deployed on Arbitrum.
                   </div>
+                  <motion.div className="wallet-steps" variants={stagger} initial="hidden" animate="visible">
+                    {['01  CONNECT WALLET','02  SIGN MESSAGE (SIWE)','03  CHECK ON-CHAIN AGENT','04  DEPLOY IF NEW USER','05  LAUNCH'].map((s,i)=>(
+                      <motion.div key={i} className="wallet-step" variants={slideRight}
+                        onMouseEnter={()=>SFX.hover()}>
+                        <span className="step-text">&gt; {s}</span>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                  {!hasWallet() && (
+                    <div className="auth-err" style={{marginBottom:14}}>
+                      &gt; NO WALLET DETECTED.{' '}
+                      <a href="https://metamask.io" target="_blank" rel="noreferrer"
+                        style={{color:'var(--acid)'}}>INSTALL METAMASK</a>
+                    </div>
+                  )}
+                  {authErr && <div className="auth-err" style={{marginBottom:12}}>&gt; {authErr}</div>}
+                  <motion.button className="wallet-btn"
+                    whileHover={{scale:1.02}} whileTap={{scale:0.98}}
+                    onClick={doAuth} onMouseEnter={()=>SFX.hover()}>
+                    &gt; CONNECT WALLET
+                  </motion.button>
+                </motion.div>
+              )}
+
+              {['connecting','signing','checking','deploying'].includes(authStep) && (
+                <motion.div key="wallet-progress" className="wallet-box"
+                  variants={scaleIn} initial="hidden" animate="visible">
+                  <div className="wallet-box-label">
+                    {authStep==='connecting' && '01 / CONNECTING WALLET'}
+                    {authStep==='signing'    && '02 / SIGNING MESSAGE'}
+                    {authStep==='checking'   && '03 / CHECKING AGENT'}
+                    {authStep==='deploying'  && '04 / DEPLOYING AGENT'}
+                  </div>
+                  <div className="auth-progress">
+                    <motion.div className="auth-bar">
+                      <motion.div className="auth-bar-fill"
+                        initial={{width:'0%'}}
+                        animate={{width:
+                          authStep==='connecting'?'20%':
+                          authStep==='signing'?'45%':
+                          authStep==='checking'?'70%':'95%'
+                        }}
+                        transition={{duration:0.6,ease:'easeInOut'}}
+                      />
+                    </motion.div>
+                  </div>
+                  <div className="auth-msg">{authMsg}</div>
+                  {authStep==='deploying' && (
+                    <motion.div className="auth-new" variants={fadeUp} initial="hidden" animate="visible">
+                      &gt; FIRST TIME USER. DEPLOYING YOUR PERSONAL CFO AGENT ON ARBITRUM SEPOLIA...
+                    </motion.div>
+                  )}
+                </motion.div>
+              )}
+
+              {authStep==='error' && (
+                <motion.div key="wallet-error" className="wallet-box err-box"
+                  variants={scaleIn} initial="hidden" animate="visible">
+                  <div className="wallet-box-label" style={{color:'var(--red)'}}>AUTH FAILED</div>
+                  <div className="auth-err" style={{margin:'12px 0'}}>&gt; {authErr}</div>
+                  <motion.button className="wallet-btn"
+                    whileHover={{scale:1.02}} whileTap={{scale:0.98}}
+                    onClick={()=>{setAuthStep('');setAuthErr('')}}
+                    onMouseEnter={()=>SFX.hover()}>
+                    &gt; TRY AGAIN
+                  </motion.button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+          <MuteBtn muted={muted} toggle={toggleMute}/>
+        </motion.div>
+      )}
+
+      {/* ---- GLITCH ---- */}
+      {phase==='glitch' && (
+        <motion.div key="glitch" className="fullscreen glitch-screen crt"
+          variants={fadeIn} initial="hidden" animate="visible" exit={{opacity:0,transition:{duration:0.3}}}>
+          <div className="scanline"/>
+          <div className="glitch-bars-wrap">{[0,1,2,3,4,5,6,7].map(i=><div key={i} className="gbar"/>)}</div>
+          <div className="glitch-word">CONNECTING</div>
+        </motion.div>
+      )}
+
+      {/* ---- BOOT TERMINAL ---- */}
+      {phase==='boot' && (
+        <motion.div key="boot" className="fullscreen terminal-screen crt"
+          variants={fadeIn} initial="hidden" animate="visible"
+          onClick={()=>document.getElementById('hIn')?.focus()}>
+          <div className="scanline"/>
+          <div className="t-statusbar">
+            <div className="t-sb-left">
+              <span><span className={`signal-dot ${locked?'locked':''}`}/>{sigText}</span>
+              <span className="t-ping">PING : 039 MS</span>
+            </div>
+            <div>{eraText}</div>
+          </div>
+          <div className="t-viewport">
+            <div className="t-block">
+              <AnimatePresence>
+                {lines.map((l,i)=>(
+                  <motion.div key={i}
+                    className={`t-line ${l.type==='resp'?'resp':l.type||''}`}
+                    initial={{opacity:0, x:-8}}
+                    animate={{opacity:1, x:0}}
+                    transition={{duration:0.2}}>
+                    {l.type!=='dim'&&l.type!=='resp'&&!l.text.startsWith('>')&&<span className="t-chev">&gt;</span>}
+                    {l.text}
+                  </motion.div>
                 ))}
-              </div>
-              {!hasWallet() && (
-                <div className="auth-err" style={{marginBottom:14}}>
-                  &gt; NO WALLET DETECTED. <a href="https://metamask.io" target="_blank" rel="noreferrer" style={{color:'var(--acid)'}}>INSTALL METAMASK</a>
+              </AnimatePresence>
+              {bootIdx<bootLines.length && (
+                <div className="t-processing">
+                  <div className="t-bar-wrap">
+                    <div className="t-bar">
+                      <motion.div className="t-bar-fill"
+                        animate={{width:progress+'%'}}
+                        transition={{duration:0.3}}
+                      />
+                    </div>
+                    <span className="t-pct">{progress}%</span>
+                  </div>
+                  <span className="t-dots"/>
                 </div>
               )}
-              <button className="wallet-btn" onClick={doAuth}>&gt; CONNECT WALLET</button>
+              {locked && (
+                <div className="input-line">
+                  <span className="prompt-char">&gt;</span>
+                  <span className="typed-text">{typed}</span>
+                  <span className="cursor-block"/>
+                </div>
+              )}
+              <div ref={bootRef}/>
             </div>
-            {authErr && <div className="auth-err" style={{marginTop:12}}>&gt; {authErr}</div>}
-          </>
-        )}
+          </div>
+          <input id="hIn" className="real-input" autoComplete="off" value={typed} onChange={()=>{}}/>
+          {locked && <div className="hint">TYPE SOMETHING</div>}
+          <MuteBtn muted={muted} toggle={toggleMute}/>
+        </motion.div>
+      )}
 
-        {['connecting','signing','checking','deploying'].includes(authStep) && (
-          <div className="wallet-box">
-            <div className="wallet-box-label">
-              {authStep==='connecting' && '01 / CONNECTING WALLET'}
-              {authStep==='signing'    && '02 / SIGNING MESSAGE'}
-              {authStep==='checking'   && '03 / CHECKING AGENT'}
-              {authStep==='deploying'  && '04 / DEPLOYING AGENT'}
+      {/* ---- MAIN APP ---- */}
+      {phase==='app' && (
+        <motion.div key="app" className="app-wrap crt"
+          variants={fadeIn} initial="hidden" animate="visible">
+          <div className="scanline"/>
+          {sideOpen && <div className="side-overlay" onClick={()=>setSideOpen(false)}/>}
+          <aside className={`side ${sideOpen?'side-open':''}`}>
+            <div className="side-top">
+              <div>
+                <div className="logo-text">CFO AGENT</div>
+                <div className="logo-sub">CALLSIGN: {callsign||csTyped.toUpperCase()}</div>
+              </div>
+              <button className="side-close" onClick={()=>setSideOpen(false)}>✕</button>
             </div>
-            <div className="auth-progress">
-              <div className="auth-bar">
-                <div className="auth-bar-fill" style={{width:
-                  authStep==='connecting'?'20%':
-                  authStep==='signing'?'45%':
-                  authStep==='checking'?'70%':'95%'
-                }}/>
+            <nav className="side-nav">
+              <div className="nav-label">// OVERVIEW</div>
+              {[{id:'dashboard',label:'DASHBOARD'},{id:'log',label:'ACTIVITY'}].map(item=>(
+                <button key={item.id} className={`nav ${nav===item.id?'on':''}`}
+                  onClick={()=>{setNav(item.id);setSideOpen(false);SFX.key()}}
+                  onMouseEnter={()=>SFX.hover()}>{item.label}</button>
+              ))}
+              <div className="nav-label">// AUTOMATION</div>
+              <button className={`nav ${nav==='sequencer'?'on':''}`}
+                onClick={()=>{setNav('sequencer');setSideOpen(false);SFX.key()}}
+                onMouseEnter={()=>SFX.hover()}>
+                SEQUENCER {queueDepth>0&&<span className="nav-badge">{queueDepth}</span>}
+              </button>
+              {[{id:'rules',label:'RULES'},{id:'settings',label:'SETTINGS'}].map(item=>(
+                <button key={item.id} className={`nav ${nav===item.id?'on':''}`}
+                  onClick={()=>{setNav(item.id);setSideOpen(false);SFX.key()}}
+                  onMouseEnter={()=>SFX.hover()}>{item.label}</button>
+              ))}
+            </nav>
+            <div className="side-foot">
+              <div className="wallet-label"><div className="w-dot"/>CONNECTED</div>
+              <div className="wallet-addr">{truncAddr(address)||'0x71C7...976F'}</div>
+              <div className="agent-addr">AGENT: {truncAddr(agentAddr)||'0x9aB4...1e77'}</div>
+              {isNew && <div className="new-badge">NEW AGENT DEPLOYED</div>}
+              <div className="agent-addr" style={{marginTop:6}}>USERS: {totalUsers.toString()}</div>
+            </div>
+          </aside>
+
+          <div className="main">
+            <div className="main-bar">
+              <div className="main-bar-left">
+                <button className="burger" onClick={()=>setSideOpen(true)}>☰</button>
+                <span style={{display:'flex',alignItems:'center',gap:8}}>
+                  <motion.span
+                    style={{width:6,height:6,borderRadius:'50%',background:statColor,display:'inline-block'}}
+                    animate={{opacity:[1,0.3,1]}}
+                    transition={{repeat:Infinity,duration:1.5}}
+                  />
+                  <span className="stat-label">STATUS : <span style={{color:statColor}}>{appStat}</span></span>
+                </span>
+                <span className="ping-label">PING : {String(ping).padStart(3,'0')} MS</span>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:12}}>
+                <span className="time-label">{time} / ARB SEPOLIA</span>
+                <MuteBtn muted={muted} toggle={toggleMute} inline/>
               </div>
             </div>
-            <div className="auth-msg">{authMsg}</div>
-            {authStep==='deploying' && (
-              <div className="auth-new">&gt; FIRST TIME USER — DEPLOYING YOUR PERSONAL CFO AGENT ON ARBITRUM SEPOLIA...</div>
-            )}
-          </div>
-        )}
-
-        {authStep==='error' && (
-          <div className="wallet-box err-box">
-            <div className="wallet-box-label" style={{color:'var(--red)'}}>AUTHENTICATION FAILED</div>
-            <div className="auth-err" style={{margin:'12px 0'}}>&gt; {authErr}</div>
-            <button className="wallet-btn" onClick={()=>{setAuthStep('');setAuthErr('')}}>&gt; TRY AGAIN</button>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-
-  if(phase==='glitch') return (
-    <div className="fullscreen glitch-screen crt">
-      <div className="scanline"/>
-      <div className="glitch-bars-wrap">{[0,1,2,3,4,5,6,7].map(i=><div key={i} className="gbar"/>)}</div>
-      <div className="glitch-word">CONNECTING</div>
-    </div>
-  )
-
-  if(phase==='boot') return (
-    <div className="fullscreen terminal-screen crt" onClick={()=>document.getElementById('hIn')?.focus()}>
-      <div className="scanline"/>
-      <div className="t-statusbar">
-        <div className="t-sb-left">
-          <span><span className={`signal-dot ${locked?'locked':''}`}/>{sigText}</span>
-          <span className="t-ping">PING : 039 MS</span>
-        </div>
-        <div>{eraText}</div>
-      </div>
-      <div className="t-viewport">
-        <div className="t-block">
-          {lines.map((l,i)=>(
-            <div key={i} className={`t-line ${l.type==='resp'?'resp':l.type||''}`}>
-              {l.type!=='dim'&&l.type!=='resp'&&!l.text.startsWith('>')&&<span className="t-chev">&gt;</span>}
-              {l.text}
+            <div className="main-content">
+              <AnimatePresence mode="wait">
+                {nav==='dashboard' && (
+                  <motion.div key="dashboard" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
+                    <Dashboard rules={rules} log={log} queue={queue} agentOn={agentOn} setAgentOn={setAgentOn} simulate={simExec} activeCount={activeCount} queueDepth={queueDepth}/>
+                  </motion.div>
+                )}
+                {nav==='sequencer' && (
+                  <motion.div key="sequencer" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
+                    <Sequencer queue={queue} simulate={simExec}
+                      cancelJob={id=>setQueue(q=>q.map(j=>j.id===id?{...j,status:'CANCELLED'}:j))}
+                      boostJob={id=>setQueue(q=>q.map(j=>j.id===id?{...j,priority:'CRITICAL'}:j))}/>
+                  </motion.div>
+                )}
+                {nav==='rules' && (
+                  <motion.div key="rules" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
+                    <Rules rules={rules} showAdd={showAdd} setShowAdd={setShowAdd} form={form} setForm={setForm} addRule={addRule}
+                      toggleRule={id=>setRules(r=>r.map(rl=>rl.id===id?{...rl,active:!rl.active}:rl))}
+                      deleteRule={id=>setRules(r=>r.filter(rl=>rl.id!==id))}/>
+                  </motion.div>
+                )}
+                {nav==='log' && (
+                  <motion.div key="log" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
+                    <Log log={log} simulate={simExec}/>
+                  </motion.div>
+                )}
+                {nav==='settings' && (
+                  <motion.div key="settings" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
+                    <Settings agentOn={agentOn} setAgentOn={setAgentOn} address={address} agentAddr={agentAddr}/>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          ))}
-          {bootIdx<bootLines.length && (
-            <div className="t-processing">
-              <div className="t-bar-wrap">
-                <div className="t-bar"><div className="t-bar-fill" style={{width:progress+'%'}}/></div>
-                <span className="t-pct">{progress}%</span>
-              </div>
-              <span className="t-dots"/>
-            </div>
-          )}
-          {locked && (
-            <div className="input-line">
-              <span className="prompt-char">&gt;</span>
-              <span className="typed-text">{typed}</span>
-              <span className="cursor-block"/>
-            </div>
-          )}
-          <div ref={bootRef}/>
-        </div>
-      </div>
-      <input id="hIn" className="real-input" autoComplete="off" value={typed} onChange={()=>{}}/>
-      {locked && <div className="hint">TYPE SOMETHING</div>}
-    </div>
-  )
-
-  // APP
-  return (
-    <div className="app-wrap crt">
-      <div className="scanline"/>
-      {sideOpen && <div className="side-overlay" onClick={()=>setSideOpen(false)}/>}
-      <aside className={`side ${sideOpen?'side-open':''}`}>
-        <div className="side-top">
-          <div>
-            <div className="logo-text">CFO AGENT</div>
-            <div className="logo-sub">CALLSIGN: {callsign||csTyped.toUpperCase()}</div>
           </div>
-          <button className="side-close" onClick={()=>setSideOpen(false)}>✕</button>
-        </div>
-        <nav className="side-nav">
-          <div className="nav-label">// OVERVIEW</div>
-          {[{id:'dashboard',label:'DASHBOARD'},{id:'log',label:'ACTIVITY'}].map(item=>(
-            <button key={item.id} className={`nav ${nav===item.id?'on':''}`} onClick={()=>{setNav(item.id);setSideOpen(false)}}>{item.label}</button>
-          ))}
-          <div className="nav-label">// AUTOMATION</div>
-          <button className={`nav ${nav==='sequencer'?'on':''}`} onClick={()=>{setNav('sequencer');setSideOpen(false)}}>
-            SEQUENCER {queueDepth>0&&<span className="nav-badge">{queueDepth}</span>}
-          </button>
-          {[{id:'rules',label:'RULES'},{id:'settings',label:'SETTINGS'}].map(item=>(
-            <button key={item.id} className={`nav ${nav===item.id?'on':''}`} onClick={()=>{setNav(item.id);setSideOpen(false)}}>{item.label}</button>
-          ))}
-        </nav>
-        <div className="side-foot">
-          <div className="wallet-label"><div className="w-dot"/>CONNECTED</div>
-          <div className="wallet-addr">{truncAddr(address)||'0x71C7...976F'}</div>
-          <div className="agent-addr">AGENT: {truncAddr(agentAddr)||'0x9aB4...1e77'}</div>
-          {isNew && <div className="new-badge">NEW AGENT DEPLOYED</div>}
-          <div className="agent-addr" style={{marginTop:6}}>USERS: {totalUsers.toString()}</div>
-        </div>
-      </aside>
+        </motion.div>
+      )}
 
-      <div className="main">
-        <div className="main-bar">
-          <div className="main-bar-left">
-            <button className="burger" onClick={()=>setSideOpen(true)}>☰</button>
-            <span style={{display:'flex',alignItems:'center',gap:8}}>
-              <span style={{width:6,height:6,borderRadius:'50%',background:statColor,display:'inline-block',animation:'pulse 1.5s infinite'}}/>
-              <span className="stat-label">STATUS : <span style={{color:statColor}}>{appStat}</span></span>
-            </span>
-            <span className="ping-label">PING : {String(ping).padStart(3,'0')} MS</span>
-          </div>
-          <span className="time-label">{time} / ARB SEPOLIA</span>
-        </div>
-        <div className="main-content">
-          {nav==='dashboard' && <Dashboard rules={rules} log={log} queue={queue} agentOn={agentOn} setAgentOn={setAgentOn} simulate={simExec} activeCount={activeCount} queueDepth={queueDepth}/>}
-          {nav==='sequencer' && <Sequencer queue={queue} simulate={simExec} cancelJob={id=>setQueue(q=>q.map(j=>j.id===id?{...j,status:'CANCELLED'}:j))} boostJob={id=>setQueue(q=>q.map(j=>j.id===id?{...j,priority:'CRITICAL'}:j))}/>}
-          {nav==='rules' && <Rules rules={rules} showAdd={showAdd} setShowAdd={setShowAdd} form={form} setForm={setForm} addRule={addRule} toggleRule={id=>setRules(r=>r.map(rl=>rl.id===id?{...rl,active:!rl.active}:rl))} deleteRule={id=>setRules(r=>r.filter(rl=>rl.id!==id))}/>}
-          {nav==='log' && <Log log={log} simulate={simExec}/>}
-          {nav==='settings' && <Settings agentOn={agentOn} setAgentOn={setAgentOn} address={address} agentAddr={agentAddr}/>}
-        </div>
-      </div>
-    </div>
+    </AnimatePresence>
   )
 }
 
-// ---- Sub-components ----
+// ---- Mute button ----
+function MuteBtn({ muted, toggle, inline }) {
+  return (
+    <motion.button
+      className={`mute-btn ${inline?'mute-inline':''}`}
+      onClick={toggle}
+      whileHover={{scale:1.05}}
+      whileTap={{scale:0.95}}
+    >
+      {muted ? '[ MUTED ]' : (
+        <span style={{display:'flex',alignItems:'center',gap:6}}>
+          <motion.span
+            style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'var(--acid)'}}
+            animate={{opacity:[1,0.2,1]}}
+            transition={{repeat:Infinity,duration:1.2}}
+          />
+          AUDIO
+        </span>
+      )}
+    </motion.button>
+  )
+}
 
+// ---- Dashboard ----
 function Dashboard({rules,log,queue,agentOn,setAgentOn,simulate,activeCount,queueDepth}) {
   return (
     <>
       <div className="ph">
         <div><div className="pt">DASHBOARD</div><div className="ps">ARB SEPOLIA // LIVE</div></div>
-        <button className="btn" onClick={simulate}>&gt; SIMULATE</button>
+        <motion.button className="btn" onClick={simulate}
+          whileHover={{scale:1.04}} whileTap={{scale:0.96}}
+          onMouseEnter={()=>SFX.hover()}>
+          &gt; SIMULATE
+        </motion.button>
       </div>
-      <div className="stats">
-        <StatCard label="BALANCE" value="4,820" sub="USDC" accent/>
-        <StatCard label="RULES" value={activeCount} sub={`OF ${rules.length}`}/>
-        <StatCard label="QUEUE" value={queueDepth} sub="PENDING"/>
-        <StatCard label="ROUTED" value="2,000" sub="USDC/MO"/>
-      </div>
-      <div className="status-bar-app">
+      <motion.div className="stats" variants={stagger} initial="hidden" animate="visible">
+        {[
+          {label:'BALANCE', value:'4,820', sub:'USDC', accent:true},
+          {label:'RULES',   value:activeCount, sub:`OF ${rules.length}`},
+          {label:'QUEUE',   value:queueDepth,  sub:'PENDING'},
+          {label:'ROUTED',  value:'2,000',     sub:'USDC/MO'},
+        ].map(c=>(
+          <motion.div key={c.label} className="sc" variants={fadeUp}>
+            <div className="sl">{c.label}</div>
+            <div className={`sv ${c.accent?'accent':''}`}>{c.value}</div>
+            <div className="ss">{c.sub}</div>
+          </motion.div>
+        ))}
+      </motion.div>
+      <motion.div className="status-bar-app" variants={fadeUp} initial="hidden" animate="visible">
         <div className="sb-left">
           <div className="w-dot" style={agentOn?{}:{background:'var(--red)'}}/>
           <div>
@@ -565,18 +747,28 @@ function Dashboard({rules,log,queue,agentOn,setAgentOn,simulate,activeCount,queu
           <span className="sb-status" style={{color:agentOn?'var(--acid)':'var(--red)'}}>{agentOn?'ONLINE':'OFFLINE'}</span>
           <Toggle on={agentOn} onClick={()=>setAgentOn(v=>!v)}/>
         </div>
-      </div>
+      </motion.div>
       <div className="two-col">
         <div>
           <div className="sh"><div className="st">// RECENT ACTIVITY</div></div>
-          <div className="log-list">{log.slice(0,4).map(e=><LogItem key={e.id} entry={e}/>)}</div>
+          <motion.div className="log-list" variants={stagger} initial="hidden" animate="visible">
+            {log.slice(0,4).map(e=>(
+              <motion.div key={e.id} variants={slideRight}>
+                <LogItem entry={e}/>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
         <div>
           <div className="sh"><div className="st">// QUEUE</div></div>
-          <div className="q-mini">
-            {queue.slice(0,4).map(j=><QueueMini key={j.id} job={j}/>)}
+          <motion.div className="q-mini" variants={stagger} initial="hidden" animate="visible">
+            {queue.slice(0,4).map(j=>(
+              <motion.div key={j.id} variants={slideRight}>
+                <QueueMini job={j}/>
+              </motion.div>
+            ))}
             {queue.length===0&&<div className="empty">QUEUE EMPTY</div>}
-          </div>
+          </motion.div>
         </div>
       </div>
     </>
@@ -593,18 +785,28 @@ function Sequencer({queue,simulate,cancelJob,boostJob}) {
     <>
       <div className="ph">
         <div><div className="pt">SEQUENCER</div><div className="ps">{queued.length} PENDING</div></div>
-        <button className="btn" onClick={simulate}>&gt; ENQUEUE</button>
+        <motion.button className="btn" onClick={simulate}
+          whileHover={{scale:1.04}} whileTap={{scale:0.96}}
+          onMouseEnter={()=>SFX.hover()}>&gt; ENQUEUE</motion.button>
       </div>
-      <div className="stats" style={{gridTemplateColumns:'repeat(3,1fr)'}}>
-        <StatCard label="PENDING" value={queued.length} sub="IN QUEUE"/>
-        <StatCard label="DONE" value={queue.filter(j=>j.status==='COMPLETED').length} sub="COMPLETED" accent/>
-        <StatCard label="FAILED" value={queue.filter(j=>j.status==='FAILED').length} sub="ATTENTION"/>
-      </div>
+      <motion.div className="stats" style={{gridTemplateColumns:'repeat(3,1fr)'}} variants={stagger} initial="hidden" animate="visible">
+        {[
+          {label:'PENDING',   value:queued.length},
+          {label:'DONE',      value:queue.filter(j=>j.status==='COMPLETED').length, accent:true},
+          {label:'FAILED',    value:queue.filter(j=>j.status==='FAILED').length},
+        ].map(c=>(
+          <motion.div key={c.label} className="sc" variants={fadeUp}>
+            <div className="sl">{c.label}</div>
+            <div className={`sv ${c.accent?'accent':''}`}>{c.value}</div>
+          </motion.div>
+        ))}
+      </motion.div>
       <div className="sh" style={{marginTop:8}}><div className="st">// PENDING QUEUE</div></div>
-      <div className="q-list" style={{marginBottom:16}}>
+      <motion.div className="q-list" style={{marginBottom:16}} variants={stagger} initial="hidden" animate="visible">
         {queued.length===0&&<div className="empty">&gt; QUEUE EMPTY.</div>}
         {[...queued].sort((a,b)=>(pO[b.priority]||0)-(pO[a.priority]||0)).map(j=>(
-          <div className="qc" key={j.id} style={{borderLeftColor:pC[j.priority]||'#2a2820'}}>
+          <motion.div className="qc" key={j.id} style={{borderLeftColor:pC[j.priority]||'#2a2820'}}
+            variants={slideRight}>
             <div>
               <div className="qc-top">
                 <span className="qc-name">&gt; {j.rule}</span>
@@ -617,12 +819,19 @@ function Sequencer({queue,simulate,cancelJob,boostJob}) {
               <div className="qc-sub">JOB #{j.id} // RULE {j.ruleId} // {j.attempts}/{j.maxRetries} // {j.createdAt}</div>
             </div>
             <div className="ra">
-              {j.priority!=='CRITICAL'&&<button className="btn btn-sm" onClick={()=>boostJob(j.id)} style={{color:'var(--amber)',borderColor:'var(--amber)'}}>&gt; BOOST</button>}
-              <button className="btn btn-danger btn-sm" onClick={()=>cancelJob(j.id)}>CANCEL</button>
+              {j.priority!=='CRITICAL'&&(
+                <motion.button className="btn btn-sm" onClick={()=>boostJob(j.id)}
+                  style={{color:'var(--amber)',borderColor:'var(--amber)'}}
+                  whileHover={{scale:1.05}} whileTap={{scale:0.95}}
+                  onMouseEnter={()=>SFX.hover()}>&gt; BOOST</motion.button>
+              )}
+              <motion.button className="btn btn-danger btn-sm" onClick={()=>cancelJob(j.id)}
+                whileHover={{scale:1.05}} whileTap={{scale:0.95}}
+                onMouseEnter={()=>SFX.hover()}>CANCEL</motion.button>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
       {done.length>0&&(
         <>
           <div className="sh"><div className="st">// COMPLETED</div></div>
@@ -663,12 +872,15 @@ function Rules({rules,showAdd,setShowAdd,form,setForm,addRule,toggleRule,deleteR
     <>
       <div className="ph">
         <div><div className="pt">RULES</div><div className="ps">{rules.filter(r=>r.active).length} ACTIVE // {rules.filter(r=>!r.active).length} PAUSED</div></div>
-        <button className="btn btn-acid" onClick={()=>setShowAdd(true)}>&gt; NEW</button>
+        <motion.button className="btn btn-acid" onClick={()=>setShowAdd(true)}
+          whileHover={{scale:1.04}} whileTap={{scale:0.96}}
+          onMouseEnter={()=>SFX.hover()}>&gt; NEW</motion.button>
       </div>
       {showAdd&&<AddRuleModal form={form} setForm={setForm} onSave={addRule} onCancel={()=>setShowAdd(false)}/>}
-      <div className="rule-list">
+      <motion.div className="rule-list" variants={stagger} initial="hidden" animate="visible">
         {rules.map(r=>(
-          <div key={r.id} className={`rc ${r.active?'active-rule':'paused-rule'} ${r.type==='CONDITIONAL'?'cond-rule':''}`}>
+          <motion.div key={r.id} className={`rc ${r.active?'active-rule':'paused-rule'} ${r.type==='CONDITIONAL'?'cond-rule':''}`}
+            variants={slideRight}>
             <div>
               <div className="rn-row">
                 <span className="rn">&gt; {r.name}</span>
@@ -679,13 +891,17 @@ function Rules({rules,showAdd,setShowAdd,form,setForm,addRule,toggleRule,deleteR
               <div className="rd" style={{color:'var(--muted2)'}}>LIMIT {r.limit} {r.token} // LAST: {r.last}</div>
             </div>
             <div className="ra">
-              <button className="btn btn-sm" onClick={()=>toggleRule(r.id)}>{r.active?'PAUSE':'RESUME'}</button>
-              <button className="btn btn-danger btn-sm" onClick={()=>deleteRule(r.id)}>DEL</button>
+              <motion.button className="btn btn-sm" onClick={()=>toggleRule(r.id)}
+                whileHover={{scale:1.05}} whileTap={{scale:0.95}}
+                onMouseEnter={()=>SFX.hover()}>{r.active?'PAUSE':'RESUME'}</motion.button>
+              <motion.button className="btn btn-danger btn-sm" onClick={()=>deleteRule(r.id)}
+                whileHover={{scale:1.05}} whileTap={{scale:0.95}}
+                onMouseEnter={()=>SFX.hover()}>DEL</motion.button>
             </div>
-          </div>
+          </motion.div>
         ))}
         {rules.length===0&&<div className="empty">&gt; NO RULES.</div>}
-      </div>
+      </motion.div>
     </>
   )
 }
@@ -693,8 +909,8 @@ function Rules({rules,showAdd,setShowAdd,form,setForm,addRule,toggleRule,deleteR
 function AddRuleModal({form,setForm,onSave,onCancel}) {
   const f=k=>e=>setForm(p=>({...p,[k]:e.target.value}))
   return (
-    <div className="modal-bg">
-      <div className="modal">
+    <motion.div className="modal-bg" variants={fadeIn} initial="hidden" animate="visible">
+      <motion.div className="modal" variants={scaleIn} initial="hidden" animate="visible">
         <div className="modal-title">&gt; NEW RULE</div>
         <div className="fg"><label className="fl">// NAME</label><input className="fi" placeholder="FRIDAY PAYROLL" value={form.name} onChange={f('name')}/></div>
         <div className="fr">
@@ -708,9 +924,12 @@ function AddRuleModal({form,setForm,onSave,onCancel}) {
         </div>
         {form.type==='SCHEDULED'&&<div className="fg"><label className="fl">// INTERVAL</label><select className="fse" value={form.interval} onChange={f('interval')}><option value="3600">HOURLY</option><option value="86400">DAILY</option><option value="604800">WEEKLY</option><option value="2592000">MONTHLY</option></select></div>}
         {form.type==='CONDITIONAL'&&<div className="fg"><label className="fl">// TRIGGER ABOVE</label><input className="fi" type="number" placeholder="5000" value={form.condVal} onChange={f('condVal')}/></div>}
-        <div className="ma"><button className="btn" onClick={onCancel}>CANCEL</button><button className="btn btn-acid" onClick={onSave}>&gt; CREATE</button></div>
-      </div>
-    </div>
+        <div className="ma">
+          <motion.button className="btn" onClick={onCancel} whileHover={{scale:1.04}} whileTap={{scale:0.96}} onMouseEnter={()=>SFX.hover()}>CANCEL</motion.button>
+          <motion.button className="btn btn-acid" onClick={onSave} whileHover={{scale:1.04}} whileTap={{scale:0.96}} onMouseEnter={()=>SFX.hover()}>&gt; CREATE</motion.button>
+        </div>
+      </motion.div>
+    </motion.div>
   )
 }
 
@@ -719,12 +938,16 @@ function Log({log,simulate}) {
     <>
       <div className="ph">
         <div><div className="pt">ACTIVITY</div><div className="ps">{log.length} EXECUTIONS ON-CHAIN</div></div>
-        <button className="btn" onClick={simulate}>&gt; SIMULATE</button>
+        <motion.button className="btn" onClick={simulate} whileHover={{scale:1.04}} whileTap={{scale:0.96}} onMouseEnter={()=>SFX.hover()}>&gt; SIMULATE</motion.button>
       </div>
-      <div className="log-list">
-        {log.map(e=><LogItem key={e.id} entry={e}/>)}
+      <motion.div className="log-list" variants={stagger} initial="hidden" animate="visible">
+        {log.map(e=>(
+          <motion.div key={e.id} variants={slideRight}>
+            <LogItem entry={e}/>
+          </motion.div>
+        ))}
         {log.length===0&&<div className="empty">&gt; NO EXECUTIONS YET.</div>}
-      </div>
+      </motion.div>
     </>
   )
 }
@@ -744,31 +967,56 @@ function Settings({agentOn,setAgentOn,address,agentAddr}) {
   return (
     <>
       <div className="ph"><div><div className="pt">SETTINGS</div><div className="ps">CONFIGURATION // SAFETY</div></div></div>
-      <div className="two" style={{marginBottom:14}}>
-        <div className="sc"><div className="sl">YOUR WALLET</div><div className="mono-val teal">{truncAddr(address)||'0x71C7...976F'}</div><div className="ss">SIWE AUTHENTICATED</div></div>
-        <div className="sc"><div className="sl">YOUR AGENT</div><div className="mono-val teal">{truncAddr(agentAddr)||'0x9aB4...1e77'}</div><div className="ss">ARB SEPOLIA 421614</div></div>
-        <div className="sc"><div className="sl">GASLESS MODE</div><div className="mono-val" style={{color:'var(--acid)'}}>ZERODEV ACTIVE</div><div className="ss">NO ETH NEEDED FOR GAS</div></div>
-        <div className="sc"><div className="sl">DAILY USDC CAP</div><div className="sv" style={{fontSize:24,marginTop:6}}>2,000</div><div className="ss">MAX PER 24H</div></div>
-        <div className="sc full" style={{borderTop:`3px solid ${agentOn?'var(--acid)':'var(--red)'}`}}>
+      <motion.div className="two" style={{marginBottom:14}} variants={stagger} initial="hidden" animate="visible">
+        {[
+          {label:'YOUR WALLET',  val:truncAddr(address)||'0x71C7...976F', sub:'SIWE AUTHENTICATED', color:'teal'},
+          {label:'YOUR AGENT',   val:truncAddr(agentAddr)||'0x9aB4...1e77', sub:'ARB SEPOLIA 421614', color:'teal'},
+          {label:'GASLESS MODE', val:'ZERODEV ACTIVE', sub:'NO ETH NEEDED FOR GAS', color:'acid'},
+          {label:'DAILY CAP',    val:'2,000', sub:'MAX USDC / 24H', isNum:true},
+        ].map(c=>(
+          <motion.div key={c.label} className="sc" variants={fadeUp}>
+            <div className="sl">{c.label}</div>
+            {c.isNum
+              ? <div className="sv" style={{fontSize:24,marginTop:6}}>{c.val}</div>
+              : <div className={`mono-val ${c.color||''}`}>{c.val}</div>
+            }
+            <div className="ss">{c.sub}</div>
+          </motion.div>
+        ))}
+        <motion.div className="sc full" style={{borderTop:`3px solid ${agentOn?'var(--acid)':'var(--red)'}`}} variants={fadeUp}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:12}}>
             <div>
               <div className="sl">EMERGENCY KILL SWITCH</div>
               <div style={{fontSize:13,marginTop:5,color:'var(--muted2)',letterSpacing:'0.06em'}}>{agentOn?'AGENT LIVE. ALL RULES EXECUTING.':'AGENT PAUSED. NO RULES WILL EXECUTE.'}</div>
             </div>
-            <button className={`btn ${agentOn?'btn-danger':'btn-acid'}`} onClick={()=>setAgentOn(v=>!v)}>
+            <motion.button className={`btn ${agentOn?'btn-danger':'btn-acid'}`}
+              onClick={()=>setAgentOn(v=>!v)}
+              whileHover={{scale:1.04}} whileTap={{scale:0.96}}
+              onMouseEnter={()=>SFX.hover()}>
               {agentOn?'> DEACTIVATE':'> ACTIVATE'}
-            </button>
+            </motion.button>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </>
   )
 }
 
 function StatCard({label,value,sub,accent}) {
-  return <div className="sc"><div className="sl">{label}</div><div className={`sv ${accent?'accent':''}`}>{value}</div><div className="ss">{sub}</div></div>
+  return (
+    <motion.div className="sc" variants={fadeUp} whileHover={{backgroundColor:'var(--s2)'}}>
+      <div className="sl">{label}</div>
+      <div className={`sv ${accent?'accent':''}`}>{value}</div>
+      <div className="ss">{sub}</div>
+    </motion.div>
+  )
 }
 
 function Toggle({on,onClick}) {
-  return <div className={`tog ${on?'on':''}`} onClick={onClick}><div className="tthumb"/></div>
+  return (
+    <motion.div className={`tog ${on?'on':''}`} onClick={onClick}
+      whileHover={{scale:1.1}} whileTap={{scale:0.9}}>
+      <div className="tthumb"/>
+    </motion.div>
+  )
 }

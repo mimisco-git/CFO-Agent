@@ -837,3 +837,208 @@ body {
   .ph { flex-direction: column; gap: 10px; }
   .ph .btn { align-self: flex-start; }
 }
+
+/* ---- ENTRY GATE ---- */
+.gate-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.gate-grid {
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(200,255,71,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,255,71,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gate-glow {
+  position: fixed;
+  top: -30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70vw;
+  height: 70vw;
+  background: radial-gradient(ellipse, rgba(200,255,71,0.04) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gate-center {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  text-align: center;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+}
+
+.gate-mark {
+  width: clamp(60px, 14vw, 90px);
+  height: clamp(60px, 14vw, 90px);
+  border: 2px solid var(--acid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 36px;
+  position: relative;
+}
+
+.gate-mark::before, .gate-mark::after {
+  content: '';
+  position: absolute;
+  border: 1px solid rgba(200,255,71,0.2);
+}
+
+.gate-mark::before {
+  inset: 8px;
+}
+
+.gate-mark::after {
+  inset: 16px;
+  animation: spin 8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.gate-mark-inner {
+  width: clamp(16px, 4vw, 24px);
+  height: clamp(16px, 4vw, 24px);
+  background: var(--acid);
+  animation: breathe 2.5s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+.gate-title {
+  font-family: var(--vt);
+  font-size: clamp(36px, 10vw, 64px);
+  letter-spacing: 0.2em;
+  color: var(--bright);
+  line-height: 1;
+  margin-bottom: 14px;
+  text-shadow: 0 0 40px rgba(200,255,71,0.15);
+}
+
+.gate-sub {
+  font-family: var(--vt);
+  font-size: clamp(12px, 3vw, 16px);
+  letter-spacing: 0.25em;
+  color: var(--muted2);
+  margin-bottom: 8px;
+}
+
+.gate-sub2 {
+  font-family: var(--mono);
+  font-size: clamp(10px, 2.5vw, 12px);
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  margin-bottom: 44px;
+}
+
+.gate-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--acid);
+  color: #000;
+  border: none;
+  font-family: var(--vt);
+  font-size: clamp(16px, 4vw, 22px);
+  letter-spacing: 0.2em;
+  padding: clamp(14px,4vw,18px) clamp(28px,7vw,44px);
+  cursor: pointer;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.gate-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.gate-btn:hover::after {
+  transform: translateX(100%);
+}
+
+.gate-btn-glyph {
+  font-size: clamp(18px,5vw,26px);
+  animation: blink 1s infinite;
+}
+
+.gate-chain {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: clamp(10px, 2.5vw, 12px);
+  letter-spacing: 0.15em;
+  color: var(--muted);
+}
+
+.gate-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--acid);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.gate-mute {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: none;
+  border: 1px solid var(--muted);
+  color: var(--muted);
+  font-family: var(--vt);
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  padding: 6px 12px;
+  cursor: pointer;
+  z-index: 100;
+  transition: border-color .15s, color .15s;
+}
+.gate-mute:hover { border-color: var(--acid); color: var(--acid); }
+
+/* ---- MUTE BUTTON (inline and fixed) ---- */
+.mute-btn {
+  background: none;
+  border: 1px solid var(--muted);
+  color: var(--muted);
+  font-family: var(--vt);
+  font-size: clamp(11px, 2.5vw, 13px);
+  letter-spacing: 0.15em;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.mute-btn:hover { border-color: var(--acid); color: var(--acid); }
+
+.mute-inline {
+  position: static;
+}
+
+/* Fixed mute on fullscreen pages */
+.fullscreen .mute-btn:not(.mute-inline) {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+}
