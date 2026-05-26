@@ -37,7 +37,7 @@ function truncate(addr) {
 }
 
 export default function App() {
-  const [connected, setConnected] = useState(false)
+  const [page, setPage] = useState('landing')
   const [agentOn, setAgentOn] = useState(true)
   const [nav, setNav] = useState('dashboard')
   const [rules, setRules] = useState(INITIAL_RULES)
@@ -52,19 +52,8 @@ export default function App() {
     const active = rules.filter(r => r.active)
     if (!active.length) return
     const rule = active[Math.floor(Math.random() * active.length)]
-
-    const newJob = {
-      id: jobId.current++,
-      rule: rule.name,
-      ruleId: rule.id,
-      priority: 'NORMAL',
-      status: 'QUEUED',
-      attempts: 0,
-      maxRetries: 3,
-      createdAt: 'just now',
-    }
+    const newJob = { id: jobId.current++, rule: rule.name, ruleId: rule.id, priority: 'NORMAL', status: 'QUEUED', attempts: 0, maxRetries: 3, createdAt: 'just now' }
     setQueue(q => [newJob, ...q])
-
     setTimeout(() => {
       setQueue(q => q.map(j => j.id === newJob.id ? { ...j, status: 'EXECUTING' } : j))
       setTimeout(() => {
@@ -76,26 +65,14 @@ export default function App() {
   }
 
   function addRule() {
-    setRules(r => [...r, {
-      id: Date.now(), name: form.name || 'Unnamed rule', type: form.type,
-      token: form.token, recipient: form.recipient || '0x0000...0000',
-      amount: form.amount, interval: form.type === 'SCHEDULED' ? fmtInterval(form.interval) : '',
-      limit: form.limit, cond: form.type === 'CONDITIONAL' ? `Balance > ${form.condVal} ${form.token}` : '',
-      active: true, last: 'never',
-    }])
+    setRules(r => [...r, { id: Date.now(), name: form.name || 'Unnamed rule', type: form.type, token: form.token, recipient: form.recipient || '0x0000...0000', amount: form.amount, interval: form.type === 'SCHEDULED' ? fmtInterval(form.interval) : '', limit: form.limit, cond: form.type === 'CONDITIONAL' ? `Balance > ${form.condVal} ${form.token}` : '', active: true, last: 'never' }])
     setShowAdd(false)
     setForm(BLANK)
   }
 
-  function cancelJob(id) {
-    setQueue(q => q.map(j => j.id === id ? { ...j, status: 'CANCELLED' } : j))
-  }
+  function launch() { setPage('app') }
 
-  function boostJob(id) {
-    setQueue(q => q.map(j => j.id === id ? { ...j, priority: 'CRITICAL' } : j))
-  }
-
-  if (!connected) return <ConnectScreen onConnect={() => setConnected(true)} />
+  if (page === 'landing') return <LandingPage onLaunch={launch} />
 
   const activeCount = rules.filter(r => r.active).length
   const queueDepth = queue.filter(j => j.status === 'QUEUED' || j.status === 'EXECUTING').length
@@ -105,7 +82,7 @@ export default function App() {
       <Sidebar nav={nav} setNav={setNav} queueDepth={queueDepth} />
       <main className="main">
         {nav === 'dashboard' && <Dashboard rules={rules} log={log} queue={queue} agentOn={agentOn} setAgentOn={setAgentOn} simulate={simulate} activeCount={activeCount} queueDepth={queueDepth} />}
-        {nav === 'sequencer' && <Sequencer queue={queue} simulate={simulate} cancelJob={cancelJob} boostJob={boostJob} />}
+        {nav === 'sequencer' && <Sequencer queue={queue} simulate={simulate} cancelJob={id => setQueue(q => q.map(j => j.id === id ? { ...j, status: 'CANCELLED' } : j))} boostJob={id => setQueue(q => q.map(j => j.id === id ? { ...j, priority: 'CRITICAL' } : j))} />}
         {nav === 'rules' && <Rules rules={rules} showAdd={showAdd} setShowAdd={setShowAdd} form={form} setForm={setForm} addRule={addRule} toggleRule={id => setRules(r => r.map(rl => rl.id === id ? { ...rl, active: !rl.active } : rl))} deleteRule={id => setRules(r => r.filter(rl => rl.id !== id))} />}
         {nav === 'log' && <Log log={log} simulate={simulate} />}
         {nav === 'settings' && <Settings agentOn={agentOn} setAgentOn={setAgentOn} />}
@@ -114,18 +91,84 @@ export default function App() {
   )
 }
 
-function ConnectScreen({ onConnect }) {
+function LandingPage({ onLaunch }) {
   return (
-    <div className="conn">
-      <div className="conn-grid" />
-      <div className="conn-center">
-        <div className="conn-mark" />
-        <div className="conn-title">CFO Agent</div>
-        <div className="conn-sub">Programmable treasury automation.<br />Set rules. The agent executes.</div>
-        <button className="conn-btn" onClick={onConnect}>
-          <i className="ti ti-wallet" style={{ fontSize: 16 }} /> Connect Wallet
-        </button>
-        <div className="conn-chain"><div className="status-dot" />Arbitrum Sepolia · Testnet</div>
+    <div className="landing">
+      <div className="land-grid" />
+      <div className="land-glow" />
+
+      <nav className="land-nav">
+        <div className="land-logo">
+          <div className="land-logo-mark" />
+          <div className="land-logo-text">CFO Agent</div>
+        </div>
+        <div className="land-nav-right">
+          <div className="land-pill">
+            <div className="land-pill-dot" />
+            Built on Arbitrum
+          </div>
+          <button className="btn-ghost btn" onClick={onLaunch}>
+            Launch app
+          </button>
+        </div>
+      </nav>
+
+      <div className="land-hero">
+        <div className="land-tag">
+          <div className="land-tag-dot" />
+          Open House London Buildathon 2026
+        </div>
+
+        <h1 className="land-h1">
+          Your treasury.<br />
+          <span>Automated.</span>
+        </h1>
+
+        <p className="land-sub">
+          Set payment rules once. CFO Agent executes them onchain, 24/7,
+          without you touching anything. Payroll, yield routing, recurring
+          transfers — all autonomous.
+        </p>
+
+        <div className="land-btns">
+          <button className="land-btn-primary" onClick={onLaunch}>
+            <i className="ti ti-rocket" />
+            Launch app
+          </button>
+          <a className="land-btn-secondary" href="https://github.com/mimisco-git/CFO-agent" target="_blank" rel="noreferrer">
+            <i className="ti ti-brand-github" />
+            View on GitHub
+          </a>
+        </div>
+
+        <div className="land-stats">
+          <div className="land-stat">
+            <div className="land-stat-val">3</div>
+            <div className="land-stat-label">Smart contracts</div>
+          </div>
+          <div className="land-stat">
+            <div className="land-stat-val">24/7</div>
+            <div className="land-stat-label">Autonomous execution</div>
+          </div>
+          <div className="land-stat">
+            <div className="land-stat-val">0</div>
+            <div className="land-stat-label">Manual transactions</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="land-features">
+        {[
+          { icon: 'ti-bolt', title: 'Rule engine', desc: 'Define scheduled and conditional payment rules. The agent executes them automatically based on time or on-chain conditions.' },
+          { icon: 'ti-stack-2', title: 'Priority sequencer', desc: 'Jobs queue in order. CRITICAL executes first, then HIGH, then NORMAL. Retry logic handles failed executions automatically.' },
+          { icon: 'ti-shield-check', title: 'Safety controls', desc: 'Emergency kill switch, per-rule spend limits, daily caps, and multi-sig support keep your treasury protected at all times.' },
+        ].map(f => (
+          <div className="land-feature" key={f.title}>
+            <div className="land-feature-icon"><i className={`ti ${f.icon}`} /></div>
+            <div className="land-feature-title">{f.title}</div>
+            <div className="land-feature-desc">{f.desc}</div>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -137,32 +180,22 @@ function Sidebar({ nav, setNav, queueDepth }) {
       <div className="side-top">
         <div className="logo">
           <div className="logo-mark" />
-          <div>
-            <div className="logo-text">CFO Agent</div>
-            <div className="logo-sub">Treasury OS</div>
-          </div>
+          <div><div className="logo-text">CFO Agent</div><div className="logo-sub">Treasury OS</div></div>
         </div>
       </div>
       <nav className="side-nav">
         <div className="nav-section-label">Overview</div>
-        {[
-          { id: 'dashboard', icon: 'ti-layout-dashboard', label: 'Dashboard' },
-          { id: 'log', icon: 'ti-activity', label: 'Activity' },
-        ].map(item => (
+        {[{ id: 'dashboard', icon: 'ti-layout-dashboard', label: 'Dashboard' }, { id: 'log', icon: 'ti-activity', label: 'Activity' }].map(item => (
           <button key={item.id} className={`nav ${nav === item.id ? 'on' : ''}`} onClick={() => setNav(item.id)}>
             <i className={`ti ${item.icon}`} />{item.label}
           </button>
         ))}
         <div className="nav-section-label">Automation</div>
         <button className={`nav ${nav === 'sequencer' ? 'on' : ''}`} onClick={() => setNav('sequencer')}>
-          <i className="ti ti-stack-2" />
-          Sequencer
+          <i className="ti ti-stack-2" />Sequencer
           {queueDepth > 0 && <span className="nav-badge">{queueDepth}</span>}
         </button>
-        {[
-          { id: 'rules', icon: 'ti-bolt', label: 'Rules' },
-          { id: 'settings', icon: 'ti-adjustments-horizontal', label: 'Settings' },
-        ].map(item => (
+        {[{ id: 'rules', icon: 'ti-bolt', label: 'Rules' }, { id: 'settings', icon: 'ti-adjustments-horizontal', label: 'Settings' }].map(item => (
           <button key={item.id} className={`nav ${nav === item.id ? 'on' : ''}`} onClick={() => setNav(item.id)}>
             <i className={`ti ${item.icon}`} />{item.label}
           </button>
@@ -183,10 +216,7 @@ function Dashboard({ rules, log, queue, agentOn, setAgentOn, simulate, activeCou
   return (
     <>
       <div className="ph">
-        <div className="ph-left">
-          <div className="pt">Dashboard</div>
-          <div className="ps">Arbitrum Sepolia · last sync 12s ago</div>
-        </div>
+        <div className="ph-left"><div className="pt">Dashboard</div><div className="ps">Arbitrum Sepolia · last sync 12s ago</div></div>
         <button className="btn btn-ghost" onClick={simulate}><i className="ti ti-player-play" /> Simulate execution</button>
       </div>
       <div className="stats">
@@ -229,41 +259,31 @@ function Dashboard({ rules, log, queue, agentOn, setAgentOn, simulate, activeCou
 
 function Sequencer({ queue, simulate, cancelJob, boostJob }) {
   const queued = queue.filter(j => j.status === 'QUEUED' || j.status === 'EXECUTING')
-  const done = queue.filter(j => j.status === 'COMPLETED' || j.status === 'FAILED' || j.status === 'CANCELLED')
+  const done = queue.filter(j => ['COMPLETED','FAILED','CANCELLED'].includes(j.status))
+  const pOrder = { CRITICAL: 2, HIGH: 1, NORMAL: 0 }
 
   return (
     <>
       <div className="ph">
-        <div className="ph-left">
-          <div className="pt">Execution sequencer</div>
-          <div className="ps">{queued.length} jobs pending · CRITICAL first, then HIGH, then NORMAL</div>
-        </div>
+        <div className="ph-left"><div className="pt">Execution sequencer</div><div className="ps">{queued.length} jobs pending · CRITICAL first, then HIGH, then NORMAL</div></div>
         <button className="btn btn-ghost" onClick={simulate}><i className="ti ti-plus" /> Enqueue job</button>
       </div>
-
-      <div className="stats" style={{ gridTemplateColumns: 'repeat(3,1fr)', marginBottom: 24 }}>
+      <div className="stats" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
         <StatCard label="Queue depth" value={queued.length} sub="pending jobs" />
         <StatCard label="Completed" value={queue.filter(j => j.status === 'COMPLETED').length} sub="all time" accent />
         <StatCard label="Failed" value={queue.filter(j => j.status === 'FAILED').length} sub="needs attention" />
       </div>
-
-      <div className="sh"><div className="st">Pending queue</div></div>
+      <div className="sh" style={{ marginTop: 8 }}><div className="st">Pending queue</div></div>
       <div className="q-list" style={{ marginBottom: 24 }}>
-        {queued.length === 0 && <div className="empty">No jobs in queue. Keeper will enqueue ready rules automatically.</div>}
-        {queued.sort((a, b) => {
-          const p = { CRITICAL: 2, HIGH: 1, NORMAL: 0 }
-          return (p[b.priority] || 0) - (p[a.priority] || 0)
-        }).map(j => (
+        {queued.length === 0 && <div className="empty">No jobs in queue. Rules will be enqueued automatically when ready.</div>}
+        {[...queued].sort((a, b) => (pOrder[b.priority] || 0) - (pOrder[a.priority] || 0)).map(j => (
           <QueueCard key={j.id} job={j} onCancel={() => cancelJob(j.id)} onBoost={() => boostJob(j.id)} />
         ))}
       </div>
-
       {done.length > 0 && (
         <>
           <div className="sh"><div className="st">Completed jobs</div></div>
-          <div className="q-list">
-            {done.map(j => <QueueCard key={j.id} job={j} done />)}
-          </div>
+          <div className="q-list">{done.map(j => <QueueCard key={j.id} job={j} done />)}</div>
         </>
       )}
     </>
@@ -273,29 +293,21 @@ function Sequencer({ queue, simulate, cancelJob, boostJob }) {
 function QueueCard({ job, onCancel, onBoost, done }) {
   const pColor = { CRITICAL: 'var(--red)', HIGH: 'var(--amber)', NORMAL: 'var(--t3)' }
   const sColor = { QUEUED: 'var(--teal)', EXECUTING: 'var(--acid)', COMPLETED: 'var(--t3)', FAILED: 'var(--red)', CANCELLED: 'var(--t3)' }
-
   return (
     <div className="qc" style={{ borderLeftColor: pColor[job.priority] || 'var(--t3)' }}>
-      <div className="qc-left">
+      <div>
         <div className="qc-top">
           <span className="qc-name">{job.rule}</span>
-          <span className="badge" style={{ background: 'rgba(200,255,71,0.06)', color: pColor[job.priority] }}>{job.priority}</span>
+          <span className="badge" style={{ background: 'rgba(255,255,255,0.04)', color: pColor[job.priority] }}>{job.priority}</span>
           <span className="badge" style={{ color: sColor[job.status], background: 'rgba(255,255,255,0.04)' }}>
-            {job.status === 'EXECUTING' && <span className="exec-dot" />}
-            {job.status}
+            {job.status === 'EXECUTING' && <span className="exec-dot" />}{job.status}
           </span>
         </div>
-        <div className="qc-sub">
-          Job #{job.id} · rule {job.ruleId} · attempt {job.attempts}/{job.maxRetries} · queued {job.createdAt}
-        </div>
+        <div className="qc-sub">Job #{job.id} · rule {job.ruleId} · attempt {job.attempts}/{job.maxRetries} · {job.createdAt}</div>
       </div>
       {!done && (
         <div className="ra">
-          {job.priority !== 'CRITICAL' && (
-            <button className="btn btn-ghost btn-sm" onClick={onBoost}>
-              <i className="ti ti-bolt" /> Boost
-            </button>
-          )}
+          {job.priority !== 'CRITICAL' && <button className="btn btn-ghost btn-sm" onClick={onBoost}><i className="ti ti-bolt" /> Boost</button>}
           <button className="btn btn-danger btn-sm" onClick={onCancel}>Cancel</button>
         </div>
       )}
@@ -319,42 +331,33 @@ function Rules({ rules, showAdd, setShowAdd, form, setForm, addRule, toggleRule,
   return (
     <>
       <div className="ph">
-        <div className="ph-left">
-          <div className="pt">Automation rules</div>
-          <div className="ps">{rules.filter(r => r.active).length} active · {rules.filter(r => !r.active).length} paused</div>
-        </div>
+        <div className="ph-left"><div className="pt">Automation rules</div><div className="ps">{rules.filter(r => r.active).length} active · {rules.filter(r => !r.active).length} paused</div></div>
         <button className="btn btn-acid" onClick={() => setShowAdd(true)}><i className="ti ti-plus" /> New rule</button>
       </div>
       {showAdd && <AddRuleModal form={form} setForm={setForm} onSave={addRule} onCancel={() => setShowAdd(false)} />}
       <div className="rule-list">
         {rules.map(r => (
           <div className="rc-wrap" key={r.id}>
-            <RuleCard rule={r} onToggle={() => toggleRule(r.id)} onDelete={() => deleteRule(r.id)} />
+            <div className={`rc ${r.active ? 'active-rule' : 'paused-rule'} ${r.type === 'CONDITIONAL' ? 'cond-rule' : ''}`}>
+              <div>
+                <div className="rn-row">
+                  <span className="rn">{r.name}</span>
+                  <span className={`badge ${r.type === 'SCHEDULED' ? 'b-sched' : 'b-cond'}`}>{r.type}</span>
+                  <span className={`badge ${r.active ? 'b-active' : 'b-paused'}`}>{r.active ? 'active' : 'paused'}</span>
+                </div>
+                <div className="rd">{r.amount} {r.token} → {r.recipient}{r.interval ? ` · every ${r.interval}` : ''}{r.cond ? ` · when ${r.cond}` : ''}</div>
+                <div className="rd" style={{ marginTop: 3, color: 'var(--t3)' }}>limit {r.limit} {r.token} · last: {r.last}</div>
+              </div>
+              <div className="ra">
+                <button className="btn btn-ghost btn-sm" onClick={() => toggleRule(r.id)}>{r.active ? 'Pause' : 'Resume'}</button>
+                <button className="btn btn-danger btn-sm" onClick={() => deleteRule(r.id)}><i className="ti ti-trash" /></button>
+              </div>
+            </div>
           </div>
         ))}
         {rules.length === 0 && <div className="empty">No rules configured.</div>}
       </div>
     </>
-  )
-}
-
-function RuleCard({ rule, onToggle, onDelete }) {
-  return (
-    <div className={`rc ${rule.active ? 'active-rule' : 'paused-rule'} ${rule.type === 'CONDITIONAL' ? 'cond-rule' : ''}`}>
-      <div>
-        <div className="rn-row">
-          <span className="rn">{rule.name}</span>
-          <span className={`badge ${rule.type === 'SCHEDULED' ? 'b-sched' : 'b-cond'}`}>{rule.type}</span>
-          <span className={`badge ${rule.active ? 'b-active' : 'b-paused'}`}>{rule.active ? 'active' : 'paused'}</span>
-        </div>
-        <div className="rd">{rule.amount} {rule.token} → {rule.recipient}{rule.interval ? ` · every ${rule.interval}` : ''}{rule.cond ? ` · when ${rule.cond}` : ''}</div>
-        <div className="rd" style={{ marginTop: 3, color: 'var(--t3)' }}>limit {rule.limit} {rule.token} · last: {rule.last}</div>
-      </div>
-      <div className="ra">
-        <button className="btn btn-ghost btn-sm" onClick={onToggle}>{rule.active ? 'Pause' : 'Resume'}</button>
-        <button className="btn btn-danger btn-sm" onClick={onDelete}><i className="ti ti-trash" /></button>
-      </div>
-    </div>
   )
 }
 
@@ -371,15 +374,12 @@ function AddRuleModal({ form, setForm, onSave, onCancel }) {
         </div>
         <div className="fg"><label className="fl">Recipient address</label><input className="fi" placeholder="0x..." value={form.recipient} onChange={f('recipient')} /></div>
         <div className="fr">
-          <div className="fg"><label className="fl">Amount per execution</label><input className="fi" type="number" placeholder="500" value={form.amount} onChange={f('amount')} /></div>
-          <div className="fg"><label className="fl">Spend limit (cap)</label><input className="fi" type="number" placeholder="600" value={form.limit} onChange={f('limit')} /></div>
+          <div className="fg"><label className="fl">Amount</label><input className="fi" type="number" placeholder="500" value={form.amount} onChange={f('amount')} /></div>
+          <div className="fg"><label className="fl">Spend limit</label><input className="fi" type="number" placeholder="600" value={form.limit} onChange={f('limit')} /></div>
         </div>
         {form.type === 'SCHEDULED' && <div className="fg"><label className="fl">Interval</label><select className="fse" value={form.interval} onChange={f('interval')}><option value="3600">Every hour</option><option value="86400">Every day</option><option value="604800">Every week</option><option value="2592000">Every month</option></select></div>}
         {form.type === 'CONDITIONAL' && <div className="fg"><label className="fl">Trigger when balance exceeds</label><input className="fi" type="number" placeholder="5000" value={form.condVal} onChange={f('condVal')} /></div>}
-        <div className="ma">
-          <button className="btn btn-ghost" onClick={onCancel}>Cancel</button>
-          <button className="btn btn-acid" onClick={onSave}>Create rule</button>
-        </div>
+        <div className="ma"><button className="btn btn-ghost" onClick={onCancel}>Cancel</button><button className="btn btn-acid" onClick={onSave}>Create rule</button></div>
       </div>
     </div>
   )
@@ -389,10 +389,7 @@ function Log({ log, simulate }) {
   return (
     <>
       <div className="ph">
-        <div className="ph-left">
-          <div className="pt">Activity log</div>
-          <div className="ps">{log.length} executions recorded on-chain</div>
-        </div>
+        <div className="ph-left"><div className="pt">Activity log</div><div className="ps">{log.length} executions recorded on-chain</div></div>
         <button className="btn btn-ghost" onClick={simulate}><i className="ti ti-player-play" /> Simulate</button>
       </div>
       <div className="log-list">
@@ -407,10 +404,7 @@ function LogItem({ entry: e }) {
   return (
     <div className="li">
       <div className="li-icon"><i className="ti ti-check" /></div>
-      <div className="lit">
-        <div className="lit-rule">{e.rule}</div>
-        <div className="lit-to">{e.to}</div>
-      </div>
+      <div className="lit"><div className="lit-rule">{e.rule}</div><div className="lit-to">{e.to}</div></div>
       <span className="lam">{e.amount} {e.token}</span>
       <span className="ltm">{e.time}</span>
     </div>
@@ -420,12 +414,7 @@ function LogItem({ entry: e }) {
 function Settings({ agentOn, setAgentOn }) {
   return (
     <>
-      <div className="ph">
-        <div className="ph-left">
-          <div className="pt">Settings</div>
-          <div className="ps">Agent configuration and safety controls</div>
-        </div>
-      </div>
+      <div className="ph"><div className="ph-left"><div className="pt">Settings</div><div className="ps">Agent configuration and safety controls</div></div></div>
       <div className="two" style={{ marginBottom: 16 }}>
         <div className="sc"><div className="sl">Agent contract</div><div className="mono-val teal">{AGENT}</div><div className="ss">Arbitrum Sepolia · chain 421614</div></div>
         <div className="sc"><div className="sl">Keeper bot</div><div className="mono-val muted">0x3d9A...7B22</div><div className="ss">Polling every 30 seconds</div></div>
@@ -435,11 +424,10 @@ function Settings({ agentOn, setAgentOn }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div className="sl">Emergency kill switch</div>
-              <div style={{ fontSize: 12, marginTop: 6, color: 'var(--t2)', fontWeight: 300 }}>{agentOn ? 'Agent live. Sequencer processing jobs in priority order.' : 'Agent paused. No rules will execute until reactivated.'}</div>
+              <div style={{ fontSize: 12, marginTop: 6, color: 'var(--t2)', fontWeight: 300 }}>{agentOn ? 'Agent live. Sequencer processing in priority order.' : 'Agent paused. No rules will execute until reactivated.'}</div>
             </div>
             <button className={`btn ${agentOn ? 'btn-danger' : 'btn-acid'}`} onClick={() => setAgentOn(v => !v)}>
-              <i className={`ti ${agentOn ? 'ti-power' : 'ti-player-play'}`} />
-              {agentOn ? 'Deactivate' : 'Activate'}
+              <i className={`ti ${agentOn ? 'ti-power' : 'ti-player-play'}`} />{agentOn ? 'Deactivate' : 'Activate'}
             </button>
           </div>
         </div>
@@ -449,19 +437,9 @@ function Settings({ agentOn, setAgentOn }) {
 }
 
 function StatCard({ label, value, sub, accent }) {
-  return (
-    <div className="sc">
-      <div className="sl">{label}</div>
-      <div className={`sv ${accent ? 'accent' : ''}`}>{value}</div>
-      <div className="ss">{sub}</div>
-    </div>
-  )
+  return <div className="sc"><div className="sl">{label}</div><div className={`sv ${accent ? 'accent' : ''}`}>{value}</div><div className="ss">{sub}</div></div>
 }
 
 function Toggle({ on, onClick }) {
-  return (
-    <div className={`tog ${on ? 'on' : ''}`} onClick={onClick}>
-      <div className="tthumb" />
-    </div>
-  )
+  return <div className={`tog ${on ? 'on' : ''}`} onClick={onClick}><div className="tthumb" /></div>
 }
