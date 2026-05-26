@@ -159,8 +159,18 @@ export default function App() {
     setTimeout(()=>csInputRef.current?.focus(), 100)
   },[phase])
 
+  // Detect touch device once
+  const isTouchDevice = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+
   function handleCsKey(e) {
     if(phase!=='callsign') return
+    // On touch devices, let onChange handle it to avoid doubling
+    if(isTouchDevice) {
+      if(e.key==='Enter' && csTyped.trim().length>=2) {
+        setCallsign(csTyped.trim().toUpperCase()); setPhase('wallet')
+      }
+      return
+    }
     SFX.key()
     if(e.key==='Enter' && csTyped.trim().length>=2) {
       setCallsign(csTyped.trim().toUpperCase()); setPhase('wallet')
@@ -171,8 +181,9 @@ export default function App() {
     }
   }
 
-  // Mobile onChange for callsign
+  // Mobile onChange only - desktop uses keydown above
   function handleCsChange(e) {
+    if(!isTouchDevice) return  // desktop: ignore onChange, keydown handles it
     const val = e.target.value.toUpperCase().slice(0,16)
     setCsTyped(val)
     SFX.key()
@@ -236,8 +247,9 @@ export default function App() {
     window.addEventListener('keydown',h); return()=>window.removeEventListener('keydown',h)
   },[phase,locked,typed])
 
-  // Terminal - mobile onChange
+  // Terminal onChange - mobile only, desktop uses keydown
   function handleTermChange(e) {
+    if(!isTouchDevice) return
     setTyped(e.target.value.toUpperCase().slice(0,40))
     SFX.key()
   }
@@ -370,6 +382,7 @@ export default function App() {
           onKeyDown={handleCsKey}
           maxLength={16}
           placeholder="TYPE YOUR CALLSIGN"
+          readOnly={!isTouchDevice}
         />
         {csTyped.length>=2 && (
           <motion.button className="cs-enter-btn" onClick={handleCsSubmit}
