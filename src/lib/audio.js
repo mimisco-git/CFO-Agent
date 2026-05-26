@@ -146,7 +146,7 @@ class AudioEngine {
     if (!this.drone || !this.droneOn) return
     const { droneGain, oscs, lfos } = this.drone
     const now = this.ctx.currentTime
-    droneGain.gain.linearRampToValueAtTime(0, now + 2)
+    droneGain.gain.linearRampToValueAtTime(0, now + 2);
     [...oscs, ...lfos].forEach(n => { try { n.stop(now + 2.1) } catch(e){} })
     this.droneOn = false
     this.drone = null
