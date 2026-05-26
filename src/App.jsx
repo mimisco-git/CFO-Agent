@@ -79,10 +79,6 @@ const BLANK = { name:'', type:'SCHEDULED', token:'USDC', recipient:'', amount:''
 const BLANK_RECIPIENT = { name:'', address:'', amount:'' }
 
 function fmtInt(s) {
-  const n=Number(s)
-  if(n>=2592000) return '1 MONTH'; if(n>=604800) return '1 WEEK'
-  if(n>=86400) return '1 DAY'; return '1 HOUR'
-}
 
 function usePing() {
   const [v,set]=useState(39)
@@ -693,7 +689,6 @@ function AIRuleSuggester({ rules, addRule }) {
   )
 }
 
-function fmtInt(s) {
   const n=Number(s)
   if(n>=2592000) return '1 MONTH'; if(n>=604800) return '1 WEEK'
   if(n>=86400) return '1 DAY'; return '1 HOUR'
