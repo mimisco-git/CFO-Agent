@@ -1,122 +1,79 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import './App.css'
-
-// ---- CONFIG ----
-const FACTORY_ADDRESS  = import.meta.env.VITE_FACTORY_ADDRESS  || '0x0000...0000'
-const REGISTRY_ADDRESS = import.meta.env.VITE_REGISTRY_ADDRESS || '0x0000...0000'
-const CHAIN_ID         = 421614 // Arbitrum Sepolia
-const CHAIN_HEX        = '0x' + CHAIN_ID.toString(16)
-const CHAIN_NAME       = 'Arbitrum Sepolia'
-const RPC_URL          = 'https://sepolia-rollup.arbitrum.io/rpc'
-
-// ---- MINIMAL ABI ----
-const FACTORY_ABI = [
-  'function deployAgent() external returns (address)',
-  'function hasAgent(address wallet) external view returns (bool)',
-  'function agentOf(address wallet) external view returns (address)',
-  'function totalAgents() external view returns (uint256)',
-]
-
-const AGENT_ABI = [
-  'function active() view returns (bool)',
-  'function totalExecutions() view returns (uint256)',
-  'function ethBalance() view returns (uint256)',
-  'function tokenBalance(address token) view returns (uint256)',
-]
+import {
+  hasWallet, connectWallet, signSiwe, genNonce,
+  checkHasAgent, getAgentAddress, deployAgent,
+  getAgentStatus, getTotalAgents,
+  truncAddr, onAccountChange, onChainChange,
+  FACTORY_ADDR, CHAIN_ID,
+} from './lib/chain.js'
 
 // ---- SOUND ENGINE ----
 const SFX = {
   ctx: null,
   init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)() },
-  beep(freq=880, dur=0.04, vol=0.06, type='square') {
+  beep(freq=880,dur=0.04,vol=0.06,type='square') {
     try {
       this.init()
-      const o = this.ctx.createOscillator()
-      const g = this.ctx.createGain()
+      const o=this.ctx.createOscillator(), g=this.ctx.createGain()
       o.connect(g); g.connect(this.ctx.destination)
-      o.type = type; o.frequency.value = freq
-      g.gain.setValueAtTime(vol, this.ctx.currentTime)
-      g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur)
-      o.start(); o.stop(this.ctx.currentTime + dur)
+      o.type=type; o.frequency.value=freq
+      g.gain.setValueAtTime(vol,this.ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.001,this.ctx.currentTime+dur)
+      o.start(); o.stop(this.ctx.currentTime+dur)
     } catch(e) {}
   },
-  boot()    { this.beep(440,0.06,0.08); setTimeout(()=>this.beep(660,0.04,0.05),80) },
-  line()    { this.beep(600+Math.random()*200,0.03,0.04) },
-  lock()    { [880,740,620,520].forEach((f,i)=>setTimeout(()=>this.beep(f,0.08,0.06),i*80)) },
-  launch()  { [440,550,660,880].forEach((f,i)=>setTimeout(()=>this.beep(f,0.1,0.07,'sine'),i*60)) },
-  key()     { this.beep(800+Math.random()*400,0.025,0.03) },
-  exec()    { this.beep(300,0.15,0.05,'sawtooth') },
-  done()    { [660,880,1100].forEach((f,i)=>setTimeout(()=>this.beep(f,0.12,0.05,'sine'),i*100)) },
-  deploy()  { [220,330,440,660,880].forEach((f,i)=>setTimeout(()=>this.beep(f,0.15,0.07,'sine'),i*100)) },
-  error()   { [400,300,200].forEach((f,i)=>setTimeout(()=>this.beep(f,0.1,0.06,'square'),i*80)) },
+  boot()   { this.beep(440,.06,.08); setTimeout(()=>this.beep(660,.04,.05),80) },
+  line()   { this.beep(600+Math.random()*200,.03,.04) },
+  lock()   { [880,740,620,520].forEach((f,i)=>setTimeout(()=>this.beep(f,.08,.06),i*80)) },
+  launch() { [440,550,660,880].forEach((f,i)=>setTimeout(()=>this.beep(f,.1,.07,'sine'),i*60)) },
+  key()    { this.beep(800+Math.random()*400,.025,.03) },
+  exec()   { this.beep(300,.15,.05,'sawtooth') },
+  done()   { [660,880,1100].forEach((f,i)=>setTimeout(()=>this.beep(f,.12,.05,'sine'),i*100)) },
+  deploy() { [220,330,440,660,880].forEach((f,i)=>setTimeout(()=>this.beep(f,.15,.07,'sine'),i*100)) },
+  err()    { [400,300,200].forEach((f,i)=>setTimeout(()=>this.beep(f,.1,.06,'square'),i*80)) },
 }
 
-// ---- SIWE message builder ----
-function buildSiweMessage(address, nonce, domain) {
-  const now = new Date()
-  const exp = new Date(now.getTime() + 24*60*60*1000)
-  return [
-    `${domain} wants you to sign in with your Ethereum account:`,
-    address,
-    '',
-    'Sign in to CFO Agent - Arbitrum Treasury OS',
-    '',
-    `URI: https://${domain}`,
-    'Version: 1',
-    `Chain ID: ${CHAIN_ID}`,
-    `Nonce: ${nonce}`,
-    `Issued At: ${now.toISOString()}`,
-    `Expiration Time: ${exp.toISOString()}`,
-  ].join('\n')
-}
-
-function genNonce() {
-  return Math.random().toString(36).slice(2,10).toUpperCase()
-}
-
-function truncAddr(a) {
-  if (!a) return ''
-  return a.slice(0,6)+'...'+a.slice(-4)
-}
-
-// ---- BOOT LINES ----
-function buildBoot(callsign, address) {
+function buildBoot(callsign, address, isNew) {
   return [
     { text: '...', type: 'dim' },
     { text: 'SIGNAL DETECTED', type: 'normal' },
     { text: 'SOURCE: ARBITRUM NETWORK', type: 'normal' },
     { text: `CALLSIGN: ${callsign} VERIFIED`, type: 'acid' },
     { text: `WALLET: ${truncAddr(address)}`, type: 'teal' },
+    { text: 'SIWE AUTHENTICATION: CONFIRMED', type: 'acid' },
     { text: 'PROTOCOL: CFO-AGENT v1.0', type: 'normal' },
-    { text: 'CHAIN ID: 421614 [SEPOLIA]', type: 'normal' },
+    { text: 'CHAIN ID: 421614 [ARB SEPOLIA]', type: 'normal' },
+    isNew
+      ? { text: 'NEW AGENT DEPLOYED ON-CHAIN', type: 'acid' }
+      : { text: 'EXISTING AGENT LOADED', type: 'teal' },
     { text: 'RULE REGISTRY: ONLINE', type: 'acid' },
     { text: 'EXECUTION SEQUENCER: ACTIVE', type: 'teal' },
     { text: 'GASLESS MODE: ZERODEV ENABLED', type: 'acid' },
     { text: 'ALL SYSTEMS READY', type: 'acid' },
-    { text: 'TYPE "HELP" FOR COMMANDS OR "LAUNCH" TO ENTER', type: 'bright' },
+    { text: 'TYPE "HELP" OR "LAUNCH"', type: 'bright' },
   ]
 }
 
-const LINE_DELAY = 380
+const LINE_MS = 360
 
-const COMMANDS = {
+const CMDS = {
   help: [
-    { text: 'AVAILABLE COMMANDS:', type: 'bright' },
-    { text: '  HELP       show commands', type: 'resp' },
-    { text: '  STATUS     agent status', type: 'resp' },
-    { text: '  BALANCE    treasury balance', type: 'resp' },
-    { text: '  RULES      list rules', type: 'resp' },
-    { text: '  QUEUE      execution queue', type: 'resp' },
-    { text: '  SIMULATE   test execution', type: 'resp' },
-    { text: '  CLEAR      clear terminal', type: 'resp' },
-    { text: '  LAUNCH     open dashboard', type: 'resp' },
+    { text: 'COMMANDS:', type: 'bright' },
+    { text: '  HELP      show this', type: 'resp' },
+    { text: '  STATUS    agent info', type: 'resp' },
+    { text: '  BALANCE   treasury', type: 'resp' },
+    { text: '  RULES     list rules', type: 'resp' },
+    { text: '  QUEUE     job queue', type: 'resp' },
+    { text: '  SIMULATE  test run', type: 'resp' },
+    { text: '  CLEAR     clear screen', type: 'resp' },
+    { text: '  LAUNCH    dashboard', type: 'resp' },
   ],
   status: [
     { text: 'AGENT STATUS:', type: 'bright' },
-    { text: '  CHAIN:     ARBITRUM SEPOLIA (421614)', type: 'resp' },
-    { text: '  KEEPER:    0x3d9A...7B22', type: 'resp' },
-    { text: '  GASLESS:   ZERODEV ACTIVE', type: 'resp' },
-    { text: '  STATUS:    ACTIVE', type: 'acid' },
+    { text: '  CHAIN:    ARBITRUM SEPOLIA (421614)', type: 'resp' },
+    { text: '  GASLESS:  ZERODEV ACTIVE', type: 'resp' },
+    { text: '  STATUS:   ACTIVE', type: 'acid' },
   ],
   balance: [
     { text: 'TREASURY:', type: 'bright' },
@@ -125,10 +82,10 @@ const COMMANDS = {
     { text: '  CAP:   2,000 USDC / DAY', type: 'resp' },
   ],
   rules: [
-    { text: 'ACTIVE RULES (2/3):', type: 'bright' },
-    { text: '  [0] FRIDAY PAYROLL  500 USDC  7D   ACTIVE', type: 'resp' },
-    { text: '  [1] YIELD SWEEP    1000 USDC COND  ACTIVE', type: 'resp' },
-    { text: '  [2] DAILY OPS      0.05 ETH  1D   PAUSED', type: 'dim' },
+    { text: 'RULES (2 ACTIVE / 3 TOTAL):', type: 'bright' },
+    { text: '  [0] FRIDAY PAYROLL  500 USDC  7D    ACTIVE', type: 'resp' },
+    { text: '  [1] YIELD SWEEP    1000 USDC  COND  ACTIVE', type: 'resp' },
+    { text: '  [2] DAILY OPS      0.05 ETH   1D    PAUSED', type: 'dim' },
   ],
   queue: [
     { text: 'QUEUE (2 PENDING):', type: 'bright' },
@@ -140,29 +97,28 @@ const COMMANDS = {
     { text: '  DEQUEUING JOB #0', type: 'resp' },
     { text: '  EXECUTING ON-CHAIN', type: 'acid' },
     { text: '  TX: 0x4f3a...2c1e', type: 'resp' },
-    { text: '  STATUS: CONFIRMED', type: 'acid' },
+    { text: '  CONFIRMED', type: 'acid' },
   ],
   launch: [{ text: 'LAUNCHING DASHBOARD...', type: 'acid' }],
   clear: null,
 }
 
-const INITIAL_RULES = [
-  { id:0, name:'FRIDAY PAYROLL',   type:'SCHEDULED',   token:'USDC', recipient:'0x4f3a...9B12', amount:'500',  interval:'7 DAYS', limit:'600',  active:true,  last:'2 DAYS AGO' },
-  { id:1, name:'YIELD SWEEP',      type:'CONDITIONAL', token:'USDC', recipient:'0x8c2d...4A90', amount:'1000', interval:'',       limit:'2000', active:true,  last:'5 DAYS AGO' },
-  { id:2, name:'DAILY OPS BUDGET', type:'SCHEDULED',   token:'ETH',  recipient:'0x2e7f...B301', amount:'0.05', interval:'1 DAY',  limit:'0.1',  active:false, last:'15 DAYS AGO' },
+const INIT_RULES = [
+  { id:0, name:'FRIDAY PAYROLL',   type:'SCHEDULED',   token:'USDC', recipient:'0x4f3a...9B12', amount:'500',  interval:'7 DAYS', limit:'600',  active:true,  last:'2D AGO' },
+  { id:1, name:'YIELD SWEEP',      type:'CONDITIONAL', token:'USDC', recipient:'0x8c2d...4A90', amount:'1000', interval:'',       limit:'2000', active:true,  last:'5D AGO' },
+  { id:2, name:'DAILY OPS BUDGET', type:'SCHEDULED',   token:'ETH',  recipient:'0x2e7f...B301', amount:'0.05', interval:'1 DAY',  limit:'0.1',  active:false, last:'15D AGO' },
 ]
-const INITIAL_LOG = [
+const INIT_LOG = [
   { id:1, rule:'FRIDAY PAYROLL', token:'USDC', amount:'+500',  to:'0x4f3a...9B12', time:'2D AGO' },
   { id:2, rule:'YIELD SWEEP',    token:'USDC', amount:'+1000', to:'0x8c2d...4A90', time:'5D AGO' },
 ]
-const INITIAL_QUEUE = [
+const INIT_QUEUE = [
   { id:0, rule:'FRIDAY PAYROLL', ruleId:0, priority:'NORMAL', status:'QUEUED', attempts:0, maxRetries:3, createdAt:'2M AGO' },
   { id:1, rule:'YIELD SWEEP',    ruleId:1, priority:'HIGH',   status:'QUEUED', attempts:0, maxRetries:3, createdAt:'5M AGO' },
 ]
-
 const BLANK = { name:'', type:'SCHEDULED', token:'USDC', recipient:'', amount:'', limit:'', interval:'604800', condVal:'' }
 
-function fmtInterval(s) {
+function fmtInt(s) {
   const n=Number(s)
   if(n>=2592000) return '1 MONTH'
   if(n>=604800)  return '1 WEEK'
@@ -185,278 +141,210 @@ function useTime() {
   return t
 }
 
-// ---- WALLET HELPERS ----
-async function getProvider() {
-  if (!window.ethereum) throw new Error('NO_WALLET')
-  return window.ethereum
-}
-
-async function switchToArbitrum() {
-  const eth = await getProvider()
-  try {
-    await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: CHAIN_HEX }] })
-  } catch(e) {
-    if (e.code === 4902) {
-      await eth.request({
-        method: 'wallet_addEthereumChain',
-        params: [{
-          chainId: CHAIN_HEX,
-          chainName: CHAIN_NAME,
-          nativeCurrency: { name:'ETH', symbol:'ETH', decimals:18 },
-          rpcUrls: [RPC_URL],
-          blockExplorerUrls: ['https://sepolia.arbiscan.io'],
-        }]
-      })
-    } else throw e
-  }
-}
-
-async function connectWallet() {
-  const eth = await getProvider()
-  await switchToArbitrum()
-  const accounts = await eth.request({ method: 'eth_requestAccounts' })
-  return accounts[0]
-}
-
-async function signSiwe(address, callsign) {
-  const eth = await getProvider()
-  const domain = window.location.hostname || 'cfo-agent.vercel.app'
-  const nonce = genNonce()
-  const message = buildSiweMessage(address, nonce, domain)
-  const signature = await eth.request({
-    method: 'personal_sign',
-    params: [message, address],
-  })
-  return { message, signature, nonce, callsign }
-}
-
-async function callRead(address, abi, method, args=[]) {
-  const eth = await getProvider()
-  const iface = encodeCall(abi, method, args)
-  const result = await eth.request({
-    method: 'eth_call',
-    params: [{ to: address, data: iface }, 'latest'],
-  })
-  return result
-}
-
-function encodeCall(abi, method, args) {
-  // Minimal ABI encoding for simple read calls
-  const sig = method.includes('(') ? method : `${method}(${args.map(()=>'address').join(',')})`
-  const sigHash = keccak256Sig(sig)
-  const encoded = args.map(a => a.replace('0x','').padStart(64,'0')).join('')
-  return sigHash + encoded
-}
-
-function keccak256Sig(sig) {
-  // We use a simple approach: just return the known selectors for our contract
-  const sigs = {
-    'hasAgent(address)':   '0x05bf9eb7',
-    'agentOf(address)':    '0x0e5ee4ef',
-    'totalAgents()':       '0x8d1bc9b7',
-    'deployAgent()':       '0x3aded8b8',
-    'active()':            '0x02fb0c5e',
-    'totalExecutions()':   '0x8f8a5f8a',
-  }
-  return sigs[sig] || '0x00000000'
-}
-
-// ---- MAIN APP ----
 export default function App() {
-  // Auth state
-  const [phase, setPhase]         = useState('callsign')
-  const [callsign, setCallsign]   = useState('')
-  const [csTyped, setCsTyped]     = useState('')
-  const [address, setAddress]     = useState('')
-  const [agentAddr, setAgentAddr] = useState('')
-  const [authStep, setAuthStep]   = useState('') // '', 'connecting', 'signing', 'checking', 'deploying', 'done', 'error'
-  const [authMsg, setAuthMsg]     = useState('')
-  const [authErr, setAuthErr]     = useState('')
-  const [isNewUser, setIsNewUser] = useState(false)
+  // auth
+  const [phase,setPhase]       = useState('callsign')
+  const [callsign,setCallsign] = useState('')
+  const [csTyped,setCsTyped]   = useState('')
+  const [address,setAddress]   = useState('')
+  const [agentAddr,setAgentAddr]= useState('')
+  const [isNew,setIsNew]       = useState(false)
+  const [authStep,setAuthStep] = useState('')
+  const [authMsg,setAuthMsg]   = useState('')
+  const [authErr,setAuthErr]   = useState('')
+  const [totalUsers,setTotalUsers]= useState(0n)
 
-  // Boot state
-  const [bootLines, setBootLines] = useState([])
-  const [bootIdx, setBootIdx]     = useState(0)
-  const [lines, setLines]         = useState([])
-  const [typed, setTyped]         = useState('')
-  const [locked, setLocked]       = useState(false)
-  const [sigText, setSigText]     = useState('SIGNAL : UNSTABLE')
-  const [progress, setProgress]   = useState(0)
-  const [eraText, setEraText]     = useState('2140 / SYNC PENDING')
+  // boot
+  const [bootLines,setBootLines]= useState([])
+  const [bootIdx,setBootIdx]   = useState(0)
+  const [lines,setLines]       = useState([])
+  const [typed,setTyped]       = useState('')
+  const [locked,setLocked]     = useState(false)
+  const [sigText,setSigText]   = useState('SIGNAL : UNSTABLE')
+  const [progress,setProgress] = useState(0)
+  const [eraText,setEraText]   = useState('2140 / SYNC PENDING')
 
-  // App state
-  const [nav, setNav]         = useState('dashboard')
-  const [agentOn, setAgentOn] = useState(true)
-  const [rules, setRules]     = useState(INITIAL_RULES)
-  const [log, setLog]         = useState(INITIAL_LOG)
-  const [queue, setQueue]     = useState(INITIAL_QUEUE)
-  const [showAdd, setShowAdd] = useState(false)
-  const [form, setForm]       = useState(BLANK)
-  const [appStat, setAppStat] = useState('ONLINE')
-  const [sideOpen, setSideOpen] = useState(false)
+  // app
+  const [nav,setNav]           = useState('dashboard')
+  const [agentOn,setAgentOn]   = useState(true)
+  const [rules,setRules]       = useState(INIT_RULES)
+  const [log,setLog]           = useState(INIT_LOG)
+  const [queue,setQueue]       = useState(INIT_QUEUE)
+  const [showAdd,setShowAdd]   = useState(false)
+  const [form,setForm]         = useState(BLANK)
+  const [appStat,setAppStat]   = useState('ONLINE')
+  const [sideOpen,setSideOpen] = useState(false)
 
-  const logId   = useRef(10)
-  const jobId   = useRef(10)
-  const bootRef = useRef(null)
-  const ping    = usePing()
-  const time    = useTime()
+  const logId  = useRef(10)
+  const jobId  = useRef(10)
+  const bootRef= useRef(null)
+  const ping   = usePing()
+  const time   = useTime()
 
-  useEffect(() => { bootRef.current?.scrollIntoView({behavior:'smooth'}) }, [lines, bootLines])
+  useEffect(()=>{ bootRef.current?.scrollIntoView({behavior:'smooth'}) },[lines,bootLines])
 
-  // Callsign keydown
-  useEffect(() => {
-    if (phase !== 'callsign') return
-    const h = e => {
+  // watch wallet disconnects
+  useEffect(()=>{
+    onAccountChange(acc => { if(!acc && phase==='app') { setPhase('callsign'); setCsTyped(''); } })
+  },[phase])
+
+  // Callsign input
+  useEffect(()=>{
+    if(phase!=='callsign') return
+    const h=e=>{
       SFX.key()
-      if (e.key === 'Enter' && csTyped.trim().length >= 2) {
+      if(e.key==='Enter' && csTyped.trim().length>=2) {
         setCallsign(csTyped.trim().toUpperCase())
         setPhase('wallet')
-      } else if (e.key === 'Backspace') {
-        setCsTyped(t => t.slice(0,-1))
-      } else if (e.key.length === 1 && csTyped.length < 16) {
-        setCsTyped(t => (t+e.key).toUpperCase())
+      } else if(e.key==='Backspace') {
+        setCsTyped(t=>t.slice(0,-1))
+      } else if(e.key.length===1 && csTyped.length<16) {
+        setCsTyped(t=>(t+e.key).toUpperCase())
       }
     }
-    window.addEventListener('keydown', h)
-    return () => window.removeEventListener('keydown', h)
-  }, [phase, csTyped])
+    window.addEventListener('keydown',h)
+    return()=>window.removeEventListener('keydown',h)
+  },[phase,csTyped])
 
-  // Wallet auth flow
-  async function doWalletAuth() {
+  // Wallet auth
+  async function doAuth() {
     setAuthErr('')
     try {
-      // Step 1: Connect wallet
-      setAuthStep('connecting')
-      setAuthMsg('CONNECTING WALLET...')
+      // Step 1: wallet
+      setAuthStep('connecting'); setAuthMsg('CONNECTING WALLET...')
+      if(!hasWallet()) throw {code:'NO_WALLET',message:'NO WALLET DETECTED. INSTALL METAMASK.'}
       const addr = await connectWallet()
       setAddress(addr)
 
-      // Step 2: SIWE sign
-      setAuthStep('signing')
-      setAuthMsg('SIGN MESSAGE TO AUTHENTICATE...')
-      await signSiwe(addr, callsign)
+      // Step 2: SIWE
+      setAuthStep('signing'); setAuthMsg('SIGN MESSAGE TO AUTHENTICATE...')
+      await signSiwe(addr)
 
-      // Step 3: Check factory
-      setAuthStep('checking')
-      setAuthMsg('CHECKING ON-CHAIN AGENT...')
-      // For demo we skip actual contract call if factory not deployed
-      // In production this would be: const has = await callRead(FACTORY_ADDRESS, FACTORY_ABI, 'hasAgent(address)', [addr])
-      const hasExisting = Math.random() > 0.5 // demo: 50% chance new user
+      // Step 3: check agent
+      setAuthStep('checking'); setAuthMsg('CHECKING ON-CHAIN AGENT...')
+      const [has, total] = await Promise.all([
+        checkHasAgent(addr),
+        getTotalAgents(),
+      ])
+      setTotalUsers(total)
 
-      if (!hasExisting) {
-        // Step 4: Deploy agent
-        setIsNewUser(true)
-        setAuthStep('deploying')
-        setAuthMsg('DEPLOYING YOUR CFO AGENT ON ARBITRUM...')
-        // In production: await window.ethereum.request({ method: 'eth_sendTransaction', ... })
-        await new Promise(r => setTimeout(r, 2000)) // demo delay
-        setAgentAddr('0x' + Math.random().toString(16).slice(2,10).toUpperCase() + '...NEW')
-        SFX.deploy()
+      let agentAddress
+      let newUser = false
+
+      if(has) {
+        agentAddress = await getAgentAddress(addr)
+        setAgentAddr(agentAddress || '')
       } else {
-        setAgentAddr('0x9aB4...1e77')
+        // Step 4: deploy
+        setIsNew(true); newUser=true
+        setAuthStep('deploying'); setAuthMsg('DEPLOYING YOUR CFO AGENT ON ARBITRUM...')
+        SFX.deploy()
+        if(FACTORY_ADDR && FACTORY_ADDR !== '') {
+          agentAddress = await deployAgent()
+        } else {
+          // Demo mode: factory not deployed yet
+          await new Promise(r=>setTimeout(r,2000))
+          agentAddress = '0x' + Array.from(crypto.getRandomValues(new Uint8Array(20))).map(b=>b.toString(16).padStart(2,'0')).join('')
+        }
+        setAgentAddr(agentAddress || '')
       }
 
-      // Step 5: Boot
-      setAuthStep('done')
-      setAuthMsg('')
+      // Boot
+      setAuthStep('done'); setAuthMsg('')
       SFX.boot()
       setPhase('glitch')
-      setTimeout(() => {
+      setTimeout(()=>{
         setPhase('boot')
-        setBootLines(buildBoot(callsign, addr))
+        setBootLines(buildBoot(callsign.trim().toUpperCase()||csTyped.toUpperCase(), addr, newUser))
         setBootIdx(0)
       }, 900)
 
     } catch(err) {
-      setAuthStep('error')
-      SFX.error()
-      if (err.message === 'NO_WALLET') {
-        setAuthErr('NO WALLET DETECTED. INSTALL METAMASK.')
-      } else if (err.code === 4001) {
-        setAuthErr('SIGNATURE REJECTED. TRY AGAIN.')
-      } else {
-        setAuthErr(err.message?.toUpperCase().slice(0,60) || 'UNKNOWN ERROR')
-      }
+      setAuthStep('error'); SFX.err()
+      if(err.code==='NO_WALLET') setAuthErr(err.message)
+      else if(err.code===4001) setAuthErr('SIGNATURE REJECTED. TRY AGAIN.')
+      else if(err.code===4902) setAuthErr('NETWORK ADD REJECTED.')
+      else setAuthErr((err.message||'UNKNOWN ERROR').toUpperCase().slice(0,80))
     }
   }
 
   // Boot sequence
-  useEffect(() => {
-    if (phase !== 'boot') return
-    if (bootIdx >= bootLines.length) {
-      setTimeout(() => {
+  useEffect(()=>{
+    if(phase!=='boot') return
+    if(bootIdx>=bootLines.length) {
+      setTimeout(()=>{
         setLocked(true)
         setSigText('SIGNAL : LOCKED')
         setEraText('2140 / SYNC FINDING')
         SFX.lock()
-      }, 300)
+      },300)
       return
     }
     setProgress(Math.round((bootIdx/bootLines.length)*100))
-    const timer = setTimeout(() => {
-      setLines(l => [...l, bootLines[bootIdx]])
-      setBootIdx(i => i+1)
+    const t=setTimeout(()=>{
+      setLines(l=>[...l,bootLines[bootIdx]])
+      setBootIdx(i=>i+1)
       SFX.line()
-    }, LINE_DELAY)
-    return () => clearTimeout(timer)
-  }, [phase, bootIdx, bootLines])
+    },LINE_MS)
+    return()=>clearTimeout(t)
+  },[phase,bootIdx,bootLines])
 
-  // Terminal keydown
-  useEffect(() => {
-    if (phase !== 'boot' || !locked) return
-    const h = e => {
-      if (e.key === 'Enter') { runCommand(typed); setTyped('') }
-      else if (e.key === 'Backspace') setTyped(t => t.slice(0,-1))
-      else if (e.key.length === 1) { SFX.key(); setTyped(t => (t+e.key).toUpperCase().slice(0,40)) }
+  // Terminal input
+  useEffect(()=>{
+    if(phase!=='boot'||!locked) return
+    const h=e=>{
+      if(e.key==='Enter'){ runCmd(typed); setTyped('') }
+      else if(e.key==='Backspace') setTyped(t=>t.slice(0,-1))
+      else if(e.key.length===1){ SFX.key(); setTyped(t=>(t+e.key).toUpperCase().slice(0,40)) }
     }
-    window.addEventListener('keydown', h)
-    return () => window.removeEventListener('keydown', h)
-  }, [phase, locked, typed])
+    window.addEventListener('keydown',h)
+    return()=>window.removeEventListener('keydown',h)
+  },[phase,locked,typed])
 
-  function runCommand(cmd) {
-    const t = cmd.trim().toLowerCase()
-    setLines(l => [...l, { text:'> '+cmd.trim(), type:'bright' }])
-    if (!t) return
-    const r = COMMANDS[t]
-    if (r === null) { setLines([]); return }
-    if (r) {
-      setLines(l => [...l, ...r])
-      if (t === 'launch') { SFX.launch(); setTimeout(() => setPhase('app'), 700) }
-      else if (t === 'simulate') { SFX.exec(); simulateExecution() }
+  function runCmd(cmd) {
+    const t=cmd.trim().toLowerCase()
+    setLines(l=>[...l,{text:'> '+cmd.trim(),type:'bright'}])
+    if(!t) return
+    const r=CMDS[t]
+    if(r===null){ setLines([]); return }
+    if(r){
+      setLines(l=>[...l,...r])
+      if(t==='launch'){ SFX.launch(); setTimeout(()=>setPhase('app'),700) }
+      else if(t==='simulate') simExec()
     } else {
-      setLines(l => [...l, { text:`UNKNOWN: "${cmd.trim()}" — TYPE "HELP"`, type:'red' }])
+      setLines(l=>[...l,{text:`UNKNOWN: "${cmd.trim()}" — TYPE "HELP"`,type:'red'}])
     }
   }
 
-  function simulateExecution() {
-    const active = rules.filter(r=>r.active)
-    if (!active.length) return
-    const rule = active[Math.floor(Math.random()*active.length)]
-    const nj = { id:jobId.current++, rule:rule.name, ruleId:rule.id, priority:'NORMAL', status:'QUEUED', attempts:0, maxRetries:3, createdAt:'JUST NOW' }
+  function simExec() {
+    const active=rules.filter(r=>r.active)
+    if(!active.length) return
+    const rule=active[Math.floor(Math.random()*active.length)]
+    const nj={id:jobId.current++,rule:rule.name,ruleId:rule.id,priority:'NORMAL',status:'QUEUED',attempts:0,maxRetries:3,createdAt:'JUST NOW'}
     setQueue(q=>[nj,...q]); setAppStat('EXECUTING'); SFX.exec()
-    setTimeout(() => {
+    setTimeout(()=>{
       setQueue(q=>q.map(j=>j.id===nj.id?{...j,status:'EXECUTING'}:j))
-      setTimeout(() => {
+      setTimeout(()=>{
         setQueue(q=>q.map(j=>j.id===nj.id?{...j,status:'COMPLETED'}:j))
         setLog(l=>[{id:logId.current++,rule:rule.name,token:rule.token,amount:'+'+rule.amount,to:rule.recipient,time:'JUST NOW'},...l])
         setRules(r=>r.map(rl=>rl.id===rule.id?{...rl,last:'JUST NOW'}:rl))
         setAppStat('ONLINE'); SFX.done()
-      }, 1800)
-    }, 1000)
+      },1800)
+    },1000)
   }
 
   function addRule() {
-    setRules(r=>[...r,{id:Date.now(),name:(form.name||'UNNAMED').toUpperCase(),type:form.type,token:form.token,recipient:form.recipient||'0x0000...0000',amount:form.amount,interval:form.type==='SCHEDULED'?fmtInterval(form.interval):'',limit:form.limit,cond:form.type==='CONDITIONAL'?`BALANCE > ${form.condVal} ${form.token}`:'',active:true,last:'NEVER'}])
+    setRules(r=>[...r,{id:Date.now(),name:(form.name||'UNNAMED').toUpperCase(),type:form.type,token:form.token,recipient:form.recipient||'0x0000...0000',amount:form.amount,interval:form.type==='SCHEDULED'?fmtInt(form.interval):'',limit:form.limit,cond:form.type==='CONDITIONAL'?`BALANCE > ${form.condVal} ${form.token}`:'',active:true,last:'NEVER'}])
     setShowAdd(false); setForm(BLANK)
   }
 
-  const activeCount = rules.filter(r=>r.active).length
-  const queueDepth  = queue.filter(j=>j.status==='QUEUED'||j.status==='EXECUTING').length
-  const statColor   = {ONLINE:'var(--acid)',EXECUTING:'var(--teal)'}[appStat]||'var(--acid)'
+  const activeCount=rules.filter(r=>r.active).length
+  const queueDepth=queue.filter(j=>j.status==='QUEUED'||j.status==='EXECUTING').length
+  const statColor={ONLINE:'var(--acid)',EXECUTING:'var(--teal)'}[appStat]||'var(--acid)'
 
-  // ---- CALLSIGN SCREEN ----
-  if (phase === 'callsign') return (
-    <div className="fullscreen crt" onClick={()=>document.getElementById('csInput')?.focus()}>
+  // SCREENS
+  if(phase==='callsign') return (
+    <div className="fullscreen crt" onClick={()=>document.getElementById('csIn')?.focus()}>
       <div className="scanline"/>
       <div className="cs-wrap">
         <div className="cs-logo">CFO-AGENT</div>
@@ -467,82 +355,81 @@ export default function App() {
           <span className="cs-typed">{csTyped}</span>
           <span className="cs-cur"/>
         </div>
-        <div className="cs-hint">{csTyped.length >= 2 ? 'PRESS ENTER TO CONTINUE' : 'MIN 2 CHARACTERS'}</div>
-        <input id="csInput" className="real-input" autoFocus autoComplete="off" autoCapitalize="off" spellCheck="false" value={csTyped} onChange={()=>{}}/>
+        <div className="cs-hint">{csTyped.length>=2?'PRESS ENTER TO CONTINUE':'MIN 2 CHARACTERS'}</div>
+        <input id="csIn" className="real-input" autoFocus autoComplete="off" autoCapitalize="off" spellCheck="false" value={csTyped} onChange={()=>{}}/>
       </div>
     </div>
   )
 
-  // ---- WALLET SCREEN ----
-  if (phase === 'wallet') return (
+  if(phase==='wallet') return (
     <div className="fullscreen crt">
       <div className="scanline"/>
       <div className="cs-wrap">
         <div className="cs-logo">CFO-AGENT</div>
-        <div className="cs-tag">CALLSIGN: {callsign}</div>
+        <div className="cs-tag">CALLSIGN: {callsign||csTyped.toUpperCase()}</div>
 
-        {authStep === '' && (
+        {authStep==='' && (
           <>
             <div className="wallet-box">
               <div className="wallet-box-label">AUTHENTICATION REQUIRED</div>
-              <div className="wallet-box-sub">Connect your wallet to access your on-chain treasury agent.</div>
+              <div className="wallet-box-sub">
+                Connect your wallet. Sign a message to prove ownership.<br/>
+                Your personal CFO Agent will be deployed on Arbitrum.
+              </div>
               <div className="wallet-steps">
-                {['CONNECT WALLET', 'SIGN MESSAGE (SIWE)', 'CHECK ON-CHAIN AGENT', 'LAUNCH'].map((s,i) => (
+                {['01  CONNECT WALLET','02  SIGN MESSAGE (SIWE)','03  CHECK ON-CHAIN AGENT','04  DEPLOY IF NEW USER','05  LAUNCH'].map((s,i)=>(
                   <div className="wallet-step" key={i}>
-                    <span className="step-num">{String(i+1).padStart(2,'0')}</span>
-                    <span className="step-text">{s}</span>
+                    <span className="step-text">&gt; {s}</span>
                   </div>
                 ))}
               </div>
-              <button className="wallet-btn" onClick={doWalletAuth}>
-                &gt; CONNECT WALLET
-              </button>
+              {!hasWallet() && (
+                <div className="auth-err" style={{marginBottom:14}}>
+                  &gt; NO WALLET DETECTED. <a href="https://metamask.io" target="_blank" rel="noreferrer" style={{color:'var(--acid)'}}>INSTALL METAMASK</a>
+                </div>
+              )}
+              <button className="wallet-btn" onClick={doAuth}>&gt; CONNECT WALLET</button>
             </div>
-            {authErr && <div className="auth-err">&gt; ERROR: {authErr}</div>}
+            {authErr && <div className="auth-err" style={{marginTop:12}}>&gt; {authErr}</div>}
           </>
         )}
 
         {['connecting','signing','checking','deploying'].includes(authStep) && (
           <div className="wallet-box">
             <div className="wallet-box-label">
-              {authStep === 'connecting'  && '01 / CONNECTING WALLET'}
-              {authStep === 'signing'     && '02 / SIGNING MESSAGE'}
-              {authStep === 'checking'    && '03 / CHECKING AGENT'}
-              {authStep === 'deploying'   && '04 / DEPLOYING AGENT'}
+              {authStep==='connecting' && '01 / CONNECTING WALLET'}
+              {authStep==='signing'    && '02 / SIGNING MESSAGE'}
+              {authStep==='checking'   && '03 / CHECKING AGENT'}
+              {authStep==='deploying'  && '04 / DEPLOYING AGENT'}
             </div>
             <div className="auth-progress">
               <div className="auth-bar">
                 <div className="auth-bar-fill" style={{width:
-                  authStep==='connecting'?'25%':
-                  authStep==='signing'?'50%':
-                  authStep==='checking'?'75%':'100%'
+                  authStep==='connecting'?'20%':
+                  authStep==='signing'?'45%':
+                  authStep==='checking'?'70%':'95%'
                 }}/>
               </div>
             </div>
             <div className="auth-msg">{authMsg}</div>
-            {authStep === 'deploying' && isNewUser && (
-              <div className="auth-new">
-                &gt; NEW USER DETECTED — DEPLOYING YOUR PERSONAL CFO AGENT ON ARBITRUM...
-              </div>
+            {authStep==='deploying' && (
+              <div className="auth-new">&gt; FIRST TIME USER — DEPLOYING YOUR PERSONAL CFO AGENT ON ARBITRUM SEPOLIA...</div>
             )}
           </div>
         )}
 
-        {authStep === 'error' && (
+        {authStep==='error' && (
           <div className="wallet-box err-box">
             <div className="wallet-box-label" style={{color:'var(--red)'}}>AUTHENTICATION FAILED</div>
-            <div className="auth-err">&gt; {authErr}</div>
-            <button className="wallet-btn" onClick={()=>{setAuthStep('');setAuthErr('')}}>
-              &gt; TRY AGAIN
-            </button>
+            <div className="auth-err" style={{margin:'12px 0'}}>&gt; {authErr}</div>
+            <button className="wallet-btn" onClick={()=>{setAuthStep('');setAuthErr('')}}>&gt; TRY AGAIN</button>
           </div>
         )}
       </div>
     </div>
   )
 
-  // ---- GLITCH ----
-  if (phase === 'glitch') return (
+  if(phase==='glitch') return (
     <div className="fullscreen glitch-screen crt">
       <div className="scanline"/>
       <div className="glitch-bars-wrap">{[0,1,2,3,4,5,6,7].map(i=><div key={i} className="gbar"/>)}</div>
@@ -550,9 +437,8 @@ export default function App() {
     </div>
   )
 
-  // ---- BOOT ----
-  if (phase === 'boot') return (
-    <div className="fullscreen terminal-screen crt" onClick={()=>document.getElementById('hiddenInput')?.focus()}>
+  if(phase==='boot') return (
+    <div className="fullscreen terminal-screen crt" onClick={()=>document.getElementById('hIn')?.focus()}>
       <div className="scanline"/>
       <div className="t-statusbar">
         <div className="t-sb-left">
@@ -569,7 +455,7 @@ export default function App() {
               {l.text}
             </div>
           ))}
-          {bootIdx < bootLines.length && (
+          {bootIdx<bootLines.length && (
             <div className="t-processing">
               <div className="t-bar-wrap">
                 <div className="t-bar"><div className="t-bar-fill" style={{width:progress+'%'}}/></div>
@@ -588,24 +474,21 @@ export default function App() {
           <div ref={bootRef}/>
         </div>
       </div>
-      <input id="hiddenInput" className="real-input" type="text" autoComplete="off" value={typed} onChange={()=>{}}/>
+      <input id="hIn" className="real-input" autoComplete="off" value={typed} onChange={()=>{}}/>
       {locked && <div className="hint">TYPE SOMETHING</div>}
     </div>
   )
 
-  // ---- DASHBOARD APP ----
+  // APP
   return (
     <div className="app-wrap crt">
       <div className="scanline"/>
-
-      {/* Mobile overlay */}
       {sideOpen && <div className="side-overlay" onClick={()=>setSideOpen(false)}/>}
-
       <aside className={`side ${sideOpen?'side-open':''}`}>
         <div className="side-top">
           <div>
             <div className="logo-text">CFO AGENT</div>
-            <div className="logo-sub">CALLSIGN: {callsign}</div>
+            <div className="logo-sub">CALLSIGN: {callsign||csTyped.toUpperCase()}</div>
           </div>
           <button className="side-close" onClick={()=>setSideOpen(false)}>✕</button>
         </div>
@@ -624,9 +507,10 @@ export default function App() {
         </nav>
         <div className="side-foot">
           <div className="wallet-label"><div className="w-dot"/>CONNECTED</div>
-          <div className="wallet-addr">{truncAddr(address) || '0x71C7...976F'}</div>
-          <div className="agent-addr">AGENT: {truncAddr(agentAddr) || '0x9aB4...1e77'}</div>
-          {isNewUser && <div className="new-badge">NEW AGENT DEPLOYED</div>}
+          <div className="wallet-addr">{truncAddr(address)||'0x71C7...976F'}</div>
+          <div className="agent-addr">AGENT: {truncAddr(agentAddr)||'0x9aB4...1e77'}</div>
+          {isNew && <div className="new-badge">NEW AGENT DEPLOYED</div>}
+          <div className="agent-addr" style={{marginTop:6}}>USERS: {totalUsers.toString()}</div>
         </div>
       </aside>
 
@@ -643,10 +527,10 @@ export default function App() {
           <span className="time-label">{time} / ARB SEPOLIA</span>
         </div>
         <div className="main-content">
-          {nav==='dashboard' && <Dashboard rules={rules} log={log} queue={queue} agentOn={agentOn} setAgentOn={setAgentOn} simulate={simulateExecution} activeCount={activeCount} queueDepth={queueDepth}/>}
-          {nav==='sequencer' && <Sequencer queue={queue} simulate={simulateExecution} cancelJob={id=>setQueue(q=>q.map(j=>j.id===id?{...j,status:'CANCELLED'}:j))} boostJob={id=>setQueue(q=>q.map(j=>j.id===id?{...j,priority:'CRITICAL'}:j))}/>}
+          {nav==='dashboard' && <Dashboard rules={rules} log={log} queue={queue} agentOn={agentOn} setAgentOn={setAgentOn} simulate={simExec} activeCount={activeCount} queueDepth={queueDepth}/>}
+          {nav==='sequencer' && <Sequencer queue={queue} simulate={simExec} cancelJob={id=>setQueue(q=>q.map(j=>j.id===id?{...j,status:'CANCELLED'}:j))} boostJob={id=>setQueue(q=>q.map(j=>j.id===id?{...j,priority:'CRITICAL'}:j))}/>}
           {nav==='rules' && <Rules rules={rules} showAdd={showAdd} setShowAdd={setShowAdd} form={form} setForm={setForm} addRule={addRule} toggleRule={id=>setRules(r=>r.map(rl=>rl.id===id?{...rl,active:!rl.active}:rl))} deleteRule={id=>setRules(r=>r.filter(rl=>rl.id!==id))}/>}
-          {nav==='log' && <Log log={log} simulate={simulateExecution}/>}
+          {nav==='log' && <Log log={log} simulate={simExec}/>}
           {nav==='settings' && <Settings agentOn={agentOn} setAgentOn={setAgentOn} address={address} agentAddr={agentAddr}/>}
         </div>
       </div>
@@ -654,18 +538,20 @@ export default function App() {
   )
 }
 
-function Dashboard({ rules, log, queue, agentOn, setAgentOn, simulate, activeCount, queueDepth }) {
+// ---- Sub-components ----
+
+function Dashboard({rules,log,queue,agentOn,setAgentOn,simulate,activeCount,queueDepth}) {
   return (
     <>
       <div className="ph">
-        <div><div className="pt">DASHBOARD</div><div className="ps">ARB SEPOLIA // LAST SYNC 12S AGO</div></div>
+        <div><div className="pt">DASHBOARD</div><div className="ps">ARB SEPOLIA // LIVE</div></div>
         <button className="btn" onClick={simulate}>&gt; SIMULATE</button>
       </div>
       <div className="stats">
         <StatCard label="BALANCE" value="4,820" sub="USDC" accent/>
         <StatCard label="RULES" value={activeCount} sub={`OF ${rules.length}`}/>
         <StatCard label="QUEUE" value={queueDepth} sub="PENDING"/>
-        <StatCard label="ROUTED" value="2,000" sub="USDC / MO"/>
+        <StatCard label="ROUTED" value="2,000" sub="USDC/MO"/>
       </div>
       <div className="status-bar-app">
         <div className="sb-left">
@@ -697,16 +583,16 @@ function Dashboard({ rules, log, queue, agentOn, setAgentOn, simulate, activeCou
   )
 }
 
-function Sequencer({ queue, simulate, cancelJob, boostJob }) {
-  const pOrder={CRITICAL:2,HIGH:1,NORMAL:0}
-  const pColor={CRITICAL:'var(--red)',HIGH:'var(--amber)',NORMAL:'var(--muted2)'}
-  const sColor={QUEUED:'var(--teal)',EXECUTING:'var(--acid)',COMPLETED:'var(--muted2)',FAILED:'var(--red)',CANCELLED:'var(--muted2)'}
+function Sequencer({queue,simulate,cancelJob,boostJob}) {
+  const pO={CRITICAL:2,HIGH:1,NORMAL:0}
+  const pC={CRITICAL:'var(--red)',HIGH:'var(--amber)',NORMAL:'var(--muted2)'}
+  const sC={QUEUED:'var(--teal)',EXECUTING:'var(--acid)',COMPLETED:'var(--muted2)',FAILED:'var(--red)',CANCELLED:'var(--muted2)'}
   const queued=queue.filter(j=>j.status==='QUEUED'||j.status==='EXECUTING')
   const done=queue.filter(j=>['COMPLETED','FAILED','CANCELLED'].includes(j.status))
   return (
     <>
       <div className="ph">
-        <div><div className="pt">SEQUENCER</div><div className="ps">{queued.length} PENDING // CRITICAL &gt; HIGH &gt; NORMAL</div></div>
+        <div><div className="pt">SEQUENCER</div><div className="ps">{queued.length} PENDING</div></div>
         <button className="btn" onClick={simulate}>&gt; ENQUEUE</button>
       </div>
       <div className="stats" style={{gridTemplateColumns:'repeat(3,1fr)'}}>
@@ -717,13 +603,13 @@ function Sequencer({ queue, simulate, cancelJob, boostJob }) {
       <div className="sh" style={{marginTop:8}}><div className="st">// PENDING QUEUE</div></div>
       <div className="q-list" style={{marginBottom:16}}>
         {queued.length===0&&<div className="empty">&gt; QUEUE EMPTY.</div>}
-        {[...queued].sort((a,b)=>(pOrder[b.priority]||0)-(pOrder[a.priority]||0)).map(j=>(
-          <div className="qc" key={j.id} style={{borderLeftColor:pColor[j.priority]||'#2a2820'}}>
+        {[...queued].sort((a,b)=>(pO[b.priority]||0)-(pO[a.priority]||0)).map(j=>(
+          <div className="qc" key={j.id} style={{borderLeftColor:pC[j.priority]||'#2a2820'}}>
             <div>
               <div className="qc-top">
                 <span className="qc-name">&gt; {j.rule}</span>
-                <span className="badge" style={{color:pColor[j.priority],borderColor:pColor[j.priority]}}>{j.priority}</span>
-                <span className="badge" style={{color:sColor[j.status],borderColor:sColor[j.status]}}>
+                <span className="badge" style={{color:pC[j.priority],borderColor:pC[j.priority]}}>{j.priority}</span>
+                <span className="badge" style={{color:sC[j.status],borderColor:sC[j.status]}}>
                   {j.status==='EXECUTING'&&<><span className="exec-block"/><span className="exec-block"/><span className="exec-block"/><span className="exec-block-e"/><span className="exec-block-e"/>&nbsp;</>}
                   {j.status}
                 </span>
@@ -742,11 +628,11 @@ function Sequencer({ queue, simulate, cancelJob, boostJob }) {
           <div className="sh"><div className="st">// COMPLETED</div></div>
           <div className="q-list">
             {done.map(j=>(
-              <div className="qc" key={j.id} style={{borderLeftColor:sColor[j.status],opacity:.5}}>
+              <div className="qc" key={j.id} style={{borderLeftColor:sC[j.status],opacity:.5}}>
                 <div>
                   <div className="qc-top">
                     <span className="qc-name">&gt; {j.rule}</span>
-                    <span className="badge" style={{color:sColor[j.status],borderColor:sColor[j.status]}}>{j.status}</span>
+                    <span className="badge" style={{color:sC[j.status],borderColor:sC[j.status]}}>{j.status}</span>
                   </div>
                   <div className="qc-sub">JOB #{j.id} // {j.createdAt}</div>
                 </div>
@@ -759,20 +645,20 @@ function Sequencer({ queue, simulate, cancelJob, boostJob }) {
   )
 }
 
-function QueueMini({ job }) {
-  const sColor={QUEUED:'var(--teal)',EXECUTING:'var(--acid)',COMPLETED:'var(--muted2)',FAILED:'var(--red)',CANCELLED:'var(--muted2)'}
-  const pColor={CRITICAL:'var(--red)',HIGH:'var(--amber)',NORMAL:'var(--muted2)'}
+function QueueMini({job}) {
+  const sC={QUEUED:'var(--teal)',EXECUTING:'var(--acid)',COMPLETED:'var(--muted2)',FAILED:'var(--red)',CANCELLED:'var(--muted2)'}
+  const pC={CRITICAL:'var(--red)',HIGH:'var(--amber)',NORMAL:'var(--muted2)'}
   return (
     <div className="qm">
       <span className="qm-chev">&gt;</span>
       <span className="qm-rule">{job.rule}</span>
-      <span className="qm-status" style={{color:sColor[job.status]}}>{job.status}</span>
-      <span className="qm-pri" style={{color:pColor[job.priority]}}>{job.priority}</span>
+      <span className="qm-status" style={{color:sC[job.status]}}>{job.status}</span>
+      <span className="qm-pri" style={{color:pC[job.priority]}}>{job.priority}</span>
     </div>
   )
 }
 
-function Rules({ rules, showAdd, setShowAdd, form, setForm, addRule, toggleRule, deleteRule }) {
+function Rules({rules,showAdd,setShowAdd,form,setForm,addRule,toggleRule,deleteRule}) {
   return (
     <>
       <div className="ph">
@@ -804,7 +690,7 @@ function Rules({ rules, showAdd, setShowAdd, form, setForm, addRule, toggleRule,
   )
 }
 
-function AddRuleModal({ form, setForm, onSave, onCancel }) {
+function AddRuleModal({form,setForm,onSave,onCancel}) {
   const f=k=>e=>setForm(p=>({...p,[k]:e.target.value}))
   return (
     <div className="modal-bg">
@@ -828,7 +714,7 @@ function AddRuleModal({ form, setForm, onSave, onCancel }) {
   )
 }
 
-function Log({ log, simulate }) {
+function Log({log,simulate}) {
   return (
     <>
       <div className="ph">
@@ -843,7 +729,7 @@ function Log({ log, simulate }) {
   )
 }
 
-function LogItem({ entry: e }) {
+function LogItem({entry:e}) {
   return (
     <div className="li">
       <span className="li-chev">&gt;</span>
@@ -854,13 +740,13 @@ function LogItem({ entry: e }) {
   )
 }
 
-function Settings({ agentOn, setAgentOn, address, agentAddr }) {
+function Settings({agentOn,setAgentOn,address,agentAddr}) {
   return (
     <>
       <div className="ph"><div><div className="pt">SETTINGS</div><div className="ps">CONFIGURATION // SAFETY</div></div></div>
       <div className="two" style={{marginBottom:14}}>
         <div className="sc"><div className="sl">YOUR WALLET</div><div className="mono-val teal">{truncAddr(address)||'0x71C7...976F'}</div><div className="ss">SIWE AUTHENTICATED</div></div>
-        <div className="sc"><div className="sl">YOUR AGENT</div><div className="mono-val teal">{truncAddr(agentAddr)||'0x9aB4...1e77'}</div><div className="ss">ARBITRUM SEPOLIA 421614</div></div>
+        <div className="sc"><div className="sl">YOUR AGENT</div><div className="mono-val teal">{truncAddr(agentAddr)||'0x9aB4...1e77'}</div><div className="ss">ARB SEPOLIA 421614</div></div>
         <div className="sc"><div className="sl">GASLESS MODE</div><div className="mono-val" style={{color:'var(--acid)'}}>ZERODEV ACTIVE</div><div className="ss">NO ETH NEEDED FOR GAS</div></div>
         <div className="sc"><div className="sl">DAILY USDC CAP</div><div className="sv" style={{fontSize:24,marginTop:6}}>2,000</div><div className="ss">MAX PER 24H</div></div>
         <div className="sc full" style={{borderTop:`3px solid ${agentOn?'var(--acid)':'var(--red)'}`}}>
@@ -879,10 +765,10 @@ function Settings({ agentOn, setAgentOn, address, agentAddr }) {
   )
 }
 
-function StatCard({ label, value, sub, accent }) {
+function StatCard({label,value,sub,accent}) {
   return <div className="sc"><div className="sl">{label}</div><div className={`sv ${accent?'accent':''}`}>{value}</div><div className="ss">{sub}</div></div>
 }
 
-function Toggle({ on, onClick }) {
+function Toggle({on,onClick}) {
   return <div className={`tog ${on?'on':''}`} onClick={onClick}><div className="tthumb"/></div>
 }
