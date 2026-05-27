@@ -1,30 +1,33 @@
 /**
- * ai.js
- * AI Rule Suggester powered by Claude API.
- * Requires VITE_ANTHROPIC_API_KEY environment variable.
+ * ai.js - AI Rule Suggester via Groq API
+ * Groq uses llama3-8b-8192 - extremely fast, free tier available.
+ * Set VITE_GROQ_API_KEY in Vercel environment variables.
+ * Get your key at: https://console.groq.com
  */
 
-const API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY || ''
+const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || ''
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
+const MODEL = 'llama3-8b-8192'
 
 export async function suggestRules(businessDescription, existingRules = []) {
-  if (!API_KEY) {
-    throw new Error('ANTHROPIC API KEY NOT SET. ADD VITE_ANTHROPIC_API_KEY TO VERCEL ENV VARS.')
+  if (!GROQ_API_KEY) {
+    throw new Error('GROQ API KEY NOT SET. ADD VITE_GROQ_API_KEY TO VERCEL ENV VARS. GET FREE KEY AT console.groq.com')
   }
 
   const systemPrompt = `You are an expert CFO and DeFi treasury manager specializing in on-chain payment automation on Arbitrum.
 
 A user has deployed a CFO Agent smart contract that automates payments with two rule types:
-1. SCHEDULED: Execute at fixed intervals (hourly, daily, weekly, monthly)
+1. SCHEDULED: Execute at fixed intervals
 2. CONDITIONAL: Execute when treasury balance exceeds a threshold
 
 Available tokens: USDC, ETH
 
 Analyze their business and suggest 3-5 optimal automation rules.
 
-Respond ONLY with a valid JSON array. No markdown, no explanation, just the array:
+Respond ONLY with a valid JSON array. No markdown, no explanation, just raw JSON:
 [
   {
-    "name": "RULE NAME IN CAPS MAX 20 CHARS",
+    "name": "RULE NAME CAPS MAX 18 CHARS",
     "type": "SCHEDULED",
     "token": "USDC",
     "recipient": "0x0000000000000000000000000000000000000000",
@@ -32,48 +35,50 @@ Respond ONLY with a valid JSON array. No markdown, no explanation, just the arra
     "limit": "600",
     "interval": "604800",
     "condVal": "",
-    "reasoning": "One sentence explaining why this rule helps their specific business"
+    "reasoning": "One sentence why this rule matters for their business"
   }
 ]
 
-For SCHEDULED: interval in seconds. 3600=hourly, 86400=daily, 604800=weekly, 2592000=monthly.
-For CONDITIONAL: condVal=threshold in token units, interval="0".
-Keep amounts realistic for the business described.`
+Intervals in seconds: 3600=hourly, 86400=daily, 604800=weekly, 2592000=monthly.
+For CONDITIONAL rules set interval to "0" and condVal to the threshold amount.`
 
-  const userPrompt = `Business: ${businessDescription}
-
+  const userMessage = `Business: ${businessDescription}
 Existing rules: ${existingRules.length > 0 ? existingRules.map(r => `${r.name} (${r.type})`).join(', ') : 'none'}
+Generate 3-5 optimal automation rules. Return only the JSON array.`
 
-Generate the best 3-5 automation rules for this business.`
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetch(GROQ_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': API_KEY,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
+      'Authorization': `Bearer ${GROQ_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: MODEL,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage },
+      ],
       max_tokens: 1000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
+      temperature: 0.3,
     }),
   })
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}))
-    throw new Error(err.error?.message || `API ERROR ${response.status}`)
+    throw new Error(err.error?.message || `GROQ API ERROR ${response.status}`)
   }
 
   const data = await response.json()
-  const text = data.content?.[0]?.text || '[]'
+  const text = data.choices?.[0]?.message?.content || '[]'
 
   try {
     const clean = text.replace(/```json|```/g, '').trim()
-    return JSON.parse(clean)
+    // Find JSON array in response
+    const start = clean.indexOf('[')
+    const end = clean.lastIndexOf(']')
+    if (start === -1 || end === -1) throw new Error('No JSON array found')
+    return JSON.parse(clean.slice(start, end + 1))
   } catch {
-    throw new Error('FAILED TO PARSE AI RESPONSE')
+    throw new Error('FAILED TO PARSE AI RESPONSE. TRY AGAIN.')
   }
 }
