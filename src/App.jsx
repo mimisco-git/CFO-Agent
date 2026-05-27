@@ -148,10 +148,6 @@ export default function App() {
 
   function toggleMute() { SFX.init(); const m=SFX.toggle(); setMuted(m) }
 
-  function enterGate() {
-    SFX.init(); SFX.initialize()
-    setTimeout(()=>{ SFX.startDrone(); setPhase('callsign') }, 600)
-  }
 
   // Callsign - works on both desktop (keydown) and mobile (input onChange)
   useEffect(()=>{
