@@ -9,8 +9,8 @@
     "preview": "vite preview",
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",
-    "deploy:sepolia": "npx hardhat run scripts/deploy.js --network arbitrumSepolia",
-    "deploy:mainnet": "npx hardhat run scripts/deploy.js --network arbitrumOne",
+    "deploy:sepolia": "npx hardhat run scripts/deploy.cjs --network arbitrumSepolia",
+    "deploy:mainnet": "npx hardhat run scripts/deploy.cjs --network arbitrumOne",
     "keeper": "node keeper.js"
   },
   "dependencies": {
