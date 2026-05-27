@@ -100,7 +100,7 @@ function useTime() {
 }
 
 export default function App() {
-  const [phase,setPhase]           = useState('gate')
+  const [phase,setPhase]           = useState('intro')
   const [muted,setMuted]           = useState(false)
   const [callsign,setCallsign]     = useState('')
   const [csTyped,setCsTyped]       = useState('')
@@ -325,7 +325,82 @@ export default function App() {
   const queueDepth=queue.filter(j=>j.status==='QUEUED'||j.status==='EXECUTING').length
   const statColor={ONLINE:'var(--acid)',EXECUTING:'var(--teal)'}[appStat]||'var(--acid)'
 
-  // ---- GATE ----
+  // ---- INTRO (hermians-style multi-scene) ----
+  if(phase==='intro') return (
+    <Intro
+      wallets={getAvailableWallets()}
+      onComplete={async (selectedWallet) => {
+        setPhase('auth')
+        setAuthErr('')
+        try {
+          setAuthStep('connecting'); setAuthMsg('CONNECTING WALLET...')
+          if(!hasWallet()) throw {code:'NO_WALLET',message:'NO WALLET DETECTED.'}
+          if(selectedWallet) setActiveProvider(selectedWallet.provider)
+          const addr = await connectWallet(selectedWallet?.provider)
+          setAddress(addr)
+          setAuthStep('signing'); setAuthMsg('SIGN MESSAGE TO AUTHENTICATE...')
+          await signSiwe(addr)
+          setAuthStep('checking'); setAuthMsg('CHECKING ON-CHAIN AGENT...')
+          const [has,total] = await Promise.all([checkHasAgent(addr),getTotalAgents()])
+          setTotalUsers(total)
+          let agentAddress, newUser=false
+          if(has) { agentAddress = await getAgentAddress(addr); setAgentAddr(agentAddress||'') }
+          else {
+            setIsNew(true); newUser=true
+            setAuthStep('deploying'); setAuthMsg('DEPLOYING YOUR CFO AGENT...')
+            SFX.deploy()
+            try {
+              if(FACTORY_ADDR && FACTORY_ADDR!=='') { agentAddress = await deployAgent() }
+              else { throw new Error('no factory') }
+            } catch(de) { agentAddress = addr.slice(0,22)+'1e77'; }
+            setAgentAddr(agentAddress||'')
+          }
+          setCallsign('AGENT')
+          SFX.boot()
+          setPhase('app')
+        } catch(err) {
+          setAuthStep('error'); SFX.err()
+          setAuthErr((err.message||'UNKNOWN ERROR').toUpperCase().slice(0,80))
+          setPhase('auth_err')
+        }
+      }}
+    />
+  )
+
+  // ---- AUTH LOADING ----
+  if(phase==='auth') return (
+    <div className="fullscreen crt" style={{flexDirection:'column',gap:16}}>
+      <div className="scanline"/>
+      <div style={{fontFamily:"'VT323',monospace",fontSize:'clamp(18px,5vw,26px)',letterSpacing:'0.12em',color:'#d4d0b8'}}>
+        CFO AGENT
+      </div>
+      <div style={{width:'clamp(200px,50vw,320px)',height:2,background:'#1a1a16',overflow:'hidden'}}>
+        <motion.div style={{height:'100%',background:'#c8ff47'}}
+          initial={{width:'0%'}}
+          animate={{width:authStep==='connecting'?'25%':authStep==='signing'?'50%':authStep==='checking'?'75%':'95%'}}
+          transition={{duration:0.6,ease:'easeInOut'}}/>
+      </div>
+      <div style={{fontFamily:"'Share Tech Mono',monospace",fontSize:'clamp(12px,3vw,16px)',letterSpacing:'0.1em',color:'#5a5848'}}>
+        &gt; {authMsg}
+      </div>
+    </div>
+  )
+
+  // ---- AUTH ERROR ----
+  if(phase==='auth_err') return (
+    <div className="fullscreen crt" style={{flexDirection:'column',gap:16}}>
+      <div className="scanline"/>
+      <div style={{fontFamily:"'VT323',monospace",fontSize:22,letterSpacing:'0.12em',color:'#ff5c5c'}}>AUTH FAILED</div>
+      <div style={{fontFamily:"'Share Tech Mono',monospace",fontSize:14,letterSpacing:'0.08em',color:'#ff5c5c',maxWidth:400,textAlign:'center'}}>&gt; {authErr}</div>
+      <motion.button style={{fontFamily:"'VT323',monospace",fontSize:20,letterSpacing:'0.15em',background:'#c8ff47',color:'#000',border:'none',padding:'12px 32px',cursor:'pointer'}}
+        whileHover={{scale:1.04}} whileTap={{scale:0.96}}
+        onClick={()=>setPhase('intro')}>
+        &gt; TRY AGAIN
+      </motion.button>
+    </div>
+  )
+
+  // ---- GATE (legacy, kept for reference) ----
   if(phase==='gate') return (
     <motion.div className="fullscreen crt gate-screen" variants={fadeIn} initial="hidden" animate="visible" exit="exit" key="gate">
       <div className="scanline"/>
