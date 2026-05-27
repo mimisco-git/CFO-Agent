@@ -1,189 +1,160 @@
 /**
- * keeper.js
+ * keeper.js - CFO Agent Keeper Bot
+ * Polls the sequencer every 30 seconds and executes ready rules.
+ * Supports both Arbitrum Sepolia and Robinhood Chain.
  *
- * Off-chain keeper bot for CFOAgent + ExecutionSequencer.
- * 1. Scans active rules from RuleRegistry
- * 2. Enqueues ready rules into ExecutionSequencer
- * 3. Dequeues jobs in priority order and executes on CFOAgent
- * 4. Marks jobs complete or failed with retry logic
+ * Usage:
+ *   AGENT_ADDRESS=0x... PRIVATE_KEY=0x... node keeper.js
+ *
+ * Env vars:
+ *   AGENT_ADDRESS     - your deployed CFOAgent address
+ *   REGISTRY_ADDRESS  - RuleRegistry contract address
+ *   SEQUENCER_ADDRESS - ExecutionSequencer address
+ *   PRIVATE_KEY       - keeper wallet private key
+ *   RPC_URL           - JSON-RPC endpoint
+ *   POLL_INTERVAL_MS  - polling interval (default 30000)
+ *   NETWORK_NAME      - display name (default "Arbitrum Sepolia")
  */
 
-import { ethers } from "ethers";
-import { config } from "dotenv";
-config();
+import { ethers } from 'ethers';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const REGISTRY_ABI = [
-  "function getActiveRules(address agent) view returns (tuple(uint256 id, uint8 ruleType, uint8 conditionType, address token, address recipient, uint256 amount, uint256 spendLimit, uint256 interval, uint256 lastExecuted, uint256 conditionValue, bool active)[])",
-  "function isRuleReady(address agent, uint256 ruleId) view returns (bool)",
+const {
+  AGENT_ADDRESS,
+  REGISTRY_ADDRESS     = '0x5eadac819B2206B960a30978eFCEf3E1351C6b10',
+  SEQUENCER_ADDRESS    = '0xA6a5A3364c8A169c9F38768df67Ad89AA33f14e2',
+  PRIVATE_KEY,
+  RPC_URL              = 'https://sepolia-rollup.arbitrum.io/rpc',
+  POLL_INTERVAL_MS     = '30000',
+  NETWORK_NAME         = 'Arbitrum Sepolia',
+} = process.env;
+
+if (!AGENT_ADDRESS)  { console.error('[ERROR] AGENT_ADDRESS not set'); process.exit(1); }
+if (!PRIVATE_KEY)    { console.error('[ERROR] PRIVATE_KEY not set');   process.exit(1); }
+
+const POLL_MS = parseInt(POLL_INTERVAL_MS, 10);
+
+const SEQUENCER_ABI = [
+  'function queueDepth() view returns (uint256)',
+  'function executeNext(address agent) returns (bool)',
+  'function getQueuedJobs() view returns (tuple(uint256 id, address agent, uint256 ruleId, uint8 priority, uint8 status, uint256 attempts, uint256 maxRetries, uint256 createdAt)[])',
 ];
 
 const AGENT_ABI = [
-  "function executeRule(uint256 ruleId) external",
-  "function active() view returns (bool)",
-  "function totalExecutions() view returns (uint256)",
-  "event RuleExecuted(uint256 indexed ruleId, address indexed token, address indexed recipient, uint256 amount)",
+  'function active() view returns (bool)',
+  'function totalExecutions() view returns (uint256)',
+  'function owner() view returns (address)',
 ];
 
-const SEQUENCER_ABI = [
-  "function enqueue(address agent, uint256 ruleId, uint8 priority, uint256 scheduledFor, uint256 maxRetries) returns (uint256 jobId)",
-  "function startJob(uint256 jobId) external",
-  "function completeJob(uint256 jobId) external",
-  "function failJob(uint256 jobId, string reason) external",
-  "function cancelJob(uint256 jobId) external",
-  "function getNextJob() view returns (tuple(uint256 id, address agent, uint256 ruleId, uint8 priority, uint8 status, uint256 attempts, uint256 maxRetries, uint256 createdAt, uint256 executedAt, uint256 scheduledFor, string failReason), bool found)",
-  "function hasActiveJob(address agent, uint256 ruleId) view returns (bool)",
-  "function queueDepth() view returns (uint256)",
-  "event JobQueued(uint256 indexed jobId, address indexed agent, uint256 ruleId, uint8 priority)",
-  "event JobCompleted(uint256 indexed jobId, address indexed agent, uint256 ruleId)",
-  "event JobFailed(uint256 indexed jobId, string reason, uint256 attempts)",
-];
+let provider, wallet, sequencer, agent;
+let execCount = 0;
+let pollCount = 0;
+let lastExecTime = null;
 
-const {
-  PRIVATE_KEY,
-  RPC_URL,
-  AGENT_ADDRESS,
-  REGISTRY_ADDRESS,
-  SEQUENCER_ADDRESS,
-  POLL_INTERVAL_MS = "30000",
-} = process.env;
-
-if (!PRIVATE_KEY || !RPC_URL || !AGENT_ADDRESS || !REGISTRY_ADDRESS) {
-  console.error("Missing env vars: PRIVATE_KEY, RPC_URL, AGENT_ADDRESS, REGISTRY_ADDRESS");
-  process.exit(1);
+function log(msg, level = 'INFO') {
+  const ts = new Date().toISOString().replace('T',' ').slice(0,19);
+  const prefix = { INFO:'[+]', WARN:'[!]', ERR:'[X]', OK:'[OK]' }[level] || '[.]';
+  console.log(`${ts} ${prefix} ${msg}`);
 }
 
-const provider  = new ethers.JsonRpcProvider(RPC_URL);
-const wallet    = new ethers.Wallet(PRIVATE_KEY, provider);
-const registry  = new ethers.Contract(REGISTRY_ADDRESS, REGISTRY_ABI, provider);
-const agent     = new ethers.Contract(AGENT_ADDRESS, AGENT_ABI, wallet);
-const sequencer = SEQUENCER_ADDRESS
-  ? new ethers.Contract(SEQUENCER_ADDRESS, SEQUENCER_ABI, wallet)
-  : null;
+async function init() {
+  log(`CFO AGENT KEEPER BOT`);
+  log(`Network:   ${NETWORK_NAME}`);
+  log(`RPC:       ${RPC_URL}`);
+  log(`Agent:     ${AGENT_ADDRESS}`);
+  log(`Registry:  ${REGISTRY_ADDRESS}`);
+  log(`Sequencer: ${SEQUENCER_ADDRESS}`);
+  log(`Poll:      every ${POLL_MS/1000}s`);
+  log('─'.repeat(52));
 
-let errors = 0;
+  provider  = new ethers.JsonRpcProvider(RPC_URL);
+  wallet    = new ethers.Wallet(PRIVATE_KEY, provider);
+  sequencer = new ethers.Contract(SEQUENCER_ADDRESS, SEQUENCER_ABI, wallet);
+  agent     = new ethers.Contract(AGENT_ADDRESS, AGENT_ABI, provider);
+
+  const [network, balance, agentActive, totalExecs] = await Promise.all([
+    provider.getNetwork(),
+    provider.getBalance(wallet.address),
+    agent.active().catch(() => false),
+    agent.totalExecutions().catch(() => 0n),
+  ]);
+
+  log(`Chain ID:  ${network.chainId}`);
+  log(`Keeper:    ${wallet.address}`);
+  log(`Balance:   ${ethers.formatEther(balance)} ETH`);
+  log(`Agent:     ${agentActive ? 'ACTIVE' : 'PAUSED'}`);
+  log(`Executions: ${totalExecs.toString()} total`);
+  log('─'.repeat(52));
+
+  if (!agentActive) {
+    log('Agent is paused. Waiting for activation...', 'WARN');
+  }
+}
+
+async function poll() {
+  pollCount++;
+  try {
+    const [depth, active] = await Promise.all([
+      sequencer.queueDepth().catch(() => 0n),
+      agent.active().catch(() => false),
+    ]);
+
+    log(`Poll #${pollCount} | Queue: ${depth} | Agent: ${active ? 'ACTIVE' : 'PAUSED'}`);
+
+    if (!active) {
+      log('Agent paused, skipping execution', 'WARN');
+      return;
+    }
+
+    if (depth === 0n) {
+      log('Queue empty, nothing to execute');
+      return;
+    }
+
+    log(`Executing next job from queue...`);
+    const tx = await sequencer.executeNext(AGENT_ADDRESS, {
+      gasLimit: 500000n,
+    });
+
+    log(`TX submitted: ${tx.hash}`);
+    const receipt = await tx.wait();
+
+    if (receipt.status === 1) {
+      execCount++;
+      lastExecTime = new Date().toISOString();
+      log(`Execution SUCCESS | Gas: ${receipt.gasUsed.toString()} | Total: ${execCount}`, 'OK');
+    } else {
+      log(`Execution REVERTED`, 'ERR');
+    }
+
+  } catch (err) {
+    if (err.message?.includes('Queue is empty')) {
+      log('Queue empty (contract)');
+    } else if (err.message?.includes('insufficient funds')) {
+      log('INSUFFICIENT GAS - fund keeper wallet!', 'ERR');
+    } else {
+      log(`Poll error: ${err.message?.slice(0, 100)}`, 'ERR');
+    }
+  }
+}
 
 async function run() {
-  try {
-    const isActive = await agent.active();
-    if (!isActive) { log("Agent deactivated."); return; }
-
-    if (sequencer) {
-      await scanAndEnqueue();
-      await dequeueAndExecute();
-    } else {
-      await legacyExecute();
-    }
-
-    errors = 0;
-  } catch (err) {
-    errors++;
-    log(`Error: ${err.message}`);
-    if (errors >= 5) log("5 consecutive errors. Check setup.");
-  }
+  await init();
+  await poll(); // immediate first poll
+  setInterval(poll, POLL_MS);
+  log(`Keeper running. Ctrl+C to stop.`);
+  log('─'.repeat(52));
 }
 
-// ---- Sequencer mode ----
+// Graceful shutdown
+process.on('SIGINT', () => {
+  log(`\nShutting down. Total executions this session: ${execCount}`);
+  if (lastExecTime) log(`Last execution: ${lastExecTime}`);
+  process.exit(0);
+});
 
-async function scanAndEnqueue() {
-  const rules = await registry.getActiveRules(AGENT_ADDRESS);
-  log(`Scanning ${rules.length} rule(s) for queue...`);
-
-  for (const rule of rules) {
-    const ready = await registry.isRuleReady(AGENT_ADDRESS, rule.id);
-    if (!ready) continue;
-
-    const alreadyQueued = await sequencer.hasActiveJob(AGENT_ADDRESS, rule.id);
-    if (alreadyQueued) { log(`Rule ${rule.id} already queued.`); continue; }
-
-    const priority = 0; // NORMAL. Bump to 1 (HIGH) or 2 (CRITICAL) for urgent rules.
-    const tx = await sequencer.enqueue(AGENT_ADDRESS, rule.id, priority, 0, 3);
-    const receipt = await tx.wait();
-    log(`Rule ${rule.id} enqueued. Tx: ${receipt.hash}`);
-  }
-}
-
-async function dequeueAndExecute() {
-  const depth = await sequencer.queueDepth();
-  log(`Queue depth: ${depth}`);
-  if (depth === 0n) return;
-
-  const [job, found] = await sequencer.getNextJob();
-  if (!found) return;
-
-  log(`Dequeuing job ${job.id} (rule ${job.ruleId}, priority ${['NORMAL','HIGH','CRITICAL'][job.priority]})`);
-
-  try {
-    const startTx = await sequencer.startJob(job.id);
-    await startTx.wait();
-
-    const execTx = await agent.executeRule(job.ruleId, { gasLimit: 400_000 });
-    log(`Executing tx: ${execTx.hash}`);
-    const receipt = await execTx.wait();
-
-    const completeTx = await sequencer.completeJob(job.id);
-    await completeTx.wait();
-
-    log(`Job ${job.id} completed. Gas: ${receipt.gasUsed}`);
-    printEvents(receipt);
-  } catch (err) {
-    const reason = parseRevert(err);
-    log(`Job ${job.id} failed: ${reason}. Attempt ${Number(job.attempts) + 1}/${job.maxRetries}`);
-    const failTx = await sequencer.failJob(job.id, reason.slice(0, 200));
-    await failTx.wait();
-  }
-}
-
-// ---- Legacy mode (no sequencer deployed yet) ----
-
-async function legacyExecute() {
-  const rules = await registry.getActiveRules(AGENT_ADDRESS);
-  for (const rule of rules) {
-    const ready = await registry.isRuleReady(AGENT_ADDRESS, rule.id);
-    if (!ready) continue;
-    try {
-      const tx = await agent.executeRule(rule.id, { gasLimit: 300_000 });
-      const receipt = await tx.wait();
-      log(`Rule ${rule.id} executed. Gas: ${receipt.gasUsed}`);
-    } catch (err) {
-      log(`Rule ${rule.id} failed: ${parseRevert(err)}`);
-    }
-  }
-}
-
-// ---- Helpers ----
-
-function printEvents(receipt) {
-  const iface = new ethers.Interface(AGENT_ABI);
-  for (const l of receipt.logs) {
-    try {
-      const parsed = iface.parseLog(l);
-      if (parsed?.name === "RuleExecuted") {
-        const { ruleId, token, recipient, amount } = parsed.args;
-        console.log(`  RuleExecuted: rule=${ruleId} token=${token} to=${recipient} amount=${amount}`);
-      }
-    } catch {}
-  }
-}
-
-function parseRevert(err) {
-  return err.reason ?? err.shortMessage ?? err.message ?? "unknown error";
-}
-
-function log(msg) {
-  console.log(`[${new Date().toISOString()}] ${msg}`);
-}
-
-async function main() {
-  const network = await provider.getNetwork();
-  log(`Keeper v2 started on chain ${network.chainId}`);
-  log(`Agent:      ${AGENT_ADDRESS}`);
-  log(`Registry:   ${REGISTRY_ADDRESS}`);
-  log(`Sequencer:  ${SEQUENCER_ADDRESS ?? "not deployed (legacy mode)"}`);
-  log(`Keeper:     ${wallet.address}`);
-  log(`Polling every ${Number(POLL_INTERVAL_MS) / 1000}s`);
-
-  await run();
-  setInterval(run, Number(POLL_INTERVAL_MS));
-}
-
-main().catch((err) => { console.error("Fatal:", err); process.exit(1); });
+run().catch(err => {
+  console.error('[FATAL]', err.message);
+  process.exit(1);
+});

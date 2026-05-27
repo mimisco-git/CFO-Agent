@@ -1,46 +1,37 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
 
-const PRIVATE_KEY = process.env.PRIVATE_KEY || "0x" + "0".repeat(64);
+const PRIVATE_KEY = process.env.PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000001";
 
-/** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: {
     version: "0.8.20",
-    settings: {
-      optimizer: { enabled: true, runs: 200 },
-    },
+    settings: { optimizer: { enabled: true, runs: 200 } }
   },
   networks: {
-    hardhat: {},
     arbitrumSepolia: {
       url: process.env.RPC_URL || "https://sepolia-rollup.arbitrum.io/rpc",
       accounts: [PRIVATE_KEY],
       chainId: 421614,
     },
-    arbitrumOne: {
-      url: "https://arb1.arbitrum.io/rpc",
+    robinhoodTestnet: {
+      url: "https://testnet.chain.robinhood.com/rpc",
       accounts: [PRIVATE_KEY],
-      chainId: 42161,
+      chainId: 46630,
     },
-    // Uncomment when Robinhood Chain RPC is confirmed:
-    // robinhoodChain: {
-    //   url: process.env.ROBINHOOD_RPC_URL,
-    //   accounts: [PRIVATE_KEY],
-    // },
   },
   etherscan: {
     apiKey: {
-      arbitrumSepolia: process.env.ARBISCAN_API_KEY || "",
-      arbitrumOne: process.env.ARBISCAN_API_KEY || "",
+      arbitrumSepolia: "DUMMY",
+      robinhoodTestnet: "DUMMY",
     },
     customChains: [
       {
-        network: "arbitrumSepolia",
-        chainId: 421614,
+        network: "robinhoodTestnet",
+        chainId: 46630,
         urls: {
-          apiURL: "https://api-sepolia.arbiscan.io/api",
-          browserURL: "https://sepolia.arbiscan.io",
+          apiURL: "https://explorer.testnet.chain.robinhood.com/api",
+          browserURL: "https://explorer.testnet.chain.robinhood.com",
         },
       },
     ],
