@@ -7,7 +7,7 @@
 
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || ''
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
-const MODEL = 'llama3-8b-8192'
+const MODEL = 'llama-3.3-70b-versatile'
 
 export async function suggestRules(businessDescription, existingRules = []) {
   if (!GROQ_API_KEY) {
