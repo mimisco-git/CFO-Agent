@@ -16,9 +16,10 @@
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.0",
     "ethers": "^6.0.0",
+    "framer-motion": "^11.0.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
-    "framer-motion": "^11.0.0"
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
