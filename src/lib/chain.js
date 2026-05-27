@@ -33,9 +33,12 @@ const SEL = {
 
 function pad32(val) {
   if (typeof val === 'string' && val.startsWith('0x')) {
-    return val.slice(2).padStart(64, '0')
+    return val.slice(2).toLowerCase().padStart(64, '0')
   }
-  return BigInt(val).toString(16).padStart(64, '0')
+  if (typeof val === 'string' || typeof val === 'number') {
+    return BigInt(val).toString(16).padStart(64, '0')
+  }
+  return val.toString(16).padStart(64, '0')
 }
 
 function encodeCall(selector, ...args) {
@@ -200,7 +203,7 @@ export async function deployAgent() {
       from: accounts[0],
       to: FACTORY_ADDR,
       data: SEL.deployAgent,
-      gas: '0x' + (500000).toString(16),
+      gas: '0x' + (3000000).toString(16), // 3M gas for contract deployment
     }],
   })
 
