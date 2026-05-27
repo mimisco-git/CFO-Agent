@@ -15,7 +15,7 @@ module.exports = {
       chainId: 421614,
     },
     robinhoodTestnet: {
-      url: "https://testnet.chain.robinhood.com/rpc",
+      url: "https://rpc.testnet.chain.robinhood.com",
       accounts: [PRIVATE_KEY],
       chainId: 46630,
     },

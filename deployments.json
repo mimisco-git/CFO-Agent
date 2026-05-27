@@ -8,5 +8,15 @@
     "RuleRegistry": "0x5eadac819B2206B960a30978eFCEf3E1351C6b10",
     "AgentFactory": "0xF1EE2CC9741547cAf04FE99ed2ad8Ff072AEe900",
     "ExecutionSequencer": "0xA6a5A3364c8A169c9F38768df67Ad89AA33f14e2"
+  },
+  "robinhoodTestnet": {
+    "chainId": "46630",
+    "timestamp": "2026-05-27T15:11:30.380Z",
+    "deployer": "0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf",
+    "contracts": {
+      "RuleRegistry": "0xbfce6B877Ebff977bB6e80B24FbBb7bC4eBcA4df",
+      "AgentFactory": "0xcd75Ad7AC9C9325105f798c476E84176648F391A",
+      "ExecutionSequencer": "0x6d5a4D246617d711595a1657c55B17B97e20bdda"
+    }
   }
 }
