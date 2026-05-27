@@ -1366,3 +1366,23 @@ body {
 .wallet-option-icon { font-size: 20px; flex-shrink: 0; }
 .wallet-option-name { flex: 1; }
 .wallet-option-arrow { color: var(--muted2); font-size: 16px; }
+
+/* ---- LOGOUT / DISCONNECT ---- */
+.logout-btn:hover { border-color: var(--red) !important; color: var(--red) !important; }
+
+.disconnect-btn {
+  background: none;
+  border: 1px solid #2a2820;
+  color: var(--muted2);
+  font-family: var(--vt);
+  font-size: clamp(11px,2.5vw,13px);
+  letter-spacing: 0.12em;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+  display: none;
+}
+
+.disconnect-btn:hover { border-color: var(--red); color: var(--red); }
+
+@media (min-width: 600px) { .disconnect-btn { display: inline-flex; } }

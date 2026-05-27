@@ -84,6 +84,25 @@ export default function App() {
 
   function toggleMute() { SFX.init(); setMuted(SFX.toggle()) }
 
+  function logout() {
+    SFX.err()
+    setPhase('intro')
+    setAddress('')
+    setAgentAddr('')
+    setCallsign('')
+    setIsNew(false)
+    setAuthStep('')
+    setAuthMsg('')
+    setAuthErr('')
+    setNav('dashboard')
+    setRules(INIT_RULES)
+    setLog(INIT_LOG)
+    setQueue(INIT_QUEUE)
+    setAppStat('ONLINE')
+    setSideOpen(false)
+    SFX.stopDrone()
+  }
+
   async function doAuth(selectedWallet) {
     setAuthErr(''); setPhase('auth')
     try {
@@ -247,6 +266,22 @@ export default function App() {
           <div className="agent-addr">AGENT: {truncAddr(agentAddr)||'0x9aB4...1e77'}</div>
           {isNew&&<div className="new-badge">NEW AGENT DEPLOYED</div>}
           <div className="agent-addr" style={{marginTop:6}}>TOTAL USERS: {totalUsers.toString()}</div>
+          <motion.button
+            onClick={logout}
+            onMouseEnter={()=>SFX.hover()}
+            whileHover={{scale:1.02}}
+            whileTap={{scale:0.97}}
+            style={{
+              marginTop:12, width:'100%',
+              background:'none', border:'1px solid #2a2820',
+              color:'var(--muted2)', fontFamily:"'VT323',monospace",
+              fontSize:15, letterSpacing:'0.12em',
+              padding:'6px 0', cursor:'pointer',
+              transition:'border-color .15s, color .15s',
+            }}
+            className="logout-btn">
+            &gt; DISCONNECT
+          </motion.button>
         </div>
       </aside>
 
@@ -264,6 +299,11 @@ export default function App() {
           <div style={{display:'flex',alignItems:'center',gap:10}}>
             <span className="time-label">{time} / ARB SEPOLIA</span>
             <MuteBtn muted={muted} toggle={toggleMute} inline/>
+            <motion.button className="disconnect-btn" onClick={logout}
+              whileHover={{scale:1.05}} whileTap={{scale:0.95}}
+              onMouseEnter={()=>SFX.hover()}>
+              DISCONNECT
+            </motion.button>
           </div>
         </div>
         <div className="main-content">
