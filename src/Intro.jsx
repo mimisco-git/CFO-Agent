@@ -357,6 +357,18 @@ export default function Intro({ onComplete, wallets = [] }) {
 
   function next() { setScene(s => s + 1) }
 
+  // Global keydown - works without clicking first
+  useEffect(() => {
+    if (scene !== 0) return
+    const h = (e) => {
+      // Ignore modifier-only keys
+      if (['Shift','Control','Alt','Meta','Tab'].includes(e.key)) return
+      handleGateClick()
+    }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }, [scene])
+
   function handleGateClick() {
     SFX.init()
     SFX.initialize()

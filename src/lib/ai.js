@@ -1,51 +1,59 @@
 /**
  * ai.js
  * AI Rule Suggester powered by Claude API.
- * User describes their business, Claude suggests optimal CFO Agent rules.
- * Targets the AI Agents prize track directly.
+ * Requires VITE_ANTHROPIC_API_KEY environment variable.
  */
 
+const API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY || ''
+
 export async function suggestRules(businessDescription, existingRules = []) {
+  if (!API_KEY) {
+    throw new Error('ANTHROPIC API KEY NOT SET. ADD VITE_ANTHROPIC_API_KEY TO VERCEL ENV VARS.')
+  }
+
   const systemPrompt = `You are an expert CFO and DeFi treasury manager specializing in on-chain payment automation on Arbitrum.
 
-A user has deployed a CFO Agent smart contract that can automate payments with two types of rules:
-1. SCHEDULED rules: Execute at a fixed interval (hourly, daily, weekly, monthly)
-2. CONDITIONAL rules: Execute when treasury balance exceeds a threshold
+A user has deployed a CFO Agent smart contract that automates payments with two rule types:
+1. SCHEDULED: Execute at fixed intervals (hourly, daily, weekly, monthly)
+2. CONDITIONAL: Execute when treasury balance exceeds a threshold
 
 Available tokens: USDC, ETH
 
-Your job is to analyze their business and suggest 3-5 optimal automation rules.
+Analyze their business and suggest 3-5 optimal automation rules.
 
-Respond ONLY with a valid JSON array, no markdown, no explanation. Format:
+Respond ONLY with a valid JSON array. No markdown, no explanation, just the array:
 [
   {
-    "name": "RULE NAME IN CAPS",
-    "type": "SCHEDULED" or "CONDITIONAL",
-    "token": "USDC" or "ETH",
+    "name": "RULE NAME IN CAPS MAX 20 CHARS",
+    "type": "SCHEDULED",
+    "token": "USDC",
     "recipient": "0x0000000000000000000000000000000000000000",
     "amount": "500",
     "limit": "600",
     "interval": "604800",
     "condVal": "",
-    "reasoning": "One sentence explaining why this rule matters for their business"
+    "reasoning": "One sentence explaining why this rule helps their specific business"
   }
 ]
 
-For SCHEDULED rules: interval is in seconds. 3600=hourly, 86400=daily, 604800=weekly, 2592000=monthly.
-For CONDITIONAL rules: condVal is the balance threshold in USDC or ETH units. interval should be "0".
-Keep amounts realistic. Keep rule names concise, uppercase, under 20 chars.`
+For SCHEDULED: interval in seconds. 3600=hourly, 86400=daily, 604800=weekly, 2592000=monthly.
+For CONDITIONAL: condVal=threshold in token units, interval="0".
+Keep amounts realistic for the business described.`
 
-  const userPrompt = `Business description: ${businessDescription}
+  const userPrompt = `Business: ${businessDescription}
 
-Existing rules already configured: ${existingRules.length > 0
-    ? existingRules.map(r => `${r.name} (${r.type})`).join(', ')
-    : 'none'}
+Existing rules: ${existingRules.length > 0 ? existingRules.map(r => `${r.name} (${r.type})`).join(', ') : 'none'}
 
-Suggest the best automation rules for this business. Focus on practical, high-impact rules that save the most time and prevent the most financial errors.`
+Generate the best 3-5 automation rules for this business.`
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': API_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1000,
@@ -55,7 +63,8 @@ Suggest the best automation rules for this business. Focus on practical, high-im
   })
 
   if (!response.ok) {
-    throw new Error(`API error: ${response.status}`)
+    const err = await response.json().catch(() => ({}))
+    throw new Error(err.error?.message || `API ERROR ${response.status}`)
   }
 
   const data = await response.json()
@@ -65,6 +74,6 @@ Suggest the best automation rules for this business. Focus on practical, high-im
     const clean = text.replace(/```json|```/g, '').trim()
     return JSON.parse(clean)
   } catch {
-    throw new Error('Failed to parse AI response')
+    throw new Error('FAILED TO PARSE AI RESPONSE')
   }
 }
