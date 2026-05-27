@@ -193,12 +193,13 @@ export default function App() {
     if(csTyped.trim().length>=2) { setCallsign(csTyped.trim().toUpperCase()); setPhase('wallet') }
   }
 
-  async function doAuth() {
+  async function doAuth(provider) {
     setAuthErr('')
     try {
       setAuthStep('connecting'); setAuthMsg('CONNECTING WALLET...')
       if(!hasWallet()) throw {code:'NO_WALLET',message:'NO WALLET DETECTED. INSTALL METAMASK.'}
-      const addr = await connectWallet(); setAddress(addr)
+      if(provider) setActiveProvider(provider)
+      const addr = await connectWallet(provider); setAddress(addr)
       setAuthStep('signing'); setAuthMsg('SIGN MESSAGE TO AUTHENTICATE...')
       await signSiwe(addr)
       setAuthStep('checking'); setAuthMsg('CHECKING ON-CHAIN AGENT...')

@@ -81,26 +81,60 @@ export function hasWallet() {
 export async function getAccounts() {
   if (!hasWallet()) return []
   try {
-    return await window.ethereum.request({ method: 'eth_accounts' })
+    return await getActiveProvider().request({ method: 'eth_accounts' })
   } catch { return [] }
 }
 
-export async function connectWallet() {
-  if (!hasWallet()) throw { code: 'NO_WALLET', message: 'No wallet detected. Install MetaMask.' }
-  await switchToArbitrum()
-  const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+// Detect all available wallet providers
+export function getAvailableWallets() {
+  const wallets = []
+  if (!window.ethereum) return wallets
+
+  // EIP-6963 providers (modern standard)
+  if (window.ethereum.providers) {
+    window.ethereum.providers.forEach(p => {
+      if (p.isMetaMask) wallets.push({ id: 'metamask', name: 'MetaMask', provider: p })
+      else if (p.isCoinbaseWallet) wallets.push({ id: 'coinbase', name: 'Coinbase Wallet', provider: p })
+      else if (p.isBraveWallet) wallets.push({ id: 'brave', name: 'Brave Wallet', provider: p })
+      else wallets.push({ id: 'injected', name: 'Browser Wallet', provider: p })
+    })
+  } else {
+    // Single provider
+    const p = window.ethereum
+    if (p.isMetaMask) wallets.push({ id: 'metamask', name: 'MetaMask', provider: p })
+    else if (p.isCoinbaseWallet) wallets.push({ id: 'coinbase', name: 'Coinbase Wallet', provider: p })
+    else if (p.isBraveWallet) wallets.push({ id: 'brave', name: 'Brave Wallet', provider: p })
+    else wallets.push({ id: 'injected', name: 'Browser Wallet', provider: p })
+  }
+
+  return wallets
+}
+
+let activeProvider = null
+
+export function setActiveProvider(provider) {
+  activeProvider = provider
+}
+
+function getActiveProvider() {
+  return activeProvider || window.ethereum
+}
+
+export async function connectWallet(provider) {
+  const p = provider || getActiveProvider()
+  if (!p) throw { code: 'NO_WALLET', message: 'No wallet detected. Install MetaMask.' }
+  activeProvider = p
+  await switchToArbitrumWith(p)
+  const accounts = await p.request({ method: 'eth_requestAccounts' })
   return accounts[0]
 }
 
-export async function switchToArbitrum() {
+async function switchToArbitrumWith(p) {
   try {
-    await window.ethereum.request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: CHAIN_HEX }],
-    })
+    await p.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: CHAIN_HEX }] })
   } catch (e) {
     if (e.code === 4902) {
-      await window.ethereum.request({
+      await p.request({
         method: 'wallet_addEthereumChain',
         params: [{
           chainId: CHAIN_HEX,
@@ -112,6 +146,10 @@ export async function switchToArbitrum() {
       })
     } else throw e
   }
+}
+
+export async function switchToArbitrum() {
+  return switchToArbitrumWith(getActiveProvider())
 }
 
 export function onAccountChange(cb) {
@@ -156,7 +194,7 @@ export function genNonce() {
 export async function signSiwe(address) {
   const nonce = genNonce()
   const message = buildSiweMessage(address, nonce)
-  const signature = await window.ethereum.request({
+  const signature = await getActiveProvider().request({
     method: 'personal_sign',
     params: [message, address],
   })
@@ -197,13 +235,13 @@ export async function deployAgent() {
   const accounts = await getAccounts()
   if (!accounts[0]) throw new Error('No wallet connected')
 
-  const txHash = await window.ethereum.request({
+  const txHash = await getActiveProvider().request({
     method: 'eth_sendTransaction',
     params: [{
       from: accounts[0],
       to: FACTORY_ADDR,
       data: SEL.deployAgent,
-      gas: '0x' + (3000000).toString(16), // 3M gas for contract deployment
+      gas: '0x' + (3000000).toString(16),
     }],
   })
 

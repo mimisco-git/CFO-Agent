@@ -1330,3 +1330,39 @@ body {
   .payroll-row .fi { width: 100%; flex: none; }
   .payroll-header { display: none; }
 }
+
+/* ---- WALLET SELECTOR ---- */
+.wallet-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.wallet-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  background: #000;
+  border: 1px solid #2a2820;
+  color: var(--text);
+  font-family: var(--vt);
+  font-size: clamp(15px,4vw,18px);
+  letter-spacing: 0.1em;
+  padding: clamp(12px,3vw,14px) 16px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  text-align: left;
+}
+
+.wallet-option-btn:hover {
+  background: var(--dim);
+  border-color: var(--acid);
+}
+
+.wallet-wc-btn:hover { border-color: var(--teal) !important; }
+
+.wallet-option-icon { font-size: 20px; flex-shrink: 0; }
+.wallet-option-name { flex: 1; }
+.wallet-option-arrow { color: var(--muted2); font-size: 16px; }
