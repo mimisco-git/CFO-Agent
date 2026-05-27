@@ -18,19 +18,15 @@ const CHAIN_NAME = 'Arbitrum Sepolia'
 // These are the keccak256 first 4 bytes of each function signature.
 // Computed offline and hardcoded to avoid a library dependency.
 const SEL = {
-  hasAgent:       '0x05bf9eb7', // hasAgent(address)
-  agentOf:        '0x0e5ee4ef', // agentOf(address)
-  totalAgents:    '0x8d1bc9b7', // totalAgents()
-  deployAgent:    '0x3aded8b8', // deployAgent()
+  hasAgent:       '0x4aa11248', // hasAgent(address)
+  agentOf:        '0xac3c0e30', // agentOf(address)
+  totalAgents:    '0xc5053712', // totalAgents()
+  deployAgent:    '0x9752f163', // deployAgent()
   active:         '0x02fb0c5e', // active()
-  totalExec:      '0xb08ad33c', // totalExecutions()
-  ethBalance:     '0x4b64e492', // ethBalance()
-  tokenBalance:   '0x459e0e43', // tokenBalance(address)
-  addRule:        '0xd4e67c5e', // addRule(uint8,uint8,address,address,uint256,uint256,uint256,uint256)
-  deactivateRule: '0x2d0527d2', // deactivateRule(uint256)
-  activateRule:   '0x92c8e16a', // activateRule(uint256)
-  getActiveRules: '0x8a6fd08e', // getActiveRules(address)
-  isRuleReady:    '0x1e01d0bc', // isRuleReady(address,uint256)
+  totalExec:      '0x642f7d5e', // totalExecutions()
+  ethBalance:     '0x4e6630b0', // ethBalance()
+  tokenBalance:   '0xeedc966a', // tokenBalance(address)
+  queueDepth:     '0x179eb1d9', // queueDepth()
 }
 
 // ---- Low-level helpers ----
