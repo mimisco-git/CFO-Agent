@@ -192,9 +192,7 @@ export default function App() {
   const [sideOpen,setSideOpen]     = useState(false)
   const [dailySpent,setDailySpent] = useState(1000)
   const [keeperLogs,setKeeperLogs]   = useState([])
-  const [keeperFeed]                 = useState(() => new KeeperFeed(entry => {
-    setKeeperLogs(prev => [entry, ...prev].slice(0, 80))
-  }))
+
   const [activeChain,setActiveChain] = useState('arbitrum')
 
   const chain = CHAINS[activeChain]
@@ -203,8 +201,7 @@ export default function App() {
     const c = CHAINS[chainKey]
     setActiveChain(chainKey)
     SFX.key()
-    keeperFeed.stop()
-    setTimeout(() => keeperFeed.start(c.shortName), 500)
+
     // Switch MetaMask network
     try {
       await window.ethereum?.request({
@@ -229,6 +226,7 @@ export default function App() {
 
   const logId    = useRef(10)
   const keeperRef = useRef(null)
+  const [keeperOn, setKeeperOn] = useState(false)
 
   const jobId = useRef(10)
   const ping  = usePing()
@@ -244,7 +242,7 @@ export default function App() {
     setNav('dashboard'); setRules(INIT_RULES); setLog(INIT_LOG)
     setQueue(INIT_QUEUE); setAppStat('ONLINE'); setSideOpen(false)
     SFX.stopDrone()
-    keeperFeed.stop()
+
   }
 
   async function doAuth(selectedWallet) {
@@ -281,7 +279,7 @@ export default function App() {
         keeperRef.current = feed
         setKeeperOn(true)
       }, 1500)
-      setTimeout(() => keeperFeed.start(CHAINS.arbitrum.shortName), 1000)
+  
     } catch(err) {
       SFX.err()
       setAuthErr((err.message||'UNKNOWN ERROR').toUpperCase().slice(0,80))
@@ -428,13 +426,7 @@ export default function App() {
             <span>PUBLIC TREASURY</span>
             <span className="ai-badge" style={{background:'var(--amber)',color:'#000'}}>↗</span>
           </button>
-          <button className={`nav ${nav==='keeper'?'on':''}`}
-            onClick={()=>{setNav('keeper');setSideOpen(false);SFX.key()}}
-            onMouseEnter={()=>SFX.hover()}>
-            <span>KEEPER FEED</span>
-            <motion.span style={{width:6,height:6,borderRadius:'50%',background:'var(--acid)',display:'inline-block',marginLeft:'auto'}}
-              animate={{opacity:[1,0.2,1]}} transition={{repeat:Infinity,duration:1.2}}/>
-          </button>
+
           <button className={`nav ${nav==='settings'?'on':''}`}
             onClick={()=>{setNav('settings');setSideOpen(false);SFX.key()}}
             onMouseEnter={()=>SFX.hover()}>SETTINGS</button>
@@ -561,9 +553,7 @@ export default function App() {
             {nav==='treasury'&&<motion.div key="tr" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
               <PublicTreasury rules={rules} log={log} agentAddr={agentAddr} address={address} chain={chain} usdcRouted={usdcRouted} activeCount={activeCount}/>
             </motion.div>}
-            {nav==='keeper'&&<motion.div key="kp" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
-              <KeeperFeedView logs={keeperLogs} chain={chain}/>
-            </motion.div>}
+
             {nav==='settings'&&<motion.div key="st" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
               <Settings agentOn={agentOn} setAgentOn={setAgentOn} address={address} agentAddr={agentAddr} chain={chain} chains={CHAINS} activeChain={activeChain} switchChain={switchChain}/>
             </motion.div>}
