@@ -82,3 +82,65 @@ Generate 3-5 optimal automation rules. Return only the JSON array.`
     throw new Error('FAILED TO PARSE AI RESPONSE. TRY AGAIN.')
   }
 }
+
+/**
+ * Treasury AI Chat
+ * Answers natural language questions about the user's treasury using Groq.
+ * Context-aware: gets the actual rules, log, and balances passed in.
+ */
+export async function askTreasury(question, context) {
+  if (!GROQ_API_KEY) {
+    throw new Error('GROQ API KEY NOT SET. ADD VITE_GROQ_API_KEY TO VERCEL ENV VARS.')
+  }
+
+  const { rules=[], log=[], balance='4820', dailySpent=0, dailyCap=2000, chain='Arbitrum Sepolia', agentAddr='' } = context
+
+  const systemPrompt = `You are the AI brain of a CFO Agent smart contract on ${chain}.
+You have direct access to the treasury data and answer the user's questions concisely.
+
+Current treasury state:
+- Balance: ${balance} USDC
+- Daily spend: ${dailySpent} of ${dailyCap} USDC cap (${Math.round(dailySpent/dailyCap*100)}% used)
+- Active rules: ${rules.filter(r=>r.active).length} of ${rules.length} total
+- Recent executions: ${log.length} total
+- Agent address: ${agentAddr}
+- Network: ${chain}
+
+Active rules:
+${rules.filter(r=>r.active).map(r => `- ${r.name}: ${r.amount} ${r.token} ${r.interval?`every ${r.interval}`:r.cond||''}`).join('\n') || '- none configured'}
+
+Recent activity (last 5):
+${log.slice(0,5).map(l => `- ${l.rule}: ${l.amount} ${l.token} to ${l.to} (${l.time})`).join('\n') || '- no activity yet'}
+
+Rules:
+${rules.map(r => `- ${r.name} [${r.active?'ACTIVE':'PAUSED'}] ${r.type}: ${r.amount} ${r.token}`).join('\n') || '- none'}
+
+Answer in 2-3 sentences max. Be direct and specific. Use numbers from the data. 
+If asked about savings vs Ethereum L1, note that Arbitrum is ~99% cheaper.
+Format numbers clearly. Use CAPS for rule names.`
+
+  const response = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${GROQ_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: question },
+      ],
+      max_tokens: 200,
+      temperature: 0.4,
+    }),
+  })
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}))
+    throw new Error(err.error?.message || `GROQ API ERROR ${response.status}`)
+  }
+
+  const data = await response.json()
+  return data.choices?.[0]?.message?.content || 'Unable to get response.'
+}

@@ -6,7 +6,7 @@ import {
 } from 'recharts'
 import './App.css'
 import { SFX } from './lib/audio.js'
-import { suggestRules } from './lib/ai.js'
+import { suggestRules, askTreasury } from './lib/ai.js'
 import Intro from './Intro.jsx'
 import { KeeperFeed } from './lib/keeperFeed.js'
 import {
@@ -397,6 +397,11 @@ export default function App() {
             onMouseEnter={()=>SFX.hover()}>
             <span>TEMPLATES</span><span className="ai-badge" style={{background:'var(--teal)',color:'#000'}}>6</span>
           </button>
+          <button className={`nav ai-nav ${nav==='chat'?'on':''}`}
+            onClick={()=>{setNav('chat');setSideOpen(false);SFX.key()}}
+            onMouseEnter={()=>SFX.hover()}>
+            <span>TREASURY CHAT</span><span className="ai-badge" style={{background:'var(--teal)',color:'#000'}}>AI</span>
+          </button>
           <button className={`nav ai-nav ${nav==='ai'?'on':''}`}
             onClick={()=>{setNav('ai');setSideOpen(false);SFX.key()}}
             onMouseEnter={()=>SFX.hover()}>
@@ -516,6 +521,9 @@ export default function App() {
             </motion.div>}
             {nav==='templates'&&<motion.div key="tp" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
               <Templates addRule={addRule} setNav={setNav}/>
+            </motion.div>}
+            {nav==='chat'&&<motion.div key="ch" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
+              <TreasuryChat rules={rules} log={log} dailySpent={dailySpent} agentAddr={agentAddr} chain={chain}/>
             </motion.div>}
             {nav==='ai'&&<motion.div key="ai" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
               <AIRuleSuggester rules={rules} addRule={addRule}/>
