@@ -1583,3 +1583,68 @@ body {
 
 .chain-card:hover { border-color: var(--muted2); }
 .chain-card-active { border-width: 2px; }
+
+/* ---- KEEPER FEED TERMINAL ---- */
+.keeper-terminal {
+  background: #000;
+  border: 1px solid #1a1a16;
+  font-family: 'Share Tech Mono', monospace;
+  overflow: hidden;
+}
+
+.keeper-terminal-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--dim);
+  border-bottom: 1px solid #1a1a16;
+  font-size: clamp(11px,2.5vw,13px);
+  letter-spacing: 0.1em;
+  color: var(--acid);
+}
+
+.keeper-terminal-body {
+  padding: clamp(12px,3vw,16px);
+  height: clamp(280px, 45vh, 420px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.keeper-terminal-body::-webkit-scrollbar { width: 4px; }
+.keeper-terminal-body::-webkit-scrollbar-track { background: #000; }
+.keeper-terminal-body::-webkit-scrollbar-thumb { background: #2a2820; }
+
+.keeper-log-line {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(6px,2vw,12px);
+  padding: 2px 0;
+  font-size: clamp(11px,2.5vw,13px);
+  line-height: 1.8;
+  border-bottom: 1px solid rgba(26,26,22,0.5);
+}
+
+.keeper-ts {
+  color: #2a2820;
+  font-size: clamp(10px,2vw,12px);
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  min-width: clamp(60px,10vw,70px);
+}
+
+.keeper-prefix {
+  font-size: clamp(10px,2vw,12px);
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  min-width: 36px;
+  opacity: 0.8;
+}
+
+.keeper-msg {
+  font-size: clamp(11px,2.5vw,13px);
+  letter-spacing: 0.04em;
+  word-break: break-all;
+  flex: 1;
+}
