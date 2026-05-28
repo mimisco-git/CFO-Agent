@@ -17,6 +17,40 @@ import {
 
 const ARBISCAN = 'https://sepolia.arbiscan.io/tx/'
 
+// ---- CHAIN CONFIG ----
+const CHAINS = {
+  arbitrum: {
+    id: 421614,
+    hex: '0x' + (421614).toString(16),
+    name: 'ARBITRUM SEPOLIA',
+    shortName: 'ARB SEPOLIA',
+    rpc: 'https://sepolia-rollup.arbitrum.io/rpc',
+    explorer: 'https://sepolia.arbiscan.io',
+    txBase: 'https://sepolia.arbiscan.io/tx/',
+    factory:   import.meta.env.VITE_FACTORY_ADDRESS   || '0xF1EE2CC9741547cAf04FE99ed2ad8Ff072AEe900',
+    registry:  import.meta.env.VITE_REGISTRY_ADDRESS  || '0x5eadac819B2206B960a30978eFCEf3E1351C6b10',
+    sequencer: import.meta.env.VITE_SEQUENCER_ADDRESS || '0xA6a5A3364c8A169c9F38768df67Ad89AA33f14e2',
+    color: 'var(--acid)',
+    icon: '🔷',
+    tag: 'ARBITRUM',
+  },
+  robinhood: {
+    id: 46630,
+    hex: '0x' + (46630).toString(16),
+    name: 'ROBINHOOD CHAIN',
+    shortName: 'RH CHAIN',
+    rpc: 'https://rpc.testnet.chain.robinhood.com',
+    explorer: 'https://explorer.testnet.chain.robinhood.com',
+    txBase: 'https://explorer.testnet.chain.robinhood.com/tx/',
+    factory:   import.meta.env.VITE_RH_FACTORY_ADDRESS   || '0xcd75Ad7AC9C9325105f798c476E84176648F391A',
+    registry:  import.meta.env.VITE_RH_REGISTRY_ADDRESS  || '0xbfce6B877Ebff977bB6e80B24FbBb7bC4eBcA4df',
+    sequencer: import.meta.env.VITE_RH_SEQUENCER_ADDRESS || '0x6d5a4D246617d711595a1657c55B17B97e20bdda',
+    color: '#47ffd4',
+    icon: '🟢',
+    tag: 'ROBINHOOD',
+  },
+}
+
 const fadeUp  = { hidden:{opacity:0,y:16}, visible:{opacity:1,y:0,transition:{duration:0.4,ease:'easeOut'}}, exit:{opacity:0,y:-8,transition:{duration:0.2}} }
 const fadeIn  = { hidden:{opacity:0}, visible:{opacity:1,transition:{duration:0.5}}, exit:{opacity:0,transition:{duration:0.25}} }
 const stagger = { visible:{transition:{staggerChildren:0.07}} }
@@ -155,7 +189,36 @@ export default function App() {
   const [form,setForm]             = useState(BLANK)
   const [appStat,setAppStat]       = useState('ONLINE')
   const [sideOpen,setSideOpen]     = useState(false)
-  const [dailySpent,setDailySpent] = useState(1000) // mock: 1000 of 2000 cap used
+  const [dailySpent,setDailySpent] = useState(1000)
+  const [activeChain,setActiveChain] = useState('arbitrum')
+
+  const chain = CHAINS[activeChain]
+
+  async function switchChain(chainKey) {
+    const c = CHAINS[chainKey]
+    setActiveChain(chainKey)
+    SFX.key()
+    // Switch MetaMask network
+    try {
+      await window.ethereum?.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: c.hex }],
+      })
+    } catch(e) {
+      if(e.code === 4902) {
+        await window.ethereum?.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: c.hex,
+            chainName: c.name,
+            nativeCurrency: { name:'ETH', symbol:'ETH', decimals:18 },
+            rpcUrls: [c.rpc],
+            blockExplorerUrls: [c.explorer],
+          }],
+        })
+      }
+    }
+  } // mock: 1000 of 2000 cap used
 
   const logId = useRef(10)
   const jobId = useRef(10)
@@ -340,6 +403,24 @@ export default function App() {
           <div className="agent-addr">AGENT: {truncAddr(agentAddr)||'0x9aB4...1e77'}</div>
           {isNew&&<div className="new-badge">NEW AGENT DEPLOYED</div>}
           <div className="agent-addr" style={{marginTop:4}}>TOTAL USERS: {totalUsers.toString()}</div>
+          <div style={{marginTop:8,padding:'6px 0',borderTop:'1px solid #1a1a16'}}>
+            <div style={{fontFamily:"'Share Tech Mono',monospace",fontSize:10,letterSpacing:'0.1em',color:'var(--muted2)',marginBottom:4}}>ACTIVE CHAIN</div>
+            <div style={{display:'flex',gap:4}}>
+              {Object.entries(CHAINS).map(([key,c])=>(
+                <button key={key}
+                  onClick={()=>switchChain(key)}
+                  style={{flex:1,padding:'4px 0',fontFamily:"'VT323',monospace",fontSize:13,letterSpacing:'0.08em',
+                    background:activeChain===key?c.color:'transparent',
+                    color:activeChain===key?'#000':c.color,
+                    border:`1px solid ${c.color}`,cursor:'pointer',transition:'all .15s'}}>
+                  {c.tag}
+                </button>
+              ))}
+            </div>
+            <div style={{fontFamily:"'Share Tech Mono',monospace",fontSize:10,letterSpacing:'0.06em',color:'var(--muted2)',marginTop:6,wordBreak:'break-all'}}>
+              FACTORY: {chain.factory.slice(0,12)}...
+            </div>
+          </div>
           <motion.button onClick={logout} onMouseEnter={()=>SFX.hover()}
             whileHover={{borderColor:'var(--red)',color:'var(--red)'}} whileTap={{scale:0.97}}
             style={{marginTop:10,width:'100%',background:'none',border:'1px solid #2a2820',color:'var(--muted2)',fontFamily:"'VT323',monospace",fontSize:15,letterSpacing:'0.12em',padding:'6px 0',cursor:'pointer',transition:'border-color .15s,color .15s'}}>
@@ -360,8 +441,21 @@ export default function App() {
             {blockedJobs>0&&<span style={{color:'var(--red)',fontFamily:"'VT323',monospace",fontSize:14,letterSpacing:'0.1em',animation:'pulse 1s infinite'}}>{blockedJobs} BLOCKED</span>}
             <span className="ping-label">PING : {String(ping).padStart(3,'0')} MS</span>
           </div>
-          <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <span className="time-label">{time} / ARB SEPOLIA</span>
+          <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+            <span className="time-label">{time}</span>
+            {/* Chain selector */}
+            <div className="chain-selector">
+              {Object.entries(CHAINS).map(([key,c])=>(
+                <motion.button key={key}
+                  className={`chain-btn ${activeChain===key?'chain-btn-active':''}`}
+                  style={activeChain===key?{borderColor:c.color,color:c.color}:{}}
+                  onClick={()=>switchChain(key)}
+                  whileHover={{scale:1.04}} whileTap={{scale:0.96}}
+                  onMouseEnter={()=>SFX.hover()}>
+                  {c.icon} {c.tag}
+                </motion.button>
+              ))}
+            </div>
             <MuteBtn muted={muted} toggle={toggleMute} inline/>
             <motion.button className="disconnect-btn" onClick={logout}
               whileHover={{scale:1.05,borderColor:'var(--red)',color:'var(--red)'}} whileTap={{scale:0.95}}>
@@ -376,7 +470,8 @@ export default function App() {
               <Dashboard rules={rules} log={log} queue={queue} agentOn={agentOn} setAgentOn={setAgentOn}
                 simulate={simExec} activeCount={activeCount} queueDepth={queueDepth}
                 setNav={setNav} hoursSaved={hoursSaved} gasSaved={gasSaved}
-                usdcRouted={usdcRouted} capPct={capPct} dailySpent={dailySpent} blockedJobs={blockedJobs}/>
+                usdcRouted={usdcRouted} capPct={capPct} dailySpent={dailySpent} blockedJobs={blockedJobs}
+                chain={chain}/>
             </motion.div>}
             {nav==='analytics'&&<motion.div key="an" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
               <Analytics rules={rules} log={log} dailySpent={dailySpent} hoursSaved={hoursSaved} gasSaved={gasSaved} usdcRouted={usdcRouted} capPct={capPct}/>
@@ -400,10 +495,10 @@ export default function App() {
               <AIRuleSuggester rules={rules} addRule={addRule}/>
             </motion.div>}
             {nav==='log'&&<motion.div key="lg" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
-              <Log log={log} simulate={simExec}/>
+              <Log log={log} simulate={simExec} txBase={chain.txBase}/>
             </motion.div>}
             {nav==='settings'&&<motion.div key="st" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
-              <Settings agentOn={agentOn} setAgentOn={setAgentOn} address={address} agentAddr={agentAddr}/>
+              <Settings agentOn={agentOn} setAgentOn={setAgentOn} address={address} agentAddr={agentAddr} chain={chain} chains={CHAINS} activeChain={activeChain} switchChain={switchChain}/>
             </motion.div>}
           </AnimatePresence>
         </div>
@@ -442,11 +537,11 @@ function MuteBtn({ muted, toggle, inline }) {
 }
 
 // ---- DASHBOARD ----
-function Dashboard({ rules,log,queue,agentOn,setAgentOn,simulate,activeCount,queueDepth,setNav,hoursSaved,gasSaved,usdcRouted,capPct,dailySpent,blockedJobs }) {
+function Dashboard({ rules,log,queue,agentOn,setAgentOn,simulate,activeCount,queueDepth,setNav,hoursSaved,gasSaved,usdcRouted,capPct,dailySpent,blockedJobs,chain }) {
   return (
     <>
       <div className="ph">
-        <div><div className="pt">DASHBOARD</div><div className="ps">ARB SEPOLIA // LIVE // YOUR ON-CHAIN CFO</div></div>
+        <div><div className="pt">DASHBOARD</div><div className="ps">{chain?.shortName||'ARB SEPOLIA'} // LIVE // YOUR ON-CHAIN CFO</div></div>
         <motion.button className="btn" onClick={simulate} whileHover={{scale:1.04}} whileTap={{scale:0.96}} onMouseEnter={()=>SFX.hover()}>&gt; SIMULATE</motion.button>
       </div>
 
@@ -927,7 +1022,7 @@ function AIRuleSuggester({ rules,addRule }) {
     <>
       <div className="ph">
         <div><div className="pt">AI RULE SUGGESTER</div><div className="ps">DESCRIBE YOUR BUSINESS. CLAUDE GENERATES YOUR AGENT&apos;S RULES.</div></div>
-        <div className="ai-powered-badge">POWERED BY CLAUDE</div>
+        <div className="ai-powered-badge">POWERED BY GROQ</div>
       </div>
       <motion.div className="pitch-banner" style={{marginBottom:14}} variants={fadeUp} initial="hidden" animate="visible">
         <div className="pitch-icon">🧠</div>
@@ -978,7 +1073,7 @@ function AIRuleSuggester({ rules,addRule }) {
 }
 
 // ---- LOG ----
-function Log({ log,simulate }) {
+function Log({ log,simulate,txBase='https://sepolia.arbiscan.io/tx/' }) {
   return (
     <>
       <div className="ph">
@@ -993,14 +1088,14 @@ function Log({ log,simulate }) {
         </div>
       </motion.div>
       <motion.div className="log-list" variants={stagger} initial="hidden" animate="visible">
-        {log.map(e=>(<motion.div key={e.id} variants={slideR}><LogItem entry={e}/></motion.div>))}
+        {log.map(e=>(<motion.div key={e.id} variants={slideR}><LogItem entry={e} txBase={txBase}/></motion.div>))}
         {log.length===0&&<div className="empty">&gt; NO EXECUTIONS YET. ADD RULES AND SIMULATE.</div>}
       </motion.div>
     </>
   )
 }
 
-function LogItem({ entry:e }) {
+function LogItem({ entry:e, txBase=ARBISCAN }) {
   return (
     <div className="li">
       <span className="li-chev">&gt;</span>
@@ -1011,8 +1106,8 @@ function LogItem({ entry:e }) {
       <span className="lam">{e.amount} {e.token}</span>
       <span className="ltm">{e.time}</span>
       {e.txHash&&(
-        <a href={ARBISCAN+e.txHash} target="_blank" rel="noreferrer"
-          className="tx-link" onClick={e=>e.stopPropagation()} title="View on Arbiscan">
+        <a href={txBase+e.txHash} target="_blank" rel="noreferrer"
+          className="tx-link" onClick={ev=>ev.stopPropagation()} title="View on explorer">
           ↗
         </a>
       )}
