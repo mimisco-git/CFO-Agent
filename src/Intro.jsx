@@ -181,7 +181,7 @@ const BOOT_LINES = [
   { text:'[OK] 03 modules :: rule-engine :: sequencer :: ai', color:'#47ffd4' },
   { text:'[OK] factory    :: 0xF1EE2CC9741547cAf0...', color:'#47ffd4' },
   { text:'[OK] registry   :: 0x5eadac819B2206B960...', color:'#47ffd4' },
-  { text:'[OK] groq ai    :: llama-3.3-70b :: READY', color:'#c8ff47' },
+  { text:'[OK] groq ai    :: llama-3.3-70b-versatile :: READY', color:'#c8ff47' },
   { text:'> select wallet to continue:', color:'#b8b49e' },
 ]
 
@@ -247,9 +247,10 @@ const WALLET_NODES = [
 ]
 
 function NodeScene({ wallets, onSelect }) {
-  const available = wallets.length > 0
-    ? WALLET_NODES.filter(n => wallets.some(w=>w.id===n.id) || n.id==='injected')
-    : WALLET_NODES
+  // Always show all options - user may have wallet but not yet detected
+  // Show detected ones as LIVE, others as CONNECT
+  const available = WALLET_NODES
+  const detected = wallets.map(w=>w.id)
 
   return (
     <div style={{
