@@ -460,6 +460,10 @@ export default function App() {
                 animate={{opacity:[1,0.3,1]}} transition={{repeat:Infinity,duration:1.5}}/>
               <span className="stat-label">STATUS : <span style={{color:statColor}}>{appStat}</span></span>
             </span>
+            <span style={{display:'flex',alignItems:'center',gap:4}} className="stat-label">
+              <span style={{width:5,height:5,borderRadius:'50%',background:chain.color,display:'inline-block'}}/>
+              <span style={{color:chain.color,fontSize:'clamp(10px,2vw,12px)',letterSpacing:'0.1em'}}>{chain.tag}</span>
+            </span>
             {blockedJobs>0&&<span style={{color:'var(--red)',fontFamily:"'VT323',monospace",fontSize:14,letterSpacing:'0.1em',animation:'pulse 1s infinite'}}>{blockedJobs} BLOCKED</span>}
             <span className="ping-label">PING : {String(ping).padStart(3,'0')} MS</span>
           </div>
@@ -607,6 +611,9 @@ function Dashboard({ rules,log,queue,agentOn,setAgentOn,simulate,activeCount,que
         <div className="saving-div"/>
         <div className="saving-item"><span className="saving-val">{log.length}</span><span className="saving-lbl">EXECUTIONS</span></div>
       </motion.div>
+
+      {/* GLOBAL NETWORK STATS */}
+      <GlobalStatsTicker/>
 
       {/* CAP ALERT */}
       {capPct >= 80 && (

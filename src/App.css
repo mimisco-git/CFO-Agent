@@ -1830,3 +1830,46 @@ body {
   background: var(--dim);
   border-bottom: 1px solid #1a1a16;
 }
+
+/* ---- GLOBAL STATS TICKER ---- */
+.global-ticker {
+  background: var(--dim);
+  border: 1px solid #1a1a16;
+  border-left: 3px solid var(--acid);
+  padding: clamp(10px,3vw,14px) clamp(14px,4vw,20px);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: clamp(12px,3vw,24px);
+  flex-wrap: wrap;
+}
+
+.global-ticker-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: clamp(10px,2vw,12px);
+  letter-spacing: 0.15em;
+  color: var(--muted2);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.global-ticker-items {
+  display: flex;
+  gap: clamp(16px,4vw,32px);
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.global-ticker-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.global-ticker-item-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: clamp(9px,2vw,11px);
+  letter-spacing: 0.12em;
+  color: var(--muted2);
+}
