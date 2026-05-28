@@ -402,6 +402,12 @@ export default function App() {
             onMouseEnter={()=>SFX.hover()}>
             <span>AI SUGGESTER</span><span className="ai-badge">AI</span>
           </button>
+          <button className={`nav ${nav==='treasury'?'on':''}`}
+            onClick={()=>{setNav('treasury');setSideOpen(false);SFX.key()}}
+            onMouseEnter={()=>SFX.hover()}>
+            <span>PUBLIC TREASURY</span>
+            <span className="ai-badge" style={{background:'var(--amber)',color:'#000'}}>↗</span>
+          </button>
           <button className={`nav ${nav==='keeper'?'on':''}`}
             onClick={()=>{setNav('keeper');setSideOpen(false);SFX.key()}}
             onMouseEnter={()=>SFX.hover()}>
@@ -512,6 +518,9 @@ export default function App() {
             </motion.div>}
             {nav==='log'&&<motion.div key="lg" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
               <Log log={log} simulate={simExec} txBase={chain.txBase}/>
+            </motion.div>}
+            {nav==='treasury'&&<motion.div key="tr" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
+              <PublicTreasury rules={rules} log={log} agentAddr={agentAddr} address={address} chain={chain} usdcRouted={usdcRouted} activeCount={activeCount}/>
             </motion.div>}
             {nav==='keeper'&&<motion.div key="kp" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
               <KeeperFeedView logs={keeperLogs} chain={chain}/>
@@ -731,6 +740,50 @@ function Analytics({ rules, log, dailySpent, hoursSaved, gasSaved, usdcRouted, c
             <Area type="monotone" dataKey="routed" name="USDC" stroke="#47ffd4" fill="url(#monthly-grad)" strokeWidth={2}/>
           </AreaChart>
         </ResponsiveContainer>
+      </motion.div>
+
+      {/* L1 vs Arbitrum cost comparison */}
+      <div className="sh" style={{marginTop:16}}><div className="st">// L1 ETHEREUM VS ARBITRUM — COST PER EXECUTION</div></div>
+      <motion.div className="cost-compare-box" variants={fadeUp} initial="hidden" animate="visible">
+        <div className="cost-compare-sub">Every rule execution your agent runs on Arbitrum vs what it would cost on Ethereum mainnet. The savings are real.</div>
+        {[
+          { rule:'PAYROLL (single)',  l1:42.80, arb:0.03, count:52 },
+          { rule:'PAYROLL SPLIT (8)',  l1:89.40, arb:0.07, count:52 },
+          { rule:'YIELD SWEEP',        l1:38.20, arb:0.02, count:12 },
+          { rule:'DAILY OPS',          l1:31.50, arb:0.02, count:365 },
+        ].map(r => {
+          const saved = ((r.l1 - r.arb) * r.count).toFixed(0)
+          const pct = Math.round((1 - r.arb/r.l1)*100)
+          return (
+            <motion.div key={r.rule} className="cost-row" variants={slideR}>
+              <div className="cost-rule">{r.rule}</div>
+              <div className="cost-bars">
+                <div className="cost-bar-wrap">
+                  <div className="cost-bar-label">ETH L1</div>
+                  <div className="cost-bar cost-bar-l1">
+                    <div className="cost-bar-fill-l1" style={{width:'100%'}}/>
+                  </div>
+                  <div className="cost-bar-val cost-l1">${r.l1.toFixed(2)}</div>
+                </div>
+                <div className="cost-bar-wrap">
+                  <div className="cost-bar-label">ARBITRUM</div>
+                  <div className="cost-bar cost-bar-arb">
+                    <div className="cost-bar-fill-arb" style={{width:`${(r.arb/r.l1)*100}%`}}/>
+                  </div>
+                  <div className="cost-bar-val cost-arb">${r.arb.toFixed(2)}</div>
+                </div>
+              </div>
+              <div className="cost-savings">
+                <span className="cost-savings-pct">{pct}% CHEAPER</span>
+                <span className="cost-savings-total">${saved} SAVED/YR</span>
+              </div>
+            </motion.div>
+          )
+        })}
+        <div className="cost-total-row">
+          <span>TOTAL ANNUAL SAVINGS (estimated)</span>
+          <span className="cost-grand-total">$74,240</span>
+        </div>
       </motion.div>
 
       {/* Daily cap gauge */}
