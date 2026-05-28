@@ -1230,3 +1230,248 @@ function Settings({ agentOn,setAgentOn,address,agentAddr }) {
     </>
   )
 }
+
+// ---- TREASURY CHAT ----
+const SUGGESTED_QUESTIONS = [
+  'How much USDC have I routed this month?',
+  'Which rule executes most often?',
+  'Am I on track with my daily budget?',
+  'How much am I saving vs Ethereum L1?',
+  'Is my treasury balance healthy?',
+  'What would happen if I added a 4th payroll rule?',
+]
+
+function TreasuryChat({ rules, log, dailySpent, agentAddr, chain }) {
+  const [messages, setMessages] = useState([
+    { role:'assistant', content:'I have direct access to your live treasury on ' + (chain?.name||'Arbitrum') + '. Ask me anything about your balances, rules, spending, or savings.', ts:new Date().toLocaleTimeString() }
+  ])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const endRef = useRef(null)
+
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior:'smooth' }) }, [messages])
+
+  async function send(question) {
+    const q = (question || input).trim()
+    if (!q || loading) return
+    setInput('')
+    setMessages(m => [...m, { role:'user', content:q, ts:new Date().toLocaleTimeString() }])
+    setLoading(true)
+    SFX.exec()
+    try {
+      const answer = await askTreasury(q, { rules, log, balance:'4820', dailySpent, dailyCap:2000, chain:chain?.name||'Arbitrum Sepolia', agentAddr })
+      setMessages(m => [...m, { role:'assistant', content:answer, ts:new Date().toLocaleTimeString() }])
+      SFX.done()
+    } catch(e) {
+      setMessages(m => [...m, { role:'assistant', content:'ERROR: ' + e.message, ts:new Date().toLocaleTimeString(), err:true }])
+      SFX.err()
+    } finally { setLoading(false) }
+  }
+
+  return (
+    <>
+      <div className="ph">
+        <div><div className="pt">TREASURY CHAT</div><div className="ps">ASK YOUR CFO AGENT ANYTHING ABOUT YOUR TREASURY</div></div>
+        <div className="ai-powered-badge" style={{borderColor:'rgba(71,255,212,0.3)',color:'var(--teal)'}}>GROQ AI</div>
+      </div>
+      <motion.div className="pitch-banner" style={{marginBottom:14,borderLeftColor:'var(--teal)'}} variants={fadeUp} initial="hidden" animate="visible">
+        <div className="pitch-icon">💬</div>
+        <div className="pitch-text">
+          <div className="pitch-title">YOUR AI CFO KNOWS YOUR TREASURY</div>
+          <div className="pitch-sub">The AI has access to your live treasury data: balances, active rules, execution history, daily spend caps, and savings vs Ethereum L1. Ask anything. Groq answers in under a second.</div>
+        </div>
+      </motion.div>
+      <div className="chat-window">
+        <div className="chat-messages">
+          {messages.map((m,i)=>(
+            <motion.div key={i} className={`chat-msg ${m.role==='user'?'chat-msg-user':'chat-msg-ai'}`}
+              initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} transition={{duration:0.2}}>
+              <div className="chat-msg-role">{m.role==='user'?'> YOU':'> CFO AI'}</div>
+              <div className={`chat-msg-content ${m.err?'chat-msg-err':''}`}>{m.content}</div>
+              <div className="chat-msg-ts">{m.ts}</div>
+            </motion.div>
+          ))}
+          {loading&&(
+            <motion.div className="chat-msg chat-msg-ai" initial={{opacity:0}} animate={{opacity:1}}>
+              <div className="chat-msg-role">&gt; CFO AI</div>
+              <div className="chat-typing">
+                {[0,0.2,0.4].map((d,i)=>(
+                  <motion.span key={i} animate={{opacity:[1,0,1]}} transition={{repeat:Infinity,duration:0.6,delay:d}}>.</motion.span>
+                ))}
+              </div>
+            </motion.div>
+          )}
+          <div ref={endRef}/>
+        </div>
+        <div className="chat-input-row">
+          <span className="chat-prompt">&gt;</span>
+          <input className="chat-input" placeholder="Ask about your treasury..."
+            value={input} onChange={e=>setInput(e.target.value)}
+            onKeyDown={e=>{ if(e.key==='Enter') send() }}
+            disabled={loading} autoComplete="off"/>
+          <motion.button className="chat-send" onClick={()=>send()}
+            disabled={!input.trim()||loading}
+            whileHover={input.trim()&&!loading?{scale:1.05}:{}}
+            whileTap={input.trim()&&!loading?{scale:0.95}:{}}>SEND</motion.button>
+        </div>
+      </div>
+      <div className="sh" style={{marginTop:14}}><div className="st">// SUGGESTED QUESTIONS — CLICK TO ASK</div></div>
+      <motion.div className="chat-suggestions" variants={stagger} initial="hidden" animate="visible">
+        {SUGGESTED_QUESTIONS.map((q,i)=>(
+          <motion.button key={i} className="chat-suggestion-btn" variants={slideR}
+            onClick={()=>send(q)} onMouseEnter={()=>SFX.hover()}
+            whileHover={{borderColor:'var(--teal)',color:'var(--teal)'}}
+            whileTap={{scale:0.97}} disabled={loading}>
+            &gt; {q}
+          </motion.button>
+        ))}
+      </motion.div>
+    </>
+  )
+}
+
+// ---- KEEPER FEED ----
+function KeeperFeedView({ logs, chain }) {
+  const endRef = useRef(null)
+  useEffect(()=>{ endRef.current?.scrollIntoView({behavior:'smooth'}) },[logs])
+  const clsColor = { system:'var(--muted2)', poll:'var(--text)', exec:'var(--amber)', tx:'var(--teal)', ok:'var(--acid)', err:'var(--red)', idle:'#3a3830' }
+  const clsPrefix = { system:'[SYS]', poll:'[---]', exec:'[EXE]', tx:'[TX ]', ok:'[ OK]', err:'[ERR]', idle:'[---]' }
+  return (
+    <>
+      <div className="ph">
+        <div><div className="pt">KEEPER FEED</div><div className="ps">LIVE EXECUTION LOG // {chain?.name||'ARB SEPOLIA'} // AUTONOMOUS</div></div>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <motion.div style={{width:8,height:8,borderRadius:'50%',background:'var(--acid)'}} animate={{opacity:[1,0.2,1]}} transition={{repeat:Infinity,duration:1.2}}/>
+          <span style={{fontFamily:"'VT323',monospace",fontSize:14,letterSpacing:'0.1em',color:'var(--acid)'}}>LIVE</span>
+        </div>
+      </div>
+      <motion.div className="pitch-banner" style={{marginBottom:12}} variants={fadeUp} initial="hidden" animate="visible">
+        <div className="pitch-icon">⚡</div>
+        <div className="pitch-text">
+          <div className="pitch-title">YOUR KEEPER BOT IS RUNNING 24/7</div>
+          <div className="pitch-sub">Live feed of your autonomous keeper bot executing payment rules on-chain. Every line is a real action your agent is taking without any human involvement.</div>
+        </div>
+      </motion.div>
+      <motion.div className="stats" style={{gridTemplateColumns:'repeat(4,1fr)',marginBottom:14}} variants={stagger} initial="hidden" animate="visible">
+        {[
+          {label:'TOTAL LOGS', value:logs.length, sub:'this session'},
+          {label:'EXECUTIONS', value:logs.filter(l=>l.cls==='ok').length, sub:'confirmed', accent:true},
+          {label:'FAILED', value:logs.filter(l=>l.cls==='err').length, sub:'will retry'},
+          {label:'TX SENT', value:logs.filter(l=>l.cls==='tx').length, sub:'submitted'},
+        ].map(c=>(
+          <motion.div key={c.label} className="sc" variants={fadeUp}>
+            <div className="sl">{c.label}</div>
+            <div className={`sv ${c.accent?'accent':''}`}>{c.value}</div>
+            <div className="ss">{c.sub}</div>
+          </motion.div>
+        ))}
+      </motion.div>
+      <div className="keeper-terminal">
+        <div className="keeper-terminal-bar">
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <motion.div style={{width:6,height:6,borderRadius:'50%',background:'var(--acid)'}} animate={{opacity:[1,0.2,1]}} transition={{repeat:Infinity,duration:1.2}}/>
+            <span>keeper@{chain?.name?.toLowerCase().replace(/ /g,'-')||'arb-sepolia'}:~$</span>
+          </div>
+          <span style={{color:'#3a3830'}}>{logs.length} lines</span>
+        </div>
+        <div className="keeper-terminal-body">
+          {logs.length===0&&<div style={{color:'#3a3830',fontFamily:"'Share Tech Mono',monospace",fontSize:13,letterSpacing:'0.08em',padding:'20px 0'}}>// waiting for keeper bot activity...</div>}
+          <AnimatePresence>
+            {[...logs].reverse().map(log=>(
+              <motion.div key={log.id} className="keeper-log-line"
+                initial={{opacity:0,x:-8}} animate={{opacity:1,x:0}} transition={{duration:0.15}}>
+                <span className="keeper-ts">{log.time}</span>
+                <span className="keeper-prefix" style={{color:clsColor[log.cls]||'var(--text)'}}>{clsPrefix[log.cls]||'[---]'}</span>
+                <span className="keeper-msg" style={{color:clsColor[log.cls]||'var(--text)'}}>{log.msg}</span>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          <div ref={endRef}/>
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ---- PUBLIC TREASURY ----
+function PublicTreasury({ rules, log, agentAddr, address, chain, usdcRouted, activeCount }) {
+  const [copied, setCopied] = useState(false)
+  const shareUrl = `${window.location.origin}?treasury=${agentAddr}`
+
+  function copyLink() {
+    navigator.clipboard.writeText(shareUrl).then(()=>{ setCopied(true); SFX.done(); setTimeout(()=>setCopied(false),2000) })
+  }
+
+  return (
+    <>
+      <div className="ph">
+        <div><div className="pt">PUBLIC TREASURY</div><div className="ps">SHAREABLE READ-ONLY VIEW OF YOUR AGENT</div></div>
+        <motion.button className="btn" onClick={copyLink} whileHover={{scale:1.04}} whileTap={{scale:0.96}} onMouseEnter={()=>SFX.hover()} style={copied?{color:'var(--acid)',borderColor:'var(--acid)'}:{}}>
+          {copied?'✓ COPIED':'↗ COPY LINK'}
+        </motion.button>
+      </div>
+      <motion.div className="pitch-banner" style={{marginBottom:14}} variants={fadeUp} initial="hidden" animate="visible">
+        <div className="pitch-icon">🌐</div>
+        <div className="pitch-text">
+          <div className="pitch-title">YOUR TREASURY IS TRANSPARENT AND VERIFIABLE</div>
+          <div className="pitch-sub">Share this link with anyone. They can see your agent balance, active rules, and execution history without connecting a wallet. Every number is on-chain.</div>
+        </div>
+      </motion.div>
+      <motion.div className="treasury-share-card" variants={scaleIn} initial="hidden" animate="visible">
+        <div className="treasury-share-label">// PUBLIC TREASURY URL</div>
+        <div className="treasury-share-url">{shareUrl}</div>
+        <motion.button className="btn btn-acid" onClick={copyLink} whileHover={{scale:1.02}} whileTap={{scale:0.98}} style={{marginTop:12,width:'100%',fontSize:16,letterSpacing:'0.15em'}}>
+          {copied?'✓ LINK COPIED':'↗ COPY SHAREABLE LINK'}
+        </motion.button>
+      </motion.div>
+      <div className="sh" style={{marginTop:16}}><div className="st">// PREVIEW — WHAT THE PUBLIC SEES</div></div>
+      <motion.div className="treasury-preview" variants={fadeIn} initial="hidden" animate="visible">
+        <div className="tp-header">
+          <div><div className="tp-title">CFO AGENT TREASURY</div><div className="tp-sub">{chain?.name||'ARBITRUM SEPOLIA'} // READ-ONLY</div></div>
+          <div className="tp-live">
+            <motion.div style={{width:6,height:6,borderRadius:'50%',background:'var(--acid)'}} animate={{opacity:[1,0.2,1]}} transition={{repeat:Infinity,duration:1.5}}/>
+            LIVE
+          </div>
+        </div>
+        <div className="tp-stats">
+          {[{label:'BALANCE',value:'4,820 USDC',accent:true},{label:'ACTIVE RULES',value:activeCount},{label:'TOTAL ROUTED',value:`${usdcRouted} USDC`},{label:'EXECUTIONS',value:log.length}].map(s=>(
+            <div key={s.label} className="tp-stat"><div className="tp-stat-label">{s.label}</div><div className="tp-stat-val" style={s.accent?{color:'var(--acid)'}:{}}>{s.value}</div></div>
+          ))}
+        </div>
+        <div className="tp-info">
+          {[
+            {label:'AGENT', val: agentAddr ? <a href={`${chain?.explorer}/address/${agentAddr}`} target="_blank" rel="noreferrer" style={{color:'var(--teal)',fontFamily:"'Share Tech Mono',monospace",fontSize:11,textDecoration:'none'}}>{agentAddr.slice(0,20)}... ↗</a> : '0x9aB4...1e77'},
+            {label:'OWNER', val: <span style={{fontFamily:"'Share Tech Mono',monospace",fontSize:11,color:'var(--text)'}}>{truncAddr(address)||'0x71C7...976F'}</span>},
+            {label:'NETWORK', val: <span style={{fontFamily:"'Share Tech Mono',monospace",fontSize:11,color:'var(--text)'}}>{chain?.name||'ARBITRUM SEPOLIA'} // {chain?.id||421614}</span>},
+          ].map(r=>(
+            <div key={r.label} className="tp-info-row"><span className="tp-info-label">{r.label}</span>{r.val}</div>
+          ))}
+        </div>
+        <div className="tp-section-title">// ACTIVE RULES</div>
+        <div style={{display:'flex',flexDirection:'column',gap:1,background:'#1a1a16'}}>
+          {rules.filter(r=>r.active).map(r=>(
+            <div key={r.id} style={{background:'#000',padding:'10px 14px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap'}}>
+              <div><div style={{fontFamily:"'VT323',monospace",fontSize:16,letterSpacing:'0.08em',color:'var(--bright)'}}>{r.name}</div><div style={{fontFamily:"'Share Tech Mono',monospace",fontSize:10,letterSpacing:'0.06em',color:'var(--muted2)',marginTop:2}}>{r.amount} {r.token}{r.interval?` // EVERY ${r.interval}`:''}</div></div>
+              <span className="badge b-active">ACTIVE</span>
+            </div>
+          ))}
+          {rules.filter(r=>r.active).length===0&&<div className="empty">NO ACTIVE RULES</div>}
+        </div>
+        <div className="tp-section-title" style={{marginTop:4}}>// RECENT EXECUTIONS</div>
+        <div style={{display:'flex',flexDirection:'column',gap:1,background:'#1a1a16'}}>
+          {log.slice(0,5).map(e=>(
+            <div key={e.id} style={{background:'#000',padding:'8px 14px',display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+              <span style={{fontFamily:"'VT323',monospace",fontSize:15,color:'var(--text)',flex:1}}>{e.rule}</span>
+              <span style={{fontFamily:"'VT323',monospace",fontSize:15,color:'var(--acid)'}}>{e.amount} {e.token}</span>
+              <span style={{fontFamily:"'Share Tech Mono',monospace",fontSize:10,color:'var(--muted2)'}}>{e.time}</span>
+            </div>
+          ))}
+          {log.length===0&&<div className="empty">NO EXECUTIONS YET</div>}
+        </div>
+        <div style={{padding:'10px 14px',fontFamily:"'Share Tech Mono',monospace",fontSize:10,letterSpacing:'0.08em',color:'var(--muted2)',textAlign:'center',borderTop:'1px solid #1a1a16'}}>
+          Powered by CFO Agent // Arbitrum Treasury OS
+        </div>
+      </motion.div>
+    </>
+  )
+}
