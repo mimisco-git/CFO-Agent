@@ -2019,3 +2019,66 @@ body {
 
 .chat-suggestion-btn:hover:not(:disabled) { border-color: var(--teal); color: var(--teal); }
 .chat-suggestion-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---- KEEPER FEED TERMINAL ---- */
+.keeper-terminal {
+  background: #000;
+  border: 1px solid #1a1a16;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.keeper-terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  border-bottom: 1px solid #1a1a16;
+  font-size: clamp(11px,2.5vw,13px);
+  letter-spacing: 0.1em;
+}
+
+.keeper-terminal-body {
+  height: clamp(300px, 45vh, 500px);
+  overflow-y: auto;
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.keeper-terminal-body::-webkit-scrollbar { width: 4px; }
+.keeper-terminal-body::-webkit-scrollbar-track { background: #000; }
+.keeper-terminal-body::-webkit-scrollbar-thumb { background: #2a2820; }
+
+.keeper-line {
+  display: grid;
+  grid-template-columns: 70px 52px 1fr;
+  gap: 8px;
+  padding: 3px 14px;
+  font-size: clamp(11px,2.5vw,13px);
+  letter-spacing: 0.05em;
+  line-height: 1.8;
+  align-items: baseline;
+}
+
+.keeper-line:hover { background: rgba(255,255,255,0.02); }
+
+.keeper-time {
+  color: var(--muted2);
+  font-size: clamp(10px,2vw,12px);
+  flex-shrink: 0;
+}
+
+.keeper-type {
+  font-weight: bold;
+  flex-shrink: 0;
+  font-size: clamp(10px,2vw,12px);
+}
+
+.keeper-msg {
+  word-break: break-all;
+  line-height: 1.6;
+}
+
+@media (max-width: 480px) {
+  .keeper-line { grid-template-columns: 60px 44px 1fr; gap: 6px; }
+}

@@ -192,8 +192,8 @@ export default function App() {
   const [sideOpen,setSideOpen]     = useState(false)
   const [dailySpent,setDailySpent] = useState(1000)
   const [keeperLogs,setKeeperLogs]   = useState([])
-  const [keeperFeed]                 = useState(() => new KeeperFeed(log => {
-    setKeeperLogs(prev => [log, ...prev].slice(0, 80))
+  const [keeperFeed]                 = useState(() => new KeeperFeed(entry => {
+    setKeeperLogs(prev => [entry, ...prev].slice(0, 80))
   }))
   const [activeChain,setActiveChain] = useState('arbitrum')
 
@@ -227,7 +227,9 @@ export default function App() {
     }
   } // mock: 1000 of 2000 cap used
 
-  const logId = useRef(10)
+  const logId    = useRef(10)
+  const keeperRef = useRef(null)
+
   const jobId = useRef(10)
   const ping  = usePing()
   const time  = useTime()
@@ -272,6 +274,13 @@ export default function App() {
       }
       setCallsign(selectedWallet?.name?.toUpperCase().slice(0,10)||'AGENT')
       SFX.done(); setPhase('app')
+      // Start keeper feed
+      setTimeout(() => {
+        const feed = new KeeperFeed(log => setKeeperLogs(l => [log, ...l].slice(0, 80)))
+        feed.start('ARB SEPOLIA')
+        keeperRef.current = feed
+        setKeeperOn(true)
+      }, 1500)
       setTimeout(() => keeperFeed.start(CHAINS.arbitrum.shortName), 1000)
     } catch(err) {
       SFX.err()
@@ -402,6 +411,12 @@ export default function App() {
             onMouseEnter={()=>SFX.hover()}>
             <span>TREASURY CHAT</span><span className="ai-badge" style={{background:'var(--teal)',color:'#000'}}>AI</span>
           </button>
+          <button className={`nav ${nav==='keeper'?'on':''}`}
+            onClick={()=>{setNav('keeper');setSideOpen(false);SFX.key()}}
+            onMouseEnter={()=>SFX.hover()}>
+            <span>KEEPER FEED</span>
+            {keeperOn&&<motion.span style={{width:6,height:6,borderRadius:'50%',background:'var(--acid)',display:'inline-block',marginLeft:'auto'}} animate={{opacity:[1,0.2,1]}} transition={{repeat:Infinity,duration:1}}/>}
+          </button>
           <button className={`nav ai-nav ${nav==='ai'?'on':''}`}
             onClick={()=>{setNav('ai');setSideOpen(false);SFX.key()}}
             onMouseEnter={()=>SFX.hover()}>
@@ -527,6 +542,18 @@ export default function App() {
             </motion.div>}
             {nav==='ai'&&<motion.div key="ai" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
               <AIRuleSuggester rules={rules} addRule={addRule}/>
+            </motion.div>}
+            {nav==='keeper'&&<motion.div key="keeper" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
+              <KeeperFeedView logs={keeperLogs} keeperOn={keeperOn} chain={chain}
+                onToggle={()=>{
+                  if(keeperOn){
+                    keeperRef.current?.stop(); setKeeperOn(false)
+                  } else {
+                    const feed = new KeeperFeed(log=>setKeeperLogs(l=>[log,...l].slice(0,80)))
+                    feed.start(chain.shortName)
+                    keeperRef.current=feed; setKeeperOn(true)
+                  }
+                }}/>
             </motion.div>}
             {nav==='log'&&<motion.div key="lg" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
               <Log log={log} simulate={simExec} txBase={chain.txBase}/>
@@ -1159,6 +1186,117 @@ function AIRuleSuggester({ rules,addRule }) {
   )
 }
 
+// ---- KEEPER FEED VIEW ----
+function KeeperFeedView({ logs, keeperOn, chain, onToggle }) {
+  const bottomRef = useRef(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [logs.length])
+
+  const clsColor = {
+    system: 'var(--muted2)',
+    poll:   '#5a8a5e',
+    exec:   'var(--amber)',
+    tx:     'var(--teal)',
+    ok:     'var(--acid)',
+    err:    'var(--red)',
+    idle:   '#3a3830',
+  }
+
+  const clsPrefix = {
+    system: '[SYS]',
+    poll:   '[POL]',
+    exec:   '[EXE]',
+    tx:     '[TX ]',
+    ok:     '[OK ]',
+    err:    '[ERR]',
+    idle:   '[---]',
+  }
+
+  return (
+    <>
+      <div className="ph">
+        <div>
+          <div className="pt">KEEPER FEED</div>
+          <div className="ps">LIVE AGENT EXECUTION LOG // {chain?.shortName || 'ARB SEPOLIA'}</div>
+        </div>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+          {keeperOn && (
+            <motion.div style={{display:'flex',alignItems:'center',gap:6,fontFamily:"'VT323',monospace",fontSize:14,letterSpacing:'0.1em',color:'var(--acid)'}}>
+              <motion.span style={{width:7,height:7,borderRadius:'50%',background:'var(--acid)',display:'inline-block'}}
+                animate={{opacity:[1,0.2,1]}} transition={{repeat:Infinity,duration:1.2}}/>
+              LIVE
+            </motion.div>
+          )}
+          <motion.button className={`btn ${keeperOn?'btn-danger':''}`}
+            onClick={onToggle}
+            whileHover={{scale:1.04}} whileTap={{scale:0.96}}
+            onMouseEnter={()=>SFX.hover()}>
+            {keeperOn ? '> STOP KEEPER' : '> START KEEPER'}
+          </motion.button>
+        </div>
+      </div>
+
+      {/* Pitch banner */}
+      <motion.div className="pitch-banner" style={{marginBottom:14}} variants={fadeUp} initial="hidden" animate="visible">
+        <div className="pitch-icon">⚡</div>
+        <div className="pitch-text">
+          <div className="pitch-title">YOUR AGENT IS RUNNING RIGHT NOW</div>
+          <div className="pitch-sub">This feed shows your keeper bot polling the sequencer, dequeuing jobs, and executing rules on-chain every 30 seconds. Fully autonomous. No human involvement.</div>
+        </div>
+      </motion.div>
+
+      {/* Stats row */}
+      <motion.div className="stats" style={{gridTemplateColumns:'repeat(4,1fr)',marginBottom:14}}
+        variants={stagger} initial="hidden" animate="visible">
+        {[
+          {label:'TOTAL LOGS', value:logs.length, sub:'ALL TIME'},
+          {label:'EXECUTIONS', value:logs.filter(l=>l.cls==='ok').length, sub:'CONFIRMED', accent:true},
+          {label:'TX ERRORS',  value:logs.filter(l=>l.cls==='err').length, sub:'RETRYING'},
+          {label:'STATUS',     value:keeperOn?'ON':'OFF', sub:keeperOn?'POLLING 30S':'STOPPED'},
+        ].map(c=>(
+          <motion.div key={c.label} className="sc" variants={fadeUp}>
+            <div className="sl">{c.label}</div>
+            <div className={`sv ${c.accent?'accent':''}`} style={c.label==='STATUS'?{color:keeperOn?'var(--acid)':'var(--muted2)',fontSize:22}:{}}>{c.value}</div>
+            <div className="ss">{c.sub}</div>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* Terminal feed */}
+      <div className="keeper-terminal">
+        <div className="keeper-terminal-header">
+          <span style={{color:'var(--muted2)'}}>// KEEPER BOT LOG — {chain?.name || 'ARBITRUM SEPOLIA'}</span>
+          <span style={{color:'var(--muted2)',fontSize:12}}>{logs.length} LINES</span>
+        </div>
+        <div className="keeper-terminal-body">
+          {logs.length === 0 && (
+            <div style={{color:'var(--muted2)',fontFamily:"'Share Tech Mono',monospace",fontSize:13,padding:'20px 0',textAlign:'center'}}>
+              {keeperOn ? '> waiting for keeper activity...' : '> keeper stopped. click START KEEPER to begin.'}
+            </div>
+          )}
+          {[...logs].reverse().map((l, i) => (
+            <motion.div key={l.id}
+              initial={{opacity:0,x:-4}} animate={{opacity:1,x:0}}
+              transition={{duration:0.15}}
+              className="keeper-line">
+              <span className="keeper-time">{l.time}</span>
+              <span className="keeper-type" style={{color:clsColor[l.cls]||'var(--muted2)'}}>
+                {clsPrefix[l.cls]||'[---]'}
+              </span>
+              <span className="keeper-msg" style={{color:clsColor[l.cls]||'var(--text)'}}>
+                {l.msg}
+              </span>
+            </motion.div>
+          ))}
+          <div ref={bottomRef}/>
+        </div>
+      </div>
+    </>
+  )
+}
+
 // ---- LOG ----
 function Log({ log,simulate,txBase='https://sepolia.arbiscan.io/tx/' }) {
   return (
@@ -1203,20 +1341,57 @@ function LogItem({ entry:e, txBase=ARBISCAN }) {
 }
 
 // ---- SETTINGS ----
-function Settings({ agentOn,setAgentOn,address,agentAddr }) {
+function Settings({ agentOn,setAgentOn,address,agentAddr,chain,chains,activeChain,switchChain }) {
+  const c = chain || { name:'ARB SEPOLIA', id:421614, explorer:'https://sepolia.arbiscan.io', factory:'0xF1EE2CC9741547cAf04FE99ed2ad8Ff072AEe900' }
   return (
     <>
-      <div className="ph"><div><div className="pt">SETTINGS</div><div className="ps">AGENT CONFIGURATION // SAFETY CONTROLS</div></div></div>
-      <motion.div className="two" style={{marginBottom:14}} variants={stagger} initial="hidden" animate="visible">
-        {[{label:'YOUR WALLET',val:truncAddr(address)||'0x71C7...976F',sub:'SIWE AUTHENTICATED',color:'teal'},{label:'YOUR AGENT',val:truncAddr(agentAddr)||'0x9aB4...1e77',sub:'ARB SEPOLIA 421614',color:'teal'},{label:'GASLESS MODE',val:'ZERODEV ACTIVE',sub:'NO ETH NEEDED FOR GAS',color:'acid'},{label:'AI SUGGESTER',val:'CLAUDE POWERED',sub:'NATURAL LANGUAGE RULES',color:'acid'}].map(c=>(
-          <motion.div key={c.label} className="sc" variants={fadeUp}><div className="sl">{c.label}</div><div className={`mono-val ${c.color||''}`}>{c.val}</div><div className="ss">{c.sub}</div></motion.div>
-        ))}
-        <motion.div className="sc" style={{gridColumn:'1/-1'}} variants={fadeUp}>
-          <div className="sl">ARBISCAN EXPLORER</div>
-          <a href={`https://sepolia.arbiscan.io/address/${agentAddr||'0xF1EE2CC9741547cAf04FE99ed2ad8Ff072AEe900'}`} target="_blank" rel="noreferrer" style={{color:'var(--teal)',fontFamily:"'Share Tech Mono',monospace",fontSize:12,letterSpacing:'0.06em',textDecoration:'none',display:'block',marginTop:6,wordBreak:'break-all'}}>
-            ↗ VIEW YOUR AGENT CONTRACT ON-CHAIN
-          </a>
+      <div className="ph"><div><div className="pt">SETTINGS</div><div className="ps">CONFIGURATION // MULTI-CHAIN DEPLOYMENT</div></div></div>
+
+      {/* Chain panel */}
+      {chains && (
+        <motion.div style={{background:'var(--dim)',border:'1px solid #1a1a16',padding:'clamp(14px,4vw,20px)',marginBottom:14}} variants={fadeUp} initial="hidden" animate="visible">
+          <div style={{fontFamily:"'VT323',monospace",fontSize:17,letterSpacing:'0.12em',color:'var(--bright)',marginBottom:6}}>// DEPLOYED CHAINS</div>
+          <div style={{fontSize:12,letterSpacing:'0.06em',color:'var(--muted2)',marginBottom:14,lineHeight:1.6}}>CFO Agent is live on both networks. Click to switch.</div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+            {Object.entries(chains).map(([key,ch])=>(
+              <motion.div key={key}
+                onClick={()=>switchChain&&switchChain(key)}
+                style={{background:'#000',border:`${activeChain===key?2:1}px solid ${activeChain===key?ch.color:'#2a2820'}`,padding:'clamp(10px,3vw,14px)',cursor:'pointer',transition:'border-color .15s'}}
+                whileHover={{scale:1.01}} whileTap={{scale:0.98}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8}}>
+                    <span style={{fontSize:18}}>{ch.icon}</span>
+                    <div>
+                      <div style={{fontFamily:"'VT323',monospace",fontSize:15,letterSpacing:'0.1em',color:activeChain===key?ch.color:'var(--bright)'}}>{ch.name}</div>
+                      <div style={{fontFamily:"'Share Tech Mono',monospace",fontSize:9,letterSpacing:'0.1em',color:'var(--muted2)'}}>CHAIN {ch.id}</div>
+                    </div>
+                  </div>
+                  {activeChain===key&&<span style={{fontFamily:"'VT323',monospace",fontSize:12,color:ch.color}}>ACTIVE</span>}
+                </div>
+                <div style={{fontFamily:"'Share Tech Mono',monospace",fontSize:9,letterSpacing:'0.04em',color:'var(--muted2)',lineHeight:1.8}}>
+                  <div>FACTORY: {ch.factory.slice(0,18)}...</div>
+                  <div>REGISTRY: {ch.registry.slice(0,18)}...</div>
+                </div>
+                <a href={`${ch.explorer}/address/${ch.factory}`} target="_blank" rel="noreferrer"
+                  onClick={e=>e.stopPropagation()}
+                  style={{display:'block',marginTop:6,fontFamily:"'Share Tech Mono',monospace",fontSize:9,letterSpacing:'0.08em',color:ch.color,textDecoration:'none'}}>
+                  ↗ VIEW ON EXPLORER
+                </a>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
+      )}
+
+      <motion.div className="two" style={{marginBottom:14}} variants={stagger} initial="hidden" animate="visible">
+        {[
+          {label:'YOUR WALLET',val:truncAddr(address)||'0x71C7...976F',sub:'SIWE AUTHENTICATED',color:'teal'},
+          {label:'YOUR AGENT',val:truncAddr(agentAddr)||'0x9aB4...1e77',sub:`${c.name} // ${c.id}`,color:'teal'},
+          {label:'GASLESS MODE',val:'ZERODEV ACTIVE',sub:'NO ETH NEEDED FOR GAS',color:'acid'},
+          {label:'AI MODEL',val:'GROQ POWERED',sub:'llama-3.3-70b-versatile',color:'acid'},
+        ].map(s=>(
+          <motion.div key={s.label} className="sc" variants={fadeUp}><div className="sl">{s.label}</div><div className={`mono-val ${s.color||''}`}>{s.val}</div><div className="ss">{s.sub}</div></motion.div>
+        ))}
         <motion.div className="sc full" style={{borderTop:`3px solid ${agentOn?'var(--acid)':'var(--red)'}`}} variants={fadeUp}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:12}}>
             <div>
@@ -1331,69 +1506,6 @@ function TreasuryChat({ rules, log, dailySpent, agentAddr, chain }) {
 }
 
 // ---- KEEPER FEED ----
-function KeeperFeedView({ logs, chain }) {
-  const endRef = useRef(null)
-  useEffect(()=>{ endRef.current?.scrollIntoView({behavior:'smooth'}) },[logs])
-  const clsColor = { system:'var(--muted2)', poll:'var(--text)', exec:'var(--amber)', tx:'var(--teal)', ok:'var(--acid)', err:'var(--red)', idle:'#3a3830' }
-  const clsPrefix = { system:'[SYS]', poll:'[---]', exec:'[EXE]', tx:'[TX ]', ok:'[ OK]', err:'[ERR]', idle:'[---]' }
-  return (
-    <>
-      <div className="ph">
-        <div><div className="pt">KEEPER FEED</div><div className="ps">LIVE EXECUTION LOG // {chain?.name||'ARB SEPOLIA'} // AUTONOMOUS</div></div>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <motion.div style={{width:8,height:8,borderRadius:'50%',background:'var(--acid)'}} animate={{opacity:[1,0.2,1]}} transition={{repeat:Infinity,duration:1.2}}/>
-          <span style={{fontFamily:"'VT323',monospace",fontSize:14,letterSpacing:'0.1em',color:'var(--acid)'}}>LIVE</span>
-        </div>
-      </div>
-      <motion.div className="pitch-banner" style={{marginBottom:12}} variants={fadeUp} initial="hidden" animate="visible">
-        <div className="pitch-icon">⚡</div>
-        <div className="pitch-text">
-          <div className="pitch-title">YOUR KEEPER BOT IS RUNNING 24/7</div>
-          <div className="pitch-sub">Live feed of your autonomous keeper bot executing payment rules on-chain. Every line is a real action your agent is taking without any human involvement.</div>
-        </div>
-      </motion.div>
-      <motion.div className="stats" style={{gridTemplateColumns:'repeat(4,1fr)',marginBottom:14}} variants={stagger} initial="hidden" animate="visible">
-        {[
-          {label:'TOTAL LOGS', value:logs.length, sub:'this session'},
-          {label:'EXECUTIONS', value:logs.filter(l=>l.cls==='ok').length, sub:'confirmed', accent:true},
-          {label:'FAILED', value:logs.filter(l=>l.cls==='err').length, sub:'will retry'},
-          {label:'TX SENT', value:logs.filter(l=>l.cls==='tx').length, sub:'submitted'},
-        ].map(c=>(
-          <motion.div key={c.label} className="sc" variants={fadeUp}>
-            <div className="sl">{c.label}</div>
-            <div className={`sv ${c.accent?'accent':''}`}>{c.value}</div>
-            <div className="ss">{c.sub}</div>
-          </motion.div>
-        ))}
-      </motion.div>
-      <div className="keeper-terminal">
-        <div className="keeper-terminal-bar">
-          <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <motion.div style={{width:6,height:6,borderRadius:'50%',background:'var(--acid)'}} animate={{opacity:[1,0.2,1]}} transition={{repeat:Infinity,duration:1.2}}/>
-            <span>keeper@{chain?.name?.toLowerCase().replace(/ /g,'-')||'arb-sepolia'}:~$</span>
-          </div>
-          <span style={{color:'#3a3830'}}>{logs.length} lines</span>
-        </div>
-        <div className="keeper-terminal-body">
-          {logs.length===0&&<div style={{color:'#3a3830',fontFamily:"'Share Tech Mono',monospace",fontSize:13,letterSpacing:'0.08em',padding:'20px 0'}}>// waiting for keeper bot activity...</div>}
-          <AnimatePresence>
-            {[...logs].reverse().map(log=>(
-              <motion.div key={log.id} className="keeper-log-line"
-                initial={{opacity:0,x:-8}} animate={{opacity:1,x:0}} transition={{duration:0.15}}>
-                <span className="keeper-ts">{log.time}</span>
-                <span className="keeper-prefix" style={{color:clsColor[log.cls]||'var(--text)'}}>{clsPrefix[log.cls]||'[---]'}</span>
-                <span className="keeper-msg" style={{color:clsColor[log.cls]||'var(--text)'}}>{log.msg}</span>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-          <div ref={endRef}/>
-        </div>
-      </div>
-    </>
-  )
-}
-
-// ---- PUBLIC TREASURY ----
 function PublicTreasury({ rules, log, agentAddr, address, chain, usdcRouted, activeCount }) {
   const [copied, setCopied] = useState(false)
   const shareUrl = `${window.location.origin}?treasury=${agentAddr}`
