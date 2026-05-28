@@ -463,7 +463,7 @@ export default function App() {
           </div>
           <button className="side-close" onClick={()=>setSideOpen(false)}>✕</button>
         </div>
-        <nav className="side-nav">
+        <nav className="side-nav" style={{overflowY:'auto',flex:1}}>
           <div className="nav-label">// OVERVIEW</div>
           {[{id:'dashboard',label:'DASHBOARD'},{id:'analytics',label:'ANALYTICS'},{id:'log',label:'ACTIVITY'}].map(item=>(
             <button key={item.id} className={`nav ${nav===item.id?'on':''}`}
@@ -485,11 +485,6 @@ export default function App() {
             onClick={()=>{setNav('templates');setSideOpen(false);SFX.key()}}
             onMouseEnter={()=>SFX.hover()}>
             <span>TEMPLATES</span><span className="ai-badge" style={{background:'var(--teal)',color:'#000'}}>6</span>
-          </button>
-          <button className={`nav ai-nav ${nav==='chat'?'on':''}`}
-            onClick={()=>{setNav('chat');setSideOpen(false);SFX.key()}}
-            onMouseEnter={()=>SFX.hover()}>
-            <span>TREASURY CHAT</span><span className="ai-badge" style={{background:'var(--teal)',color:'#000'}}>AI</span>
           </button>
           <button className={`nav ${nav==='keeper'?'on':''}`}
             onClick={()=>{setNav('keeper');setSideOpen(false);SFX.key()}}
@@ -611,9 +606,7 @@ export default function App() {
             {nav==='templates'&&<motion.div key="tp" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
               <Templates addRule={addRule} setNav={setNav}/>
             </motion.div>}
-            {nav==='chat'&&<motion.div key="ch" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
-              <TreasuryChat rules={rules} log={log} dailySpent={dailySpent} agentAddr={agentAddr} chain={chain}/>
-            </motion.div>}
+
             {nav==='ai'&&<motion.div key="ai" variants={fadeUp} initial="hidden" animate="visible" exit="exit">
               <AIRuleSuggester rules={rules} addRule={addRule}/>
             </motion.div>}
