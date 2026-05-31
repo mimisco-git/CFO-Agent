@@ -317,13 +317,49 @@ export default function App() {
   if(phase==='intro') return <Intro wallets={getAvailableWallets()} onComplete={doAuth}/>
 
   if(phase==='auth') return (
-    <div className="fullscreen crt" style={{flexDirection:'column',gap:20}}>
-      <div className="scanline"/>
-      <Logo size={46}/>
-      <div style={{fontFamily:"'VT323',monospace",fontSize:'clamp(18px,5vw,26px)',letterSpacing:'0.15em',color:'#d4d0b8'}}>CFO AGENT</div>
-      <div className="auth-bar"><motion.div style={{height:'100%',background:'var(--acid)'}} initial={{width:'0%'}} animate={{width:authStep==='connecting'?'25%':authStep==='signing'?'50%':authStep==='checking'?'75%':'95%'}} transition={{duration:0.6,ease:'easeInOut'}}/></div>
-      <div style={{fontFamily:"'Share Tech Mono',monospace",fontSize:'clamp(12px,3vw,15px)',letterSpacing:'0.1em',color:'#5a5848'}}>&gt; {authMsg}</div>
-      {authStep==='deploying'&&<div style={{fontFamily:"'Share Tech Mono',monospace",fontSize:'clamp(11px,2.5vw,13px)',color:'#47ffd4',maxWidth:340,textAlign:'center'}}>&gt; DEPLOYING YOUR PERSONAL CFO AGENT ON-CHAIN...</div>}
+    <div className="fullscreen crt" style={{flexDirection:'column',gap:0,padding:24}}>
+      <div className="scanline-sweep"/>
+      <CRTCanvas/>
+      {/* Classification header */}
+      <div style={{position:'absolute',top:20,left:0,right:0,textAlign:'center',fontFamily:"'Share Tech Mono',monospace",fontSize:10,fontWeight:'bold',letterSpacing:'.28em',color:'rgba(255,64,64,.6)',animation:'blink 2.2s infinite'}}>// CLASSIFICATION: RESTRICTED //</div>
+      {/* Main logo */}
+      <motion.div initial={{opacity:0,y:-20}} animate={{opacity:1,y:0}} transition={{duration:.8,ease:'easeOut'}} style={{display:'flex',alignItems:'center',gap:16,marginBottom:32}}>
+        <Logo size={52}/>
+        <div>
+          <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:'clamp(22px,5vw,32px)',fontWeight:900,letterSpacing:'.12em',color:'#fff',textShadow:'0 0 30px rgba(111,255,233,.3)'}}>CFO AGENT</div>
+          <div style={{fontFamily:"'Share Tech Mono',monospace",fontSize:11,fontWeight:'bold',letterSpacing:'.18em',color:'rgba(111,255,233,.55)',marginTop:4}}>ARBITRUM TREASURY OS // SECURE AUTH</div>
+        </div>
+      </motion.div>
+      {/* Auth steps */}
+      <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.3,duration:.6}} style={{width:'100%',maxWidth:440,marginBottom:28}}>
+        {[{key:'connecting',label:'01  CONNECTING WALLET',done:['signing','checking','deploying'].includes(authStep)||authStep==='connecting'},
+          {key:'signing',  label:'02  AUTHENTICATING WITH SIWE',done:['checking','deploying'].includes(authStep)},
+          {key:'checking', label:'03  VERIFYING ON-CHAIN AGENT',done:authStep==='deploying'},
+          {key:'deploying',label:'04  DEPLOYING CFO AGENT',done:false,active:authStep==='deploying'},
+        ].map(s=>(
+          <div key={s.key} style={{display:'flex',alignItems:'center',gap:14,padding:'8px 0',borderBottom:'1px solid rgba(111,255,233,.06)'}}>
+            <div style={{width:8,height:8,borderRadius:'50%',background:s.done?'var(--cyan)':authStep===s.key?'var(--cyan)':'rgba(111,255,233,.15)',boxShadow:authStep===s.key?'0 0 10px var(--cyan)':'none',animation:authStep===s.key?'pulse 1s infinite':'none',flexShrink:0,transition:'all .3s'}}/>
+            <span style={{fontFamily:"'Share Tech Mono',monospace",fontSize:12,fontWeight:'bold',letterSpacing:'.12em',color:s.done?'var(--cyan)':authStep===s.key?'#fff':'rgba(150,150,150,.4)',transition:'color .3s',textTransform:'uppercase'}}>
+              {s.label}
+            </span>
+            {s.done&&<span style={{marginLeft:'auto',color:'var(--cyan)',fontSize:14,fontWeight:'bold'}}>✓</span>}
+            {authStep===s.key&&!s.done&&<span style={{marginLeft:'auto',fontFamily:"'Share Tech Mono',monospace",fontSize:9,fontWeight:'bold',color:'rgba(111,255,233,.6)',letterSpacing:'.2em',animation:'blink 1s infinite'}}>PROCESSING</span>}
+          </div>
+        ))}
+      </motion.div>
+      {/* Progress bar */}
+      <div className="auth-bar" style={{marginBottom:20}}>
+        <motion.div className="auth-bar-fill" initial={{width:'0%'}} animate={{width:authStep==='connecting'?'25%':authStep==='signing'?'50%':authStep==='checking'?'75%':'95%'}} transition={{duration:.6,ease:'easeInOut'}}/>
+      </div>
+      {/* Status message */}
+      <motion.div key={authMsg} initial={{opacity:0,x:-10}} animate={{opacity:1,x:0}} transition={{duration:.3}} style={{fontFamily:"'Share Tech Mono',monospace",fontSize:13,fontWeight:'bold',letterSpacing:'.12em',color:'rgba(111,255,233,.7)',maxWidth:440,textAlign:'center'}}>
+        &gt; {authMsg}
+      </motion.div>
+      {authStep==='deploying'&&(
+        <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.5}} style={{marginTop:14,fontFamily:"'Share Tech Mono',monospace",fontSize:11,fontWeight:'bold',letterSpacing:'.1em',color:'rgba(111,255,233,.5)',maxWidth:400,textAlign:'center',lineHeight:1.8}}>
+          FIRST TIME USER DETECTED<br/>DEPLOYING YOUR PERSONAL CFO AGENT TO THE BLOCKCHAIN
+        </motion.div>
+      )}
     </div>
   )
 
