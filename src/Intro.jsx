@@ -71,7 +71,7 @@ const BOOT_LINES = [
   { text:'[OK] 03 modules :: rule-engine :: sequencer :: ai', color:'#47ffd4' },
   { text:'[OK] factory    :: 0xF1EE2CC9741547cAf0...', color:'#47ffd4' },
   { text:'[OK] registry   :: 0x5eadac819B2206B960...', color:'#47ffd4' },
-  { text:'[OK] groq ai    :: llama-3.3-70b :: READY', color:'#c8ff47' },
+  { text:'[OK] ai engine  :: language model :: READY', color:'#c8ff47' },
   { text:'> select wallet node to continue:', color:'#b8b49e' },
 ]
 

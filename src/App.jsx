@@ -317,49 +317,50 @@ export default function App() {
   if(phase==='intro') return <Intro wallets={getAvailableWallets()} onComplete={doAuth}/>
 
   if(phase==='auth') return (
-    <div className="fullscreen crt" style={{flexDirection:'column',gap:0,padding:24}}>
+    <div style={{position:'fixed',inset:0,background:'var(--dim)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:24}}>
       <div className="scanline-sweep"/>
       <CRTCanvas/>
-      {/* Classification header */}
-      <div style={{position:'absolute',top:20,left:0,right:0,textAlign:'center',fontFamily:"'Share Tech Mono',monospace",fontSize:10,fontWeight:'bold',letterSpacing:'.28em',color:'rgba(255,64,64,.6)',animation:'blink 2.2s infinite'}}>// CLASSIFICATION: RESTRICTED //</div>
-      {/* Main logo */}
-      <motion.div initial={{opacity:0,y:-20}} animate={{opacity:1,y:0}} transition={{duration:.8,ease:'easeOut'}} style={{display:'flex',alignItems:'center',gap:16,marginBottom:32}}>
-        <Logo size={52}/>
+      {/* Logo */}
+      <motion.div initial={{opacity:0,y:-16}} animate={{opacity:1,y:0}} transition={{duration:.7,ease:'easeOut'}} style={{display:'flex',alignItems:'center',gap:16,marginBottom:40,textAlign:'center',flexDirection:'column'}}>
+        <Logo size={56}/>
         <div>
-          <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:'clamp(22px,5vw,32px)',fontWeight:900,letterSpacing:'.12em',color:'#fff',textShadow:'0 0 30px rgba(111,255,233,.3)'}}>CFO AGENT</div>
-          <div style={{fontFamily:"'Share Tech Mono',monospace",fontSize:11,fontWeight:'bold',letterSpacing:'.18em',color:'rgba(111,255,233,.55)',marginTop:4}}>ARBITRUM TREASURY OS // SECURE AUTH</div>
+          <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:'clamp(24px,5vw,34px)',fontWeight:900,letterSpacing:'.12em',color:'#fff',textShadow:'0 0 30px rgba(111,255,233,.3)'}}>CFO AGENT</div>
+          <div style={{fontFamily:"'Share Tech Mono',monospace",fontSize:11,fontWeight:'bold',letterSpacing:'.18em',color:'rgba(111,255,233,.5)',marginTop:6}}>TREASURY OS // SECURE AUTH</div>
         </div>
       </motion.div>
-      {/* Auth steps */}
-      <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.3,duration:.6}} style={{width:'100%',maxWidth:440,marginBottom:28}}>
-        {[{key:'connecting',label:'01  CONNECTING WALLET',done:['signing','checking','deploying'].includes(authStep)||authStep==='connecting'},
-          {key:'signing',  label:'02  AUTHENTICATING WITH SIWE',done:['checking','deploying'].includes(authStep)},
-          {key:'checking', label:'03  VERIFYING ON-CHAIN AGENT',done:authStep==='deploying'},
-          {key:'deploying',label:'04  DEPLOYING CFO AGENT',done:false,active:authStep==='deploying'},
-        ].map(s=>(
-          <div key={s.key} style={{display:'flex',alignItems:'center',gap:14,padding:'8px 0',borderBottom:'1px solid rgba(111,255,233,.06)'}}>
-            <div style={{width:8,height:8,borderRadius:'50%',background:s.done?'var(--cyan)':authStep===s.key?'var(--cyan)':'rgba(111,255,233,.15)',boxShadow:authStep===s.key?'0 0 10px var(--cyan)':'none',animation:authStep===s.key?'pulse 1s infinite':'none',flexShrink:0,transition:'all .3s'}}/>
-            <span style={{fontFamily:"'Share Tech Mono',monospace",fontSize:12,fontWeight:'bold',letterSpacing:'.12em',color:s.done?'var(--cyan)':authStep===s.key?'#fff':'rgba(150,150,150,.4)',transition:'color .3s',textTransform:'uppercase'}}>
-              {s.label}
-            </span>
-            {s.done&&<span style={{marginLeft:'auto',color:'var(--cyan)',fontSize:14,fontWeight:'bold'}}>✓</span>}
-            {authStep===s.key&&!s.done&&<span style={{marginLeft:'auto',fontFamily:"'Share Tech Mono',monospace",fontSize:9,fontWeight:'bold',color:'rgba(111,255,233,.6)',letterSpacing:'.2em',animation:'blink 1s infinite'}}>PROCESSING</span>}
-          </div>
-        ))}
+      {/* Steps */}
+      <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:.25,duration:.5}} style={{width:'100%',maxWidth:420,background:'rgba(8,20,35,0.7)',backdropFilter:'blur(20px)',border:'1px solid rgba(111,255,233,.12)',borderRadius:10,padding:'20px 24px',marginBottom:24,boxShadow:'0 8px 40px rgba(0,0,0,.5)'}}>
+        {[
+          {key:'connecting',label:'CONNECTING WALLET',    num:'01'},
+          {key:'signing',   label:'AUTHENTICATING',       num:'02'},
+          {key:'checking',  label:'VERIFYING AGENT',      num:'03'},
+          {key:'deploying', label:'DEPLOYING AGENT',      num:'04'},
+        ].map(s=>{
+          const done=['signing','checking','deploying'].includes(authStep)&&s.key==='connecting'
+            ||['checking','deploying'].includes(authStep)&&s.key==='signing'
+            ||authStep==='deploying'&&s.key==='checking'
+          const active=authStep===s.key
+          return(
+            <div key={s.key} style={{display:'flex',alignItems:'center',gap:14,padding:'10px 0',borderBottom:'1px solid rgba(111,255,233,.06)'}}>
+              <span style={{fontFamily:"'Share Tech Mono',monospace",fontSize:9,fontWeight:'bold',letterSpacing:'.1em',color:done?'var(--cyan)':active?'rgba(111,255,233,.7)':'rgba(111,255,233,.2)',width:20,flexShrink:0}}>{s.num}</span>
+              <div style={{width:7,height:7,borderRadius:'50%',background:done||active?'var(--cyan)':'rgba(111,255,233,.15)',boxShadow:active?'0 0 10px var(--cyan)':'none',flexShrink:0,transition:'all .3s'}}/>
+              <span style={{fontFamily:"'Share Tech Mono',monospace",fontSize:11,fontWeight:'bold',letterSpacing:'.1em',color:done?'rgba(111,255,233,.8)':active?'#fff':'rgba(150,150,150,.35)',flex:1,textTransform:'uppercase'}}>
+                {s.label}
+              </span>
+              {done&&<span style={{color:'var(--cyan)',fontSize:14}}>✓</span>}
+              {active&&<span style={{fontFamily:"'Share Tech Mono',monospace",fontSize:9,fontWeight:'bold',color:'rgba(111,255,233,.6)',letterSpacing:'.18em',animation:'blink 1s infinite'}}>PROCESSING</span>}
+            </div>
+          )
+        })}
       </motion.div>
       {/* Progress bar */}
-      <div className="auth-bar" style={{marginBottom:20}}>
-        <motion.div className="auth-bar-fill" initial={{width:'0%'}} animate={{width:authStep==='connecting'?'25%':authStep==='signing'?'50%':authStep==='checking'?'75%':'95%'}} transition={{duration:.6,ease:'easeInOut'}}/>
+      <div style={{width:'100%',maxWidth:420,height:2,background:'rgba(111,255,233,.1)',borderRadius:1,marginBottom:20,overflow:'hidden'}}>
+        <motion.div style={{height:'100%',background:'linear-gradient(90deg,#00D4B4,#6FFFE9)',boxShadow:'0 0 12px #6FFFE9',borderRadius:1}} initial={{width:'0%'}} animate={{width:authStep==='connecting'?'25%':authStep==='signing'?'50%':authStep==='checking'?'75%':'95%'}} transition={{duration:.6,ease:'easeInOut'}}/>
       </div>
-      {/* Status message */}
-      <motion.div key={authMsg} initial={{opacity:0,x:-10}} animate={{opacity:1,x:0}} transition={{duration:.3}} style={{fontFamily:"'Share Tech Mono',monospace",fontSize:13,fontWeight:'bold',letterSpacing:'.12em',color:'rgba(111,255,233,.7)',maxWidth:440,textAlign:'center'}}>
-        &gt; {authMsg}
+      {/* Status */}
+      <motion.div key={authMsg} initial={{opacity:0}} animate={{opacity:1}} transition={{duration:.3}} style={{fontFamily:"'Share Tech Mono',monospace",fontSize:12,fontWeight:'bold',letterSpacing:'.1em',color:'rgba(111,255,233,.55)',textAlign:'center'}}>
+        {authMsg}
       </motion.div>
-      {authStep==='deploying'&&(
-        <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.5}} style={{marginTop:14,fontFamily:"'Share Tech Mono',monospace",fontSize:11,fontWeight:'bold',letterSpacing:'.1em',color:'rgba(111,255,233,.5)',maxWidth:400,textAlign:'center',lineHeight:1.8}}>
-          FIRST TIME USER DETECTED<br/>DEPLOYING YOUR PERSONAL CFO AGENT TO THE BLOCKCHAIN
-        </motion.div>
-      )}
     </div>
   )
 
@@ -404,7 +405,7 @@ export default function App() {
             KEEPER FEED
             {keeperOn&&<motion.span style={{width:6,height:6,borderRadius:'50%',background:'var(--acid)',display:'inline-block',marginLeft:'auto'}} animate={{opacity:[1,0.2,1]}} transition={{repeat:Infinity,duration:1.2}}/>}
           </button>
-          <button className={`nav ${nav==='ai'?'on':''}`} onClick={()=>{setNav('ai');setSideOpen(false);SFX.key()}} onMouseEnter={()=>SFX.hover()}>AI SUGGESTER [GROQ]</button>
+          <button className={`nav ${nav==='ai'?'on':''}`} onClick={()=>{setNav('ai');setSideOpen(false);SFX.key()}} onMouseEnter={()=>SFX.hover()}>AI SUGGESTER</button>
           <button className={`nav ${nav==='settings'?'on':''}`} onClick={()=>{setNav('settings');setSideOpen(false);SFX.key()}} onMouseEnter={()=>SFX.hover()}>SETTINGS</button>
         </nav>
         <div className="side-foot">
@@ -577,7 +578,7 @@ function Dashboard({rules,log,queue,agentOn,setAgentOn,simulate,activeCount,queu
     </motion.div>
     <motion.div className="ai-cta" variants={fadeUp} initial="hidden" animate="visible" onClick={()=>setNav('ai')} whileHover={{scale:1.01}} style={{cursor:'pointer'}}>
       <div className="ai-cta-icon">AI</div>
-      <div><div className="ai-cta-title">AI RULE SUGGESTER</div><div className="ai-cta-sub">Describe your business in plain English. Groq AI generates optimal payment automation rules.</div></div>
+      <div><div className="ai-cta-title">AI RULE SUGGESTER</div><div className="ai-cta-sub">Describe your business in plain English. AI generates optimal payment automation rules instantly.</div></div>
       <div className="ai-cta-arrow">&gt;</div>
     </motion.div>
     {(log.length>0||queue.length>0)&&<div className="two-col">
@@ -813,7 +814,7 @@ function AIRuleSuggester({rules,addRule}){
   async function get(){if(!desc.trim())return;setLoading(true);setError('');setSugs([]);SFX.exec();try{const r=await suggestRules(desc,rules);setSugs(r);SFX.done()}catch(e){setError(e.message||'REQUEST FAILED');SFX.err()}finally{setLoading(false)}}
   const examples=['Lagos fintech startup paying 8 contractors weekly in USDC','DeFi protocol sweeping yield to treasury when APY drops','E-commerce brand paying suppliers monthly']
   return(<>
-    <div className="ph"><div><div className="pt">AI RULE SUGGESTER</div><div className="ps">NATURAL LANGUAGE TO ON-CHAIN AUTOMATION // GROQ AI</div></div><div style={{display:'flex',alignItems:'center',padding:'4px 12px',background:'rgba(200,255,71,0.08)',border:'1px solid rgba(200,255,71,0.25)',fontFamily:"'Share Tech Mono',monospace",fontSize:11,letterSpacing:'0.12em',color:'var(--acid)'}}>POWERED BY GROQ</div></div>
+    <div className="ph"><div><div className="pt">AI RULE SUGGESTER</div><div className="ps">NATURAL LANGUAGE TO ON-CHAIN AUTOMATION</div></div><div style={{display:'flex',alignItems:'center',padding:'4px 12px',background:'rgba(200,255,71,0.08)',border:'1px solid rgba(200,255,71,0.25)',fontFamily:"'Share Tech Mono',monospace",fontSize:11,letterSpacing:'0.12em',color:'var(--acid)'}}>POWERED BY AI</div></div>
     <motion.div className="ai-box" variants={scaleIn} initial="hidden" animate="visible">
       <div className="ai-box-label">// DESCRIBE YOUR BUSINESS OR PAYMENT NEEDS</div>
       <textarea className="ai-textarea" placeholder="E.g. Lagos fintech startup paying 8 remote contractors weekly in USDC, plus daily gas budget..." value={desc} onChange={e=>setDesc(e.target.value)} rows={4}/>
@@ -821,7 +822,7 @@ function AIRuleSuggester({rules,addRule}){
       <motion.button className="wallet-btn" onClick={get} disabled={!desc.trim()||loading} style={!desc.trim()||loading?{opacity:.5,cursor:'not-allowed'}:{}} whileHover={desc.trim()&&!loading?{scale:1.02}:{}} whileTap={desc.trim()&&!loading?{scale:0.98}:{}}>{loading?'> ANALYZING YOUR BUSINESS...':'> GENERATE RULES WITH AI'}</motion.button>
       {error&&<div className="auth-err" style={{marginTop:12}}>&gt; ERROR: {error}</div>}
     </motion.div>
-    {loading&&<motion.div className="ai-loading" variants={fadeIn} initial="hidden" animate="visible"><div className="ai-loading-bar"><motion.div className="ai-loading-fill" animate={{width:['0%','100%']}} transition={{duration:1.5,repeat:Infinity,ease:'easeInOut'}}/></div><div className="ai-loading-text">&gt; GROQ ANALYZING BUSINESS MODEL...</div></motion.div>}
+    {loading&&<motion.div className="ai-loading" variants={fadeIn} initial="hidden" animate="visible"><div className="ai-loading-bar"><motion.div className="ai-loading-fill" animate={{width:['0%','100%']}} transition={{duration:1.5,repeat:Infinity,ease:'easeInOut'}}/></div><div className="ai-loading-text">&gt; AI ANALYZING BUSINESS MODEL...</div></motion.div>}
     {sugs.length>0&&<><div className="sh" style={{marginTop:14}}><div className="st">// AI GENERATED RULES ({sugs.length}) — CLICK TO ADD TO YOUR AGENT</div></div>
     <motion.div className="rule-list" variants={stagger} initial="hidden" animate="visible">
       {sugs.map((s,i)=>(<motion.div key={i} className="ai-suggestion" variants={slideR}>
@@ -895,7 +896,7 @@ function Settings({agentOn,setAgentOn,address,agentAddr,chain,chains,activeChain
         {label:'AGENT ETH BALANCE',val:fmtEth(agentEth)+' ETH',sub:'REAL ON-CHAIN BALANCE',cls:'acid'},
         {label:'TOTAL EXECUTIONS',val:agentExecs.toString(),sub:'CONFIRMED ON-CHAIN',cls:'acid'},
         {label:'TOTAL USERS',val:totalUsers.toString(),sub:'AGENTS DEPLOYED GLOBALLY',cls:''},
-        {label:'AI ENGINE',val:'GROQ AI',sub:'llama-3.3-70b-versatile // FAST',cls:''},
+        {label:'AI ENGINE',val:'AI ENGINE',sub:'ADVANCED AI // FAST',cls:''},
       ].map(c=>(<motion.div key={c.label} className="sc" variants={fadeUp}><div className="sl">{c.label}</div><div className={`mono-val ${c.cls}`}>{c.val}</div><div className="ss">{c.sub}</div></motion.div>))}
       <motion.div className="sc full" style={{borderTop:`3px solid ${agentOn?'var(--acid)':'var(--red)'}`}} variants={fadeUp}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:12}}>
