@@ -179,6 +179,17 @@ export default function App() {
   const [agentExecs,setAgentExecs]   = useState(0n)
   const [spendData,setSpendData]     = useState(SPEND_DATA)
   const logId    = useRef(10)
+
+  // Glitch effect
+  useEffect(()=>{
+    const id=setInterval(()=>{
+      if(Math.random()<0.12){
+        document.getElementById('cfo-app')?.classList.add('glitch')
+        setTimeout(()=>document.getElementById('cfo-app')?.classList.remove('glitch'),200)
+      }
+    },9000)
+    return()=>clearInterval(id)
+  },[])
   const jobId    = useRef(10)
   const keeperRef= useRef(null)
   const ping     = usePing()
@@ -324,17 +335,6 @@ export default function App() {
       <motion.button style={{fontFamily:"'VT323',monospace",fontSize:'clamp(16px,4vw,20px)',letterSpacing:'0.15em',background:'var(--acid)',color:'#000',border:'none',padding:'12px 32px',cursor:'pointer',marginTop:8}} whileHover={{scale:1.04}} whileTap={{scale:0.96}} onClick={()=>setPhase('intro')}>&gt; TRY AGAIN</motion.button>
     </div>
   )
-
-  // Random glitch effect
-  useEffect(()=>{
-    const id=setInterval(()=>{
-      if(Math.random()<0.12){
-        document.getElementById('cfo-app')?.classList.add('glitch')
-        setTimeout(()=>document.getElementById('cfo-app')?.classList.remove('glitch'),200)
-      }
-    },9000)
-    return()=>clearInterval(id)
-  },[])
 
   return (
     <motion.div id="cfo-app" className="app-wrap crt" variants={fadeIn} initial="hidden" animate="visible">
