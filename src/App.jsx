@@ -325,17 +325,30 @@ export default function App() {
     </div>
   )
 
+  // Random glitch effect
+  useEffect(()=>{
+    const id=setInterval(()=>{
+      if(Math.random()<0.12){
+        document.getElementById('cfo-app')?.classList.add('glitch')
+        setTimeout(()=>document.getElementById('cfo-app')?.classList.remove('glitch'),200)
+      }
+    },9000)
+    return()=>clearInterval(id)
+  },[])
+
   return (
-    <motion.div className="app-wrap crt" variants={fadeIn} initial="hidden" animate="visible">
-      <div className="scanline"/>
+    <motion.div id="cfo-app" className="app-wrap crt" variants={fadeIn} initial="hidden" animate="visible">
+      <div className="scanline-sweep"/>
+      <CRTCanvas/>
       {sideOpen&&<div className="side-overlay" onClick={()=>setSideOpen(false)}/>}
 
       {/* SIDEBAR */}
       <aside className={`side ${sideOpen?'side-open':''}`}>
         <div className="side-top">
+          <div className="side-classification">// CLASSIFICATION: RESTRICTED //</div>
           <div style={{display:'flex',alignItems:'center',gap:10}}>
             <Logo size={22}/>
-            <div><div className="logo-text">CFO AGENT</div><div className="logo-sub">CALLSIGN: {callsign||'AGENT'}</div></div>
+            <div><div className="logo-text">CFO AGENT</div><div className="logo-sub">TREASURY OS // {chain?.shortName||'ARB-421614'}</div></div>
           </div>
           <button className="side-close" onClick={()=>setSideOpen(false)}>X</button>
         </div>
@@ -376,7 +389,7 @@ export default function App() {
             ))}
           </div>
           <motion.button onClick={logout} onMouseEnter={()=>SFX.hover()} whileHover={{borderColor:'var(--red)',color:'var(--red)'}} whileTap={{scale:0.97}} style={{marginTop:8,width:'100%',background:'none',border:'1px solid #2a2820',color:'var(--muted2)',fontFamily:"'VT323',monospace",fontSize:15,letterSpacing:'0.12em',padding:'6px 0',cursor:'pointer',transition:'border-color .15s,color .15s'}}>
-            &gt; DISCONNECT
+            &gt; TERMINATE SESSION
           </motion.button>
         </div>
       </aside>
@@ -453,6 +466,38 @@ export default function App() {
 }
 
 // ---- LOGO ----
+// ---- CRT CANVAS ----
+function CRTCanvas() {
+  const ref = useRef(null)
+  useEffect(()=>{
+    const canvas=ref.current; if(!canvas) return
+    const ctx=canvas.getContext('2d')
+    let raf
+    function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+    resize(); window.addEventListener('resize',resize)
+    function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height)
+      // Vignette
+      const g=ctx.createRadialGradient(canvas.width/2,canvas.height/2,canvas.height*.28,canvas.width/2,canvas.height/2,canvas.height*.85)
+      g.addColorStop(0,'transparent'); g.addColorStop(1,'rgba(0,0,0,.75)')
+      ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height)
+      // Occasional horizontal flicker
+      if(Math.random()<.018){
+        ctx.fillStyle='rgba(111,255,233,0.025)'
+        ctx.fillRect(0,Math.random()*canvas.height,canvas.width,Math.random()*2+1)
+      }
+      if(Math.random()<.008){
+        ctx.fillStyle='rgba(255,64,64,0.04)'
+        ctx.fillRect(0,Math.random()*canvas.height,canvas.width,1)
+      }
+      raf=requestAnimationFrame(draw)
+    }
+    draw()
+    return()=>{ cancelAnimationFrame(raf); window.removeEventListener('resize',resize) }
+  },[])
+  return <canvas ref={ref} style={{position:'fixed',inset:0,pointerEvents:'none',zIndex:9999,opacity:.22}}/>
+}
+
 function Logo({size=40}){return(<svg width={size} height={size} viewBox="0 0 40 40" fill="none"><rect x="1" y="1" width="38" height="38" rx="4" stroke="var(--acid)" strokeWidth="1.5"/><rect x="7" y="7" width="26" height="26" rx="2" stroke="var(--acid)" strokeWidth="0.8" strokeOpacity="0.4"/><path d="M26 14 H18 Q14 14 14 18 V22 Q14 26 18 26 H26" stroke="var(--acid)" strokeWidth="2.2" strokeLinecap="round" fill="none"/><line x1="20" y1="11" x2="20" y2="29" stroke="var(--acid)" strokeWidth="1.4" strokeLinecap="round" strokeOpacity="0.7"/><rect x="2" y="2" width="4" height="4" fill="var(--acid)" opacity="0.6"/><rect x="34" y="34" width="4" height="4" fill="var(--acid)" opacity="0.6"/></svg>)}
 
 function MuteBtn({muted,toggle,inline}){return(<motion.button className={`mute-btn ${inline?'mute-inline':''}`} onClick={toggle} whileHover={{scale:1.05}} whileTap={{scale:0.95}}>{muted?'[MUTED]':<span style={{display:'flex',alignItems:'center',gap:6}}><motion.span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'var(--acid)'}} animate={{opacity:[1,0.2,1]}} transition={{repeat:Infinity,duration:1.2}}/>AUDIO</span>}</motion.button>)}
