@@ -381,7 +381,6 @@ export default function App() {
       {/* SIDEBAR */}
       <aside className={`side ${sideOpen?'side-open':''}`}>
         <div className="side-top">
-          <div className="side-classification">// CLASSIFICATION: RESTRICTED //</div>
           <div style={{display:'flex',alignItems:'center',gap:10}}>
             <Logo size={22}/>
             <div><div className="logo-text">CFO AGENT</div><div className="logo-sub">TREASURY OS // {chain?.shortName||'ARB-421614'}</div></div>
