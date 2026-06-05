@@ -214,7 +214,7 @@ function DashboardView({ tokens, rules, txHistory, keeperLogs, chain, agentAddr,
         <StatCard label="Treasury Value"   value={`$${totalUSD.toLocaleString(undefined,{maximumFractionDigits:0})}`} sub="Total USD value" accent icon={Wallet}/>
         <StatCard label="Active Rules"     value={activeRules} sub={`of ${rules.length} configured`} icon={BookOpen}/>
         <StatCard label="Transactions"     value={confirmedTx} sub="confirmed on-chain" icon={Activity}/>
-        <StatCard label="AI Insights"      value={keeperOk} sub="successful executions" icon={Bot}/>
+        <StatCard label="AI Insights"      value={keeperOk} sub="successful executions" icon={Zap}/>
       </div>
 
       {/* Token breakdown + recent activity */}
@@ -413,7 +413,7 @@ export default function App() {
 
   // Auth
   async function doConnect() {
-    SFX.init(); SFX.initialize(); setAuthLoading(true); setPhase("connecting");
+    SFX.init(); setAuthLoading(true); setPhase("connecting");
     try {
       setAuthStep("connecting"); setAuthMsg("Connecting wallet...");
       if(!hasWallet()) throw new Error("MetaMask not detected. Please install MetaMask.");
