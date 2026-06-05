@@ -46,12 +46,12 @@ export function OracleFeedSimulator({
           </h3>
         </div>
         <span className="text-[10px] bg-[#28a0f0]/10 border border-[#28a0f0]/25 rounded-full px-2.5 py-0.5 text-[#28a0f0] font-mono font-bold animate-pulse">
-          ● Decent Real-time
+          ● Decentralized Feed
         </span>
       </div>
 
       <p className="text-xs text-slate-400 leading-relaxed mb-5">
-        Manipulate simulated off-chain token values to trigger on-chain automated sweep thresholds and track vault asset valuations in real-time.
+        Simulate Chainlink oracle price updates to test automated sweep thresholds and monitor vault valuations in real-time.
       </p>
 
       <div className="space-y-4">
@@ -114,7 +114,7 @@ export function OracleFeedSimulator({
                   title="Crash price of volatile cryptocurrency by 20%"
                 >
                   <ArrowDownRight className="w-3 h-3" />
-                  <span>Dump 20%</span>
+                  <span>↓ -20%</span>
                 </button>
 
                 <button
@@ -124,7 +124,7 @@ export function OracleFeedSimulator({
                   title="Boost price of volatile cryptocurrency by 25%"
                 >
                   <ArrowUpRight className="w-3 h-3" />
-                  <span>Pump 25%</span>
+                  <span>↑ +25%</span>
                 </button>
               </div>
             </div>

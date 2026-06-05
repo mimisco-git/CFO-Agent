@@ -50,29 +50,47 @@ const CHAINS: Record<string, any> = {
 // ---- AUTH SCREEN ----
 function AuthScreen({ onConnect }: { onConnect: () => void }) {
   return (
-    <div className="min-h-screen bg-[#0b0e14] flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-sm space-y-6 text-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#161b22] to-[#0b0e14] border border-[#30363d] flex items-center justify-center shadow-xl">
-            <Bot className="w-7 h-7 text-[#28a0f0]"/>
+    <div style={{minHeight:"100vh",background:"#080c10",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px",position:"relative",overflow:"hidden"}}>
+      {/* Background glow */}
+      <div style={{position:"absolute",top:"-20%",left:"50%",transform:"translateX(-50%)",width:"600px",height:"600px",background:"radial-gradient(ellipse, rgba(40,160,240,0.08) 0%, transparent 65%)",pointerEvents:"none"}}/>
+      <div style={{position:"absolute",bottom:"-10%",right:"-10%",width:"400px",height:"400px",background:"radial-gradient(ellipse, rgba(40,160,240,0.04) 0%, transparent 65%)",pointerEvents:"none"}}/>
+
+      <div style={{width:"100%",maxWidth:"400px",textAlign:"center",position:"relative",zIndex:1}}>
+        {/* Logo */}
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"16px",marginBottom:"40px"}}>
+          <div style={{width:"64px",height:"64px",borderRadius:"20px",background:"linear-gradient(135deg, rgba(40,160,240,0.15), rgba(40,160,240,0.05))",border:"1px solid rgba(40,160,240,0.3)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 40px rgba(40,160,240,0.15)"}}>
+            <Bot style={{width:"32px",height:"32px",color:"#28a0f0"}}/>
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold font-display tracking-tight text-white">CFO Agent</h1>
-            <p className="text-xs text-[#28a0f0] font-mono font-semibold tracking-wide uppercase mt-1">
-              Arbitrum L2 Treasury Guardian
-            </p>
+            <h1 style={{fontSize:"28px",fontWeight:900,color:"#fff",letterSpacing:"-0.02em",fontFamily:"Space Grotesk, sans-serif",marginBottom:"6px"}}>CFO Agent</h1>
+            <div style={{fontSize:"11px",fontWeight:700,color:"#28a0f0",letterSpacing:"0.15em",fontFamily:"JetBrains Mono, monospace",textTransform:"uppercase"}}>Arbitrum · Autonomous Treasury OS</div>
           </div>
         </div>
-        <p className="text-sm text-slate-400 leading-relaxed">
-          Connect your wallet to access your autonomous treasury agent. Your CFO Agent holds funds and executes payment rules 24/7 on-chain.
-        </p>
-        <button onClick={onConnect}
-          className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#28a0f0] hover:bg-[#208cd4] text-[#0b0e14] text-sm font-bold rounded-xl transition-all shadow-lg cursor-pointer">
-          <Wallet className="w-4 h-4"/>
-          Connect MetaMask
-        </button>
-        <p className="text-[10px] text-slate-600 font-mono">
-          Secured with SIWE authentication. Your agent is deployed on Arbitrum Sepolia.
+
+        {/* Card */}
+        <div style={{background:"rgba(22,27,34,0.7)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"20px",padding:"32px",marginBottom:"24px",boxShadow:"0 24px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)"}}>
+          <p style={{fontSize:"14px",color:"rgba(200,209,217,0.8)",lineHeight:"1.7",marginBottom:"28px",fontFamily:"Inter, sans-serif"}}>
+            Connect your wallet to deploy your autonomous treasury agent. Set rules once — your agent executes payments 24/7 on-chain.
+          </p>
+
+          {/* Features */}
+          <div style={{display:"flex",flexDirection:"column",gap:"10px",marginBottom:"28px",textAlign:"left"}}>
+            {["Real MetaMask authentication via SIWE","Personal CFOAgent deployed on Arbitrum","Payment rules execute autonomously","Multi-chain: Arbitrum + Robinhood Chain"].map((f,i) => (
+              <div key={i} style={{display:"flex",alignItems:"center",gap:"10px",fontSize:"12px",color:"rgba(200,209,217,0.7)",fontFamily:"Inter, sans-serif"}}>
+                <div style={{width:"5px",height:"5px",borderRadius:"50%",background:"#28a0f0",flexShrink:0}}/>
+                {f}
+              </div>
+            ))}
+          </div>
+
+          <button onClick={onConnect} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:"8px",padding:"14px 24px",background:"#28a0f0",color:"#080c10",fontSize:"14px",fontWeight:800,borderRadius:"12px",border:"none",cursor:"pointer",letterSpacing:"0.01em",fontFamily:"Space Grotesk, sans-serif",boxShadow:"0 4px 20px rgba(40,160,240,0.3)",transition:"all 0.2s"}}>
+            <Wallet style={{width:"18px",height:"18px"}}/>
+            Connect MetaMask
+          </button>
+        </div>
+
+        <p style={{fontSize:"10px",color:"rgba(150,160,170,0.5)",fontFamily:"JetBrains Mono, monospace",letterSpacing:"0.08em"}}>
+          SECURED WITH SIWE · EIP-4361 · ARBITRUM SEPOLIA
         </p>
       </div>
     </div>
@@ -376,18 +394,71 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0b0e14] text-[#c9d1d9] font-sans tracking-tight pb-16 relative overflow-hidden">
       <style>{`
-        :root { --primary-color: ${chain.color}; --bg-base: #0b0e14; --bg-card: rgba(22,27,34,0.70); --border-color: #30363d; --primary-glow: rgba(40,160,240,0.05); }
-        body { background-color: var(--bg-base) !important; }
-        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #0b0e14; } ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 9999px; }
+        :root {
+          --primary-color: ${chain.color};
+          --bg-base: #080c10;
+          --bg-card: rgba(16,22,32,0.75);
+          --border-color: rgba(255,255,255,0.07);
+          --primary-glow: rgba(40,160,240,0.04);
+        }
+        body { background-color: #080c10 !important; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--primary-color); }
+
+        /* Premium card overrides */
+        .bg-\\[\\#161b22\\]\/70, .bg-\\[\\#161b22\\]\/80, .bg-\\[\\#161b22\\] {
+          background: var(--bg-card) !important;
+          backdrop-filter: blur(20px) !important;
+        }
+        .border-\\[\\#30363d\\] {
+          border-color: var(--border-color) !important;
+        }
+        .bg-\\[\\#0b0e14\\], .bg-\\[\\#0b0e14\\]\/40, .bg-\\[\\#0b0e14\\]\/60 {
+          background: rgba(5,8,14,0.6) !important;
+        }
+        .rounded-2xl { border-radius: 16px !important; }
+        .shadow-lg { box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04) !important; }
+
+        /* Glow on hover for cards */
+        .bg-\\[\\#161b22\\]\/70:hover {
+          box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(40,160,240,0.08), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+        }
+
+        /* Better input fields */
+        input, textarea {
+          background: rgba(5,8,14,0.7) !important;
+          border-color: rgba(255,255,255,0.08) !important;
+        }
+        input:focus, textarea:focus {
+          border-color: var(--primary-color) !important;
+          box-shadow: 0 0 0 3px rgba(40,160,240,0.08) !important;
+        }
+
+        /* Button polish */
+        button { transition: all 0.18s ease !important; }
+
         @keyframes toastIn { from { transform: translateY(20px) scale(0.95); opacity: 0; } to { transform: none; opacity: 1; } }
         @keyframes timerShrink { from { width: 100%; } to { width: 0%; } }
         .toast-in { animation: toastIn 0.25s cubic-bezier(0.16,1,0.3,1) forwards; }
         .timer-shrink { animation: timerShrink 5000ms linear forwards; }
+        .line-grid {
+          background-image: linear-gradient(rgba(40,160,240,0.04) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(40,160,240,0.04) 1px, transparent 1px);
+          background-size: 24px 24px;
+        }
+
+        /* Background gradient */
+        .min-h-screen {
+          background: radial-gradient(ellipse 80% 50% at 10% 0%, rgba(40,160,240,0.06) 0%, transparent 50%),
+                      radial-gradient(ellipse 60% 60% at 90% 100%, rgba(40,160,240,0.04) 0%, transparent 50%),
+                      #080c10 !important;
+        }
       `}</style>
 
       {/* ---- HEADER ---- */}
-      <header className="bg-[#161b22]/80 border-b border-[#30363d] sticky top-0 z-40 backdrop-blur-md">
+      <header className="sticky top-0 z-40 backdrop-blur-xl" style={{background:"rgba(11,14,20,0.92)",borderBottom:"1px solid rgba(255,255,255,0.06)",boxShadow:"0 1px 0 rgba(40,160,240,0.08), 0 4px 24px rgba(0,0,0,0.4)"}}>
         <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 flex-shrink-0">
             <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#161b22] to-[#0b0e14] border border-[#30363d] flex items-center justify-center shadow-md">
@@ -486,7 +557,7 @@ export default function App() {
       </header>
 
       {/* ---- CONTRACT INFO BANNER ---- */}
-      <div className="bg-[#0b0e14] border-b border-[#30363d]/50">
+      <div style={{background:"rgba(8,11,16,0.8)",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
         <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center gap-6 flex-wrap">
           {[
             { label: "Factory", addr: chain.factory },

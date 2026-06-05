@@ -212,7 +212,7 @@ export function KeeperSimulatorView({
               }`}
             >
               {isKeeperAutoPolling ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-              <span>{isKeeperAutoPolling ? "Bot: Active Core" : "Bot: Suspended"}</span>
+              <span>{isKeeperAutoPolling ? "Keeper: Active" : "Keeper: Paused"}</span>
             </button>
 
             <button
@@ -221,7 +221,7 @@ export function KeeperSimulatorView({
               className="px-4.5 py-2 bg-[#28a0f0] text-[#0b0e14] hover:bg-[#28a0f0]/90 text-xs font-extrabold rounded-xl cursor-pointer transition-all active:scale-95 shadow-lg flex items-center gap-1.5 font-sans"
             >
               <Sparkles className="w-3.5 h-3.5 text-slate-950" />
-              Poke Bot Sweep
+              Force Audit Now
             </button>
           </div>
         </div>
