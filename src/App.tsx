@@ -1,10 +1,29 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  LayoutDashboard, BookOpen, Shield, Bot, BarChart3,
+  LayoutDashboard, BookOpen, Shield, BarChart3,
   Zap, Settings, Wallet, ChevronDown, Check, Volume2,
-  VolumeX, RefreshCw, AlertTriangle, Info, TrendingUp,
-  Activity, Menu, X, ExternalLink, Copy, CheckCircle
+  VolumeX, RefreshCw, AlertTriangle, TrendingUp,
+  Activity, X, ExternalLink, Copy, CheckCircle, Menu
 } from "lucide-react";
+
+// Custom CFO Agent logo - unique brand mark
+const CFOLogo = ({ size = 36 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="40" height="40" rx="10" fill="rgba(40,160,240,0.12)" stroke="rgba(40,160,240,0.4)" strokeWidth="1"/>
+    {/* Treasury building pillars */}
+    <rect x="8" y="28" width="4" height="8" rx="1" fill="#28a0f0" opacity="0.9"/>
+    <rect x="14" y="24" width="4" height="12" rx="1" fill="#28a0f0"/>
+    <rect x="20" y="20" width="4" height="16" rx="1" fill="#28a0f0"/>
+    <rect x="26" y="24" width="4" height="12" rx="1" fill="#28a0f0" opacity="0.9"/>
+    {/* Trend line */}
+    <polyline points="8,26 14,22 20,18 26,22 32,14" stroke="#6FFFE9" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    {/* Dollar signal dot */}
+    <circle cx="32" cy="14" r="3" fill="#6FFFE9"/>
+    <circle cx="32" cy="14" r="5" fill="none" stroke="#6FFFE9" strokeWidth="1" opacity="0.4"/>
+    {/* Base line */}
+    <line x1="6" y1="36" x2="34" y2="36" stroke="rgba(40,160,240,0.3)" strokeWidth="1" strokeLinecap="round"/>
+  </svg>
+);
 import { TreasuryToken, PaymentRule, SpendCap, TxLog, KeeperLog, RuleStatus, RuleType } from "./types";
 import { TreasuryOverview } from "./components/TreasuryOverview";
 import { RuleRegistryView } from "./components/RuleRegistryView";
@@ -50,7 +69,7 @@ const NAV = [
   { id: "dashboard",  label: "Dashboard",     icon: LayoutDashboard, badge: null },
   { id: "treasury",   label: "Treasury",       icon: Wallet,          badge: null },
   { id: "rules",      label: "Rule Registry",  icon: BookOpen,        badge: "rules" },
-  { id: "ai",         label: "AI Copilot",     icon: Bot,             badge: "ai" },
+  { id: "ai",         label: "AI Copilot",     icon: BarChart3,             badge: "ai" },
   { id: "keeper",     label: "Keeper Bot",     icon: Activity,        badge: "live" },
   { id: "analytics",  label: "Analytics",      icon: BarChart3,       badge: null },
   { id: "safety",     label: "Safety & Caps",  icon: Shield,          badge: null },
@@ -69,7 +88,7 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
         {/* Logo */}
         <div style={{ textAlign:"center", marginBottom:"40px" }}>
           <div style={{ width:"72px", height:"72px", borderRadius:"22px", background:"linear-gradient(135deg,rgba(40,160,240,0.2),rgba(40,160,240,0.05))", border:"1px solid rgba(40,160,240,0.35)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px", boxShadow:"0 0 60px rgba(40,160,240,0.12)" }}>
-            <Bot style={{ width:"36px", height:"36px", color:"#28a0f0" }}/>
+            <CFOLogo size={36}/>
           </div>
           <h1 style={{ fontSize:"32px", fontWeight:900, color:"#fff", fontFamily:"Space Grotesk,sans-serif", letterSpacing:"-0.02em", marginBottom:"8px" }}>CFO Agent</h1>
           <p style={{ fontSize:"12px", fontWeight:700, color:"#28a0f0", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.15em", textTransform:"uppercase" }}>Autonomous Treasury OS · Arbitrum</p>
@@ -121,7 +140,7 @@ function ConnectingScreen({ step, msg }: { step: string; msg: string }) {
       <div style={{ width:"100%", maxWidth:"380px" }}>
         <div style={{ textAlign:"center", marginBottom:"40px" }}>
           <div style={{ width:"56px", height:"56px", borderRadius:"16px", background:"rgba(40,160,240,0.1)", border:"1px solid rgba(40,160,240,0.3)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
-            <Bot style={{ width:"28px", height:"28px", color:"#28a0f0" }}/>
+            <CFOLogo size={28}/>
           </div>
           <h2 style={{ fontSize:"22px", fontWeight:800, color:"#fff", fontFamily:"Space Grotesk,sans-serif" }}>Setting up your agent</h2>
         </div>
@@ -176,7 +195,7 @@ function DashboardView({ tokens, rules, txHistory, keeperLogs, chain, agentAddr,
       {/* Welcome banner */}
       <div style={{ background:"linear-gradient(135deg,rgba(40,160,240,0.12),rgba(40,160,240,0.04))", border:"1px solid rgba(40,160,240,0.2)", borderRadius:"16px", padding:"24px 28px", marginBottom:"24px", display:"flex", alignItems:"center", gap:"20px" }}>
         <div style={{ width:"48px", height:"48px", borderRadius:"14px", background:"rgba(40,160,240,0.15)", border:"1px solid rgba(40,160,240,0.3)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-          <Bot style={{ width:"24px", height:"24px", color:"#28a0f0" }}/>
+          <CFOLogo size={24}/>
         </div>
         <div style={{ flex:1 }}>
           <div style={{ fontSize:"18px", fontWeight:800, color:"#fff", fontFamily:"Space Grotesk,sans-serif", marginBottom:"4px" }}>Your CFO Agent is running autonomously</div>
@@ -191,7 +210,7 @@ function DashboardView({ tokens, rules, txHistory, keeperLogs, chain, agentAddr,
       </div>
 
       {/* Stats */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"14px", marginBottom:"24px" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:"14px", marginBottom:"24px" }}>
         <StatCard label="Treasury Value"   value={`$${totalUSD.toLocaleString(undefined,{maximumFractionDigits:0})}`} sub="Total USD value" accent icon={Wallet}/>
         <StatCard label="Active Rules"     value={activeRules} sub={`of ${rules.length} configured`} icon={BookOpen}/>
         <StatCard label="Transactions"     value={confirmedTx} sub="confirmed on-chain" icon={Activity}/>
@@ -199,7 +218,7 @@ function DashboardView({ tokens, rules, txHistory, keeperLogs, chain, agentAddr,
       </div>
 
       {/* Token breakdown + recent activity */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"16px", marginBottom:"16px" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))", gap:"16px", marginBottom:"16px" }}>
         {/* Tokens */}
         <div style={{ background:"rgba(16,22,32,0.7)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"14px", padding:"20px", position:"relative", overflow:"hidden" }}>
           <div style={{ position:"absolute", top:0, left:0, right:0, height:"1px", background:"linear-gradient(90deg,transparent,rgba(40,160,240,0.3),transparent)" }}/>
@@ -296,7 +315,7 @@ function SettingsView({ address, agentAddr, chain, chains, activeChain, switchCh
       <div style={{ background:"rgba(16,22,32,0.7)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"14px", padding:"24px", position:"relative", overflow:"hidden" }}>
         <div style={{ position:"absolute", top:0, left:0, right:0, height:"1px", background:"linear-gradient(90deg,transparent,rgba(40,160,240,0.4),transparent)" }}/>
         <div style={{ fontSize:"12px", fontWeight:700, color:"rgba(150,160,170,0.7)", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:"20px" }}>Deployed Chains</div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"12px" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:"12px" }}>
           {Object.entries(chains).map(([key, c]: any) => (
             <div key={key} onClick={()=>switchChain(key)} style={{ background:activeChain===key?"rgba(40,160,240,0.08)":"rgba(5,8,14,0.6)", border:`1px solid ${activeChain===key?c.color:"rgba(255,255,255,0.06)"}`, borderRadius:"12px", padding:"16px", cursor:"pointer", transition:"all 0.2s" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"10px" }}>
@@ -559,7 +578,7 @@ export default function App() {
   const currentNav = NAV.find(n => n.id === activeNav);
 
   return (
-    <div style={{ display:"grid", gridTemplateColumns:"240px 1fr", height:"100vh", background:"#080c10", overflow:"hidden" }}>
+    <div className="app-root" style={{ display:"grid", height:"100vh", background:"#080c10", overflow:"hidden" }}>
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
         @keyframes toastIn { from{transform:translateY(20px) scale(0.95);opacity:0} to{transform:none;opacity:1} }
@@ -569,6 +588,17 @@ export default function App() {
         .timer-shrink { animation: timerShrink 5000ms linear forwards; }
         * { box-sizing: border-box; }
         ::-webkit-scrollbar { width: 4px; }
+        /* Layout */
+        .app-root { grid-template-columns: 240px 1fr; }
+        .app-sidebar { position: relative; width: 240px; transform: translateX(0); transition: transform 0.25s ease; }
+        /* Mobile */
+        @media (max-width: 768px) {
+          .app-root { grid-template-columns: 1fr; }
+          .app-sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 240px; transform: translateX(-100%); }
+          .app-sidebar.open { transform: translateX(0); box-shadow: 4px 0 40px rgba(0,0,0,0.7); }
+          .mobile-menu-btn { display: flex !important; }
+          .mobile-overlay { display: block !important; }
+        }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 999px; }
         /* Override Gemini component styles for consistency */
@@ -580,7 +610,9 @@ export default function App() {
       `}</style>
 
       {/* SIDEBAR */}
-      <aside style={{ background:"rgba(10,14,20,0.95)", backdropFilter:"blur(20px)", borderRight:"1px solid rgba(255,255,255,0.06)", display:"flex", flexDirection:"column", height:"100vh", overflow:"hidden", position:"relative", zIndex:10 }}>
+      {/* Mobile overlay */}
+      {sideOpen && <div onClick={()=>setSideOpen(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.6)", zIndex:19, display:"none" }} className="mobile-overlay"/>}
+      <aside className={`app-sidebar ${sideOpen?"open":""}`} style={{ background:"rgba(10,14,20,0.97)", backdropFilter:"blur(20px)", borderRight:"1px solid rgba(255,255,255,0.06)", display:"flex", flexDirection:"column", height:"100vh", overflow:"hidden", zIndex:20 }}>
         {/* Top glow line */}
         <div style={{ position:"absolute", top:0, left:0, right:0, height:"1px", background:"linear-gradient(90deg,transparent,rgba(40,160,240,0.5),transparent)" }}/>
 
@@ -588,7 +620,7 @@ export default function App() {
         <div style={{ padding:"20px 20px 16px", borderBottom:"1px solid rgba(255,255,255,0.05)", flexShrink:0 }}>
           <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
             <div style={{ width:"36px", height:"36px", borderRadius:"10px", background:"rgba(40,160,240,0.12)", border:"1px solid rgba(40,160,240,0.25)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <Bot style={{ width:"18px", height:"18px", color:"#28a0f0" }}/>
+              <CFOLogo size={18}/>
             </div>
             <div>
               <div style={{ fontSize:"15px", fontWeight:800, color:"#fff", fontFamily:"Space Grotesk,sans-serif", letterSpacing:"-0.01em" }}>CFO Agent</div>
@@ -643,7 +675,11 @@ export default function App() {
       <div style={{ display:"flex", flexDirection:"column", height:"100vh", overflow:"hidden" }}>
         {/* Topbar */}
         <header style={{ height:"56px", background:"rgba(8,12,16,0.9)", backdropFilter:"blur(16px)", borderBottom:"1px solid rgba(255,255,255,0.05)", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 24px", flexShrink:0, boxShadow:"0 1px 0 rgba(40,160,240,0.06)" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:"16px" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
+            {/* Hamburger - visible on mobile */}
+            <button onClick={()=>setSideOpen(!sideOpen)} style={{ display:"none", width:"34px", height:"34px", alignItems:"center", justifyContent:"center", background:"rgba(16,22,32,0.8)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"8px", cursor:"pointer", color:"rgba(200,209,217,0.7)", flexShrink:0 }} className="mobile-menu-btn">
+              {sideOpen ? <X style={{width:"16px",height:"16px"}}/> : <Menu style={{width:"16px",height:"16px"}}/>}
+            </button>
             <div>
               <span style={{ fontSize:"15px", fontWeight:700, color:"#f0f4f8", fontFamily:"Space Grotesk,sans-serif" }}>{currentNav?.label}</span>
             </div>
