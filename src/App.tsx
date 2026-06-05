@@ -367,15 +367,12 @@ export default function App() {
   // Token + rule state
   const [baseGasPrice, setBaseGasPrice] = useState(15);
   const [tokens, setTokens] = useState<TreasuryToken[]>([
-    { symbol:"USDC", name:"USD Coin",   decimals:6,  balance:12500, usdPrice:1.0,    logo:"＄", contractAddress:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831" },
-    { symbol:"ETH",  name:"Ethereum",   decimals:18, balance:1.25,  usdPrice:3500.0, logo:"Ξ",  contractAddress:"0x82aF49447D8a07e3bd95BD0d56f352415231daa1" },
-    { symbol:"USDT", name:"Tether USD", decimals:6,  balance:5000,  usdPrice:1.0,    logo:"₮",  contractAddress:"0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9" },
-    { symbol:"ARB",  name:"Arbitrum",   decimals:18, balance:1980,  usdPrice:1.25,   logo:"⚬",  contractAddress:"0x912CE5c1150c221414429260d87deCdCc4788193" },
+    { symbol:"USDC", name:"USD Coin",   decimals:6,  balance:0, usdPrice:1.0,    logo:"＄", contractAddress:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831" },
+    { symbol:"ETH",  name:"Ethereum",   decimals:18, balance:0, usdPrice:3500.0, logo:"Ξ",  contractAddress:"0x82aF49447D8a07e3bd95BD0d56f352415231daa1" },
+    { symbol:"USDT", name:"Tether USD", decimals:6,  balance:0, usdPrice:1.0,    logo:"₮",  contractAddress:"0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9" },
+    { symbol:"ARB",  name:"Arbitrum",   decimals:18, balance:0, usdPrice:1.25,   logo:"⚬",  contractAddress:"0x912CE5c1150c221414429260d87deCdCc4788193" },
   ]);
-  const [rules, setRules] = useState<PaymentRule[]>([
-    { id:"rule_1", name:"Core Contributor Payroll", description:"Disburse 5.0 USDC every 30s", ruleType:RuleType.PAYROLL, status:RuleStatus.ACTIVE, recipient:"0x742d35Cc6634C0532925a3b844Bc454e4438f44e", destinationName:"Alex (Core Dev)", token:"USDC", amount:5, frequency:"30s Poll", frequencySeconds:30, lastExecuted:Date.now()-25000, nextExecution:Date.now()+5000, createdTime:Date.now()-3600000 },
-    { id:"rule_2", name:"High USDC Sweep to Yield", description:"Sweep when balance > 15,000 USDC", ruleType:RuleType.SWEEP, status:RuleStatus.ACTIVE, recipient:"0x11223344556677889900112233445566778899aa", destinationName:"Vault Pool", token:"USDC", amount:15000, frequency:"60s Poll", frequencySeconds:60, nextExecution:Date.now()+45000, createdTime:Date.now()-1800000 },
-  ]);
+  const [rules, setRules] = useState<PaymentRule[]>([]);
   const [spendCaps, setSpendCaps] = useState<SpendCap[]>([
     { token:"USDC", cap:250,  spent:15,  enabled:true },
     { token:"ETH",  cap:1.5,  spent:0,   enabled:true },
@@ -389,10 +386,7 @@ export default function App() {
     { id:"l2", timestamp:Date.now()-3000, message:`Agent contract verified at 0xE13F...`, type:"info" },
     { id:"l3", timestamp:Date.now()-1000, message:"Scanning RuleRegistry... 2 active rules detected.", type:"success" },
   ]);
-  const [txHistory, setTxHistory] = useState<TxLog[]>([
-    { id:"tx1", timestamp:Date.now()-7200000, type:"DEPOSIT", token:"USDC", amount:12500, txHash:"0x98f3b25fe40aacc87fc8d98dcd98a5e8e8f237ef110c7", status:"SUCCESS" },
-    { id:"tx2", timestamp:Date.now()-3600000, type:"DEPOSIT", token:"ETH",  amount:1.25,  txHash:"0x12bbcdc787df8e07da06deca412ff22a1cfcd88998decc", status:"SUCCESS" },
-  ]);
+  const [txHistory, setTxHistory] = useState<TxLog[]>([]);
   const [toasts, setToasts] = useState<any[]>([]);
 
   const addToast = (title: string, description: string, type: string) => {
@@ -494,12 +488,12 @@ export default function App() {
   const handleEmergencyWithdraw = ()=>tokens.forEach(t=>{if(t.balance>0){triggerTx("EMERGENCY_WITHDRAW",t.symbol,t.balance,address);addLog(`EMERGENCY: evacuated ${t.balance} ${t.symbol}.`,"warn");}});
   const handleReset = ()=>{
     setTokens([
-      {symbol:"USDC",name:"USD Coin",decimals:6,balance:12500,usdPrice:1.0,logo:"＄",contractAddress:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831"},
-      {symbol:"ETH",name:"Ethereum",decimals:18,balance:1.25,usdPrice:3500.0,logo:"Ξ",contractAddress:"0x82aF49447D8a07e3bd95BD0d56f352415231daa1"},
-      {symbol:"USDT",name:"Tether USD",decimals:6,balance:5000,usdPrice:1.0,logo:"₮",contractAddress:"0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"},
-      {symbol:"ARB",name:"Arbitrum",decimals:18,balance:1980,usdPrice:1.25,logo:"⚬",contractAddress:"0x912CE5c1150c221414429260d87deCdCc4788193"},
+      {symbol:"USDC",name:"USD Coin",decimals:6,balance:0,usdPrice:1.0,logo:"＄",contractAddress:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831"},
+      {symbol:"ETH",name:"Ethereum",decimals:18,balance:0,usdPrice:3500.0,logo:"Ξ",contractAddress:"0x82aF49447D8a07e3bd95BD0d56f352415231daa1"},
+      {symbol:"USDT",name:"Tether USD",decimals:6,balance:0,usdPrice:1.0,logo:"₮",contractAddress:"0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"},
+      {symbol:"ARB",name:"Arbitrum",decimals:18,balance:0,usdPrice:1.25,logo:"⚬",contractAddress:"0x912CE5c1150c221414429260d87deCdCc4788193"},
     ]);
-    setSpendCaps([{token:"USDC",cap:250,spent:15,enabled:true},{token:"ETH",cap:1.5,spent:0,enabled:true},{token:"USDT",cap:500,spent:0,enabled:true},{token:"ARB",cap:1000,spent:0,enabled:true}]);
+    setSpendCaps([{token:"USDC",cap:250,spent:0,enabled:true},{token:"ETH",cap:1.5,spent:0,enabled:true},{token:"USDT",cap:500,spent:0,enabled:true},{token:"ARB",cap:1000,spent:0,enabled:true}]);
     addLog("Treasury reset to defaults.","success");
   };
   const handleAddRule = (data:Omit<PaymentRule,"id"|"createdTime">)=>{
