@@ -597,11 +597,11 @@ export default function App() {
 
   const addToast = (title: string, description: string, type: string) => {
     const id = "t_" + Date.now();
-    setToasts(prev => { if(prev.some(t=>t.title===title&&Date.now()-t.timestamp<3000))return prev; return [{id,title,description,type,timestamp:Date.now()},.prev]; });
+    setToasts(prev => { if(prev.some(t=>t.title===title&&Date.now()-t.timestamp<3000))return prev; return [{id,title,description,type,timestamp:Date.now()},...prev]; });
     setTimeout(()=>setToasts(prev=>prev.filter(t=>t.id!==id)),5000);
   };
   const addLog = (message: string, type: "info"|"success"|"warn"|"error") => {
-    setKeeperLogs(prev=>[{id:"l"+Date.now()+"_"+Math.random(),timestamp:Date.now(),message,type},.prev.slice(0,99)]);
+    setKeeperLogs(prev=>[{id:"l"+Date.now()+"_"+Math.random(),timestamp:Date.now(),message,type},...prev.slice(0,99)]);
   };
 
   // Navigate without scroll jump
@@ -665,7 +665,7 @@ export default function App() {
       if(cap&&cap.cap>0&&(cap.spent+amount)>cap.cap){
         addLog(`Blocked: '${ruleName}' exceeds daily ${token} cap.`,"error");
         addToast("Rule Blocked",`'${ruleName}' exceeds spend cap.`,"error");
-        setTxHistory(prev=>[{id:"tx"+Date.now(),timestamp:Date.now(),type,token,amount,recipient,ruleName,txHash,status:"FAILED"},.prev]);
+        setTxHistory(prev=>[{id:"tx"+Date.now(),timestamp:Date.now(),type,token,amount,recipient,ruleName,txHash,status:"FAILED"},...prev]);
         return false;
       }
     }
@@ -679,11 +679,11 @@ export default function App() {
     });
     if(!ok){
       addLog(`Failed: Insufficient ${token} for '${ruleName}'`,"error");
-      setTxHistory(prev=>[{id:"tx"+Date.now(),timestamp:Date.now(),type,token,amount,recipient,ruleName,txHash,status:"FAILED"},.prev]);
+      setTxHistory(prev=>[{id:"tx"+Date.now(),timestamp:Date.now(),type,token,amount,recipient,ruleName,txHash,status:"FAILED"},...prev]);
       return false;
     }
     if(type==="EXECUTE_RULE")setSpendCaps(prev=>prev.map(c=>c.token===token?{.c,spent:c.spent+amount}:c));
-    setTxHistory(prev=>[{id:"tx"+Date.now(),timestamp:Date.now(),type,token,amount,recipient,ruleName,txHash,status:"SUCCESS"},.prev]);
+    setTxHistory(prev=>[{id:"tx"+Date.now(),timestamp:Date.now(),type,token,amount,recipient,ruleName,txHash,status:"SUCCESS"},...prev]);
     if(type==="EXECUTE_RULE")addToast("Rule Executed",`'${ruleName}': ${amount} ${token} sent.`,"success");
     return true;
   };
