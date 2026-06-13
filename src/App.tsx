@@ -123,11 +123,11 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
         </div>
         <div style={{ display:"flex",alignItems:"center",gap:"28px" }}>
           {["How It Works","Features","Chains"].map(l => (
-            <a key={l} href={`#${l.replace(/ /g,"-").toLowerCase()}`} className="nav-link" style={{ fontSize:"13px",fontWeight:600,color:"rgba(180,190,200,.6)",textDecoration:"none",transition:"color .2s" }}>{l}</a>
+            <a key={l} href={`#${l.replace(/ /g,"-").toLowerCase()}`} className="nav-link" style={{ fontSize:"13px",fontWeight:600,color:"rgba(200,210,220,.75)",textDecoration:"none",transition:"color .2s" }}>{l}</a>
           ))}
           <button onClick={onConnect} disabled={loading} className="launch-btn" style={{ padding:"8px 20px",background:"#28a0f0",color:"#060A12",fontSize:"13px",fontWeight:800,borderRadius:"8px",border:"none",cursor:loading?"not-allowed":"pointer",fontFamily:"Space Grotesk,sans-serif",boxShadow:"0 4px 20px rgba(40,160,240,.3)",transition:"all .2s",letterSpacing:".01em",display:"flex",alignItems:"center",gap:7 }}>
             {loading ? <RefreshCw style={{width:"13px",height:"13px",animation:"spin 1s linear infinite"}}/> : <Wallet style={{width:"13px",height:"13px"}}/>}
-            {loading ? "Connecting..." : "Launch App"}
+            {loading ? "Connecting." : "Launch App"}
           </button>
         </div>
       </nav>
@@ -152,16 +152,16 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
             <span style={{ background:"linear-gradient(135deg,#28a0f0,#6FFFE9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text" }}>Never Sleeps</span>
           </h1>
 
-          <p className="fade3" style={{ fontSize:"clamp(16px,2.5vw,20px)",color:"rgba(200,209,217,.75)",lineHeight:1.75,maxWidth:580,margin:"0 auto 40px" }}>
-            Set payment rules once. Your autonomous treasury agent executes them 24/7 on Arbitrum and Robinhood Chain — no manual transactions, no missed payments, no human error.
+          <p className="fade3" style={{ fontSize:"clamp(16px,2.5vw,20px)",color:"rgba(220,228,236,.88)",lineHeight:1.75,maxWidth:580,margin:"0 auto 40px" }}>
+            Set payment rules once. Your autonomous treasury agent executes them 24/7 on Arbitrum and Robinhood Chain. no manual transactions, no missed payments, no human error.
           </p>
 
           <div className="fade4" style={{ display:"flex",alignItems:"center",gap:14,flexWrap:"wrap",justifyContent:"center",marginBottom:64 }}>
             <button onClick={onConnect} disabled={loading} className="launch-btn" style={{ padding:"16px 36px",background:"#28a0f0",color:"#060A12",fontSize:"16px",fontWeight:800,borderRadius:"12px",border:"none",cursor:loading?"not-allowed":"pointer",fontFamily:"Space Grotesk,sans-serif",boxShadow:"0 6px 28px rgba(40,160,240,.4)",transition:"all .2s",letterSpacing:".01em",display:"flex",alignItems:"center",gap:10 }}>
               {loading ? <RefreshCw style={{width:"18px",height:"18px",animation:"spin 1s linear infinite"}}/> : <Wallet style={{width:"18px",height:"18px"}}/>}
-              {loading ? "Connecting..." : "Connect Wallet — Launch App"}
+              {loading ? "Connecting." : "Connect Wallet. Launch App"}
             </button>
-            <a href="#how-it-works" style={{ padding:"16px 28px",color:"rgba(200,209,217,.8)",fontSize:"15px",fontWeight:700,borderRadius:"12px",border:"1px solid rgba(255,255,255,.1)",background:"rgba(16,22,32,.6)",backdropFilter:"blur(8px)",textDecoration:"none",transition:"all .2s" }}>
+            <a href="#how-it-works" style={{ padding:"16px 28px",color:"rgba(220,228,236,.9)",fontSize:"15px",fontWeight:700,borderRadius:"12px",border:"1px solid rgba(255,255,255,.1)",background:"rgba(16,22,32,.6)",backdropFilter:"blur(8px)",textDecoration:"none",transition:"all .2s" }}>
               See How It Works ↓
             </a>
           </div>
@@ -170,25 +170,25 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
           <div className="fade5" style={{ width:"100%",maxWidth:760,background:"rgba(6,10,16,.98)",border:"1px solid rgba(255,255,255,.08)",borderRadius:16,overflow:"hidden",boxShadow:"0 40px 100px rgba(0,0,0,.7)",animation:"float 6s ease-in-out infinite" }}>
             <div style={{ display:"flex",alignItems:"center",gap:8,padding:"12px 18px",background:"rgba(14,20,30,.9)",borderBottom:"1px solid rgba(255,255,255,.06)" }}>
               {["#ef4444","#f59e0b","#10b981"].map(c=><div key={c} style={{width:11,height:11,borderRadius:"50%",background:c}}/>)}
-              <span style={{ flex:1,textAlign:"center",fontFamily:"JetBrains Mono,monospace",fontSize:11,fontWeight:600,color:"rgba(150,160,170,.6)",letterSpacing:".1em" }}>cfo-agent · keeper-bot · arbitrum-sepolia</span>
+              <span style={{ flex:1,textAlign:"center",fontFamily:"JetBrains Mono,monospace",fontSize:11,fontWeight:600,color:"rgba(170,180,190,.7)",letterSpacing:".1em" }}>cfo-agent · keeper-bot · arbitrum-sepolia</span>
             </div>
             <div style={{ padding:"20px 24px",textAlign:"left" }}>
               {[
-                {c:"rgba(150,160,170,.5)",p:"[SYS]",m:"keeper bot initialized · polling every 8.5s"},
+                {c:"rgba(170,180,190,.65)",p:"[SYS]",m:"keeper bot initialized · polling every 8.5s"},
                 {c:"#4a7a55",p:"[POL]",m:"scanning RuleRegistry · 2 active rules detected"},
                 {c:"#f59e0b",p:"[EXE]",m:"dequeuing job #1041 · CORE CONTRIBUTOR PAYROLL"},
-                {c:"#6FFFE9",p:"[TX ]",m:"submitted · 0x7f3a2c...b2e1 · gas 142,300"},
+                {c:"#6FFFE9",p:"[TX ]",m:"submitted · 0x7f3a2c.b2e1 · gas 142,300"},
                 {c:"#10b981",p:"[OK ]",m:"confirmed · 200 USDC → dev lead · block #21,814,965"},
                 {c:"#4a7a55",p:"[POL]",m:"scanning RuleRegistry · next execution in 8.5s"},
               ].map((l,i)=>(
                 <div key={i} style={{ display:"flex",gap:12,padding:"3px 0",fontFamily:"JetBrains Mono,monospace",fontSize:12,lineHeight:1.9 }}>
-                  <span style={{ color:"rgba(150,160,170,.4)",width:60,flexShrink:0 }}>{`17:4${i}:0${i*3}`}</span>
+                  <span style={{ color:"rgba(170,180,190,.55)",width:60,flexShrink:0 }}>{`17:4${i}:0${i*3}`}</span>
                   <span style={{ color:l.c,fontWeight:700,width:46,flexShrink:0 }}>{l.p}</span>
-                  <span style={{ color:l.c === "#10b981" ? "#10b981" : "rgba(200,209,217,.7)" }}>{l.m}</span>
+                  <span style={{ color:l.c === "#10b981" ? "#10b981" : "rgba(220,228,236,.85)" }}>{l.m}</span>
                 </div>
               ))}
               <div style={{ display:"flex",gap:12,padding:"3px 0",fontFamily:"JetBrains Mono,monospace",fontSize:12,lineHeight:1.9,marginTop:2 }}>
-                <span style={{ color:"rgba(150,160,170,.4)",width:60,flexShrink:0 }}>17:43:51</span>
+                <span style={{ color:"rgba(170,180,190,.55)",width:60,flexShrink:0 }}>17:43:51</span>
                 <span style={{ color:"#28a0f0",fontWeight:700 }}>$</span>
                 <span style={{ display:"inline-block",width:8,height:14,background:"#28a0f0",animation:"pulse2 .8s infinite",verticalAlign:"middle",marginLeft:4,borderRadius:1 }}/>
               </div>
@@ -207,7 +207,7 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
             ].map((s,i)=>(
               <div key={i} style={{ textAlign:"center",padding:"28px 20px",borderRight:i<3?"1px solid rgba(255,255,255,.06)":"none" }}>
                 <div style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(28px,5vw,38px)",fontWeight:900,background:"linear-gradient(135deg,#28a0f0,#6FFFE9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",letterSpacing:"-.02em",marginBottom:4 }}>{s.n}</div>
-                <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,fontWeight:700,color:"rgba(150,160,170,.55)",letterSpacing:".15em",textTransform:"uppercase" }}>{s.l}</div>
+                <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,fontWeight:700,color:"rgba(170,180,190,.68)",letterSpacing:".15em",textTransform:"uppercase" }}>{s.l}</div>
               </div>
             ))}
           </div>
@@ -218,11 +218,11 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
           <div style={{ textAlign:"center",marginBottom:60 }}>
             <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:11,fontWeight:700,color:"#28a0f0",letterSpacing:".2em",textTransform:"uppercase",marginBottom:12 }}>// HOW IT WORKS</div>
             <h2 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(28px,5vw,46px)",fontWeight:900,color:"#fff",letterSpacing:"-.02em",lineHeight:1.1,marginBottom:14 }}>Three steps to<br/>autonomous treasury</h2>
-            <p style={{ fontSize:16,color:"rgba(200,209,217,.7)",lineHeight:1.75,maxWidth:500,margin:"0 auto" }}>From natural language to on-chain execution in under 60 seconds.</p>
+            <p style={{ fontSize:16,color:"rgba(220,228,236,.85)",lineHeight:1.75,maxWidth:500,margin:"0 auto" }}>From natural language to on-chain execution in under 60 seconds.</p>
           </div>
           <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:20 }}>
             {[
-              {n:"01",icon:"🔐",t:"Connect & Deploy",d:"Sign in with MetaMask using SIWE. Your personal CFOAgent smart contract is automatically deployed on Arbitrum — one per wallet, non-custodial, fully yours.",tag:"AgentFactory.sol"},
+              {n:"01",icon:"🔐",t:"Connect & Deploy",d:"Sign in with MetaMask using SIWE. Your personal CFOAgent smart contract is automatically deployed on Arbitrum: one per wallet, non-custodial, fully yours.",tag:"AgentFactory.sol"},
               {n:"02",icon:"🤖",t:"Describe in English",d:'Type "Pay dev lead 500 USDC weekly" and our AI parses it into a production-ready on-chain payment rule. No code. No ABI. No manual transactions.',tag:"AI Copilot"},
               {n:"03",icon:"⚡",t:"Keeper Executes Forever",d:"The keeper bot polls your RuleRegistry every 8.5 seconds. When conditions are met, it fires on-chain transactions automatically with full audit trails.",tag:"ExecutionSequencer.sol"},
             ].map((s,i)=>(
@@ -234,7 +234,7 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
                 </div>
                 <div style={{ fontSize:28,marginBottom:14 }}>{s.icon}</div>
                 <h3 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:18,fontWeight:800,color:"#fff",marginBottom:10,letterSpacing:"-.01em" }}>{s.t}</h3>
-                <p style={{ fontSize:13,color:"rgba(200,209,217,.65)",lineHeight:1.75,marginBottom:16 }}>{s.d}</p>
+                <p style={{ fontSize:13,color:"rgba(220,228,236,.85)",lineHeight:1.75,marginBottom:16 }}>{s.d}</p>
                 <span style={{ display:"inline-flex",alignItems:"center",gap:5,fontFamily:"JetBrains Mono,monospace",fontSize:10,fontWeight:700,color:"#28a0f0",background:"rgba(40,160,240,.08)",border:"1px solid rgba(40,160,240,.15)",borderRadius:6,padding:"4px 10px",letterSpacing:".06em" }}>{s.tag}</span>
               </div>
             ))}
@@ -260,7 +260,7 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
                 <div style={{ width:42,height:42,borderRadius:10,background:f.c,border:`1px solid ${f.b}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0 }}>{f.icon}</div>
                 <div>
                   <div style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:15,fontWeight:700,color:"#fff",marginBottom:6,letterSpacing:"-.01em" }}>{f.t}</div>
-                  <div style={{ fontSize:13,color:"rgba(200,209,217,.6)",lineHeight:1.7 }}>{f.d}</div>
+                  <div style={{ fontSize:13,color:"rgba(220,228,236,.8)",lineHeight:1.7 }}>{f.d}</div>
                 </div>
               </div>
             ))}
@@ -284,14 +284,14 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
                   {c.logo}
                   <div>
                     <div style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:17,fontWeight:800,color:"#fff",marginBottom:2 }}>{c.name}</div>
-                    <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(150,160,170,.5)",letterSpacing:".1em" }}>CHAIN ID: {c.id}</div>
+                    <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(170,180,190,.65)",letterSpacing:".1em" }}>CHAIN ID: {c.id}</div>
                   </div>
                   <div style={{ marginLeft:"auto",fontSize:9,fontWeight:700,color:c.color,background:`${c.color}15`,border:`1px solid ${c.color}40`,borderRadius:6,padding:"3px 9px",fontFamily:"JetBrains Mono,monospace",letterSpacing:".1em" }}>{c.status}</div>
                 </div>
-                <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(150,160,170,.5)",lineHeight:2.2,marginBottom:14 }}>
-                  <div>Factory:&nbsp;&nbsp; {c.factory.slice(0,18)}...</div>
-                  <div>Registry:&nbsp; {c.registry.slice(0,18)}...</div>
-                  <div>Sequencer: {c.sequencer.slice(0,18)}...</div>
+                <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(170,180,190,.65)",lineHeight:2.2,marginBottom:14 }}>
+                  <div>Factory:&nbsp;&nbsp; {c.factory.slice(0,18)}.</div>
+                  <div>Registry:&nbsp; {c.registry.slice(0,18)}.</div>
+                  <div>Sequencer: {c.sequencer.slice(0,18)}.</div>
                 </div>
                 <a href={`${c.explorer}/address/${c.factory}`} target="_blank" rel="noreferrer" style={{ display:"flex",alignItems:"center",gap:5,fontFamily:"JetBrains Mono,monospace",fontSize:10,fontWeight:700,color:c.color,textDecoration:"none",letterSpacing:".06em" }}>
                   <ExternalLink style={{width:10,height:10}}/> View on Explorer
@@ -306,12 +306,12 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
           <div style={{ position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:600,height:300,background:"radial-gradient(ellipse,rgba(40,160,240,.1) 0%,transparent 65%)",pointerEvents:"none" }}/>
           <div style={{ position:"relative",zIndex:1 }}>
             <h2 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(30px,6vw,54px)",fontWeight:900,color:"#fff",letterSpacing:"-.02em",marginBottom:14,lineHeight:1.1 }}>Ready to automate<br/>your treasury?</h2>
-            <p style={{ fontSize:17,color:"rgba(200,209,217,.7)",lineHeight:1.75,marginBottom:40,maxWidth:480,margin:"0 auto 40px" }}>Connect your wallet and deploy your personal CFO Agent in under 60 seconds. Non-custodial. No setup fees.</p>
+            <p style={{ fontSize:17,color:"rgba(220,228,236,.85)",lineHeight:1.75,marginBottom:40,maxWidth:480,margin:"0 auto 40px" }}>Connect your wallet and deploy your personal CFO Agent in under 60 seconds. Non-custodial. No setup fees.</p>
             <button onClick={onConnect} disabled={loading} className="launch-btn" style={{ padding:"18px 44px",background:"#28a0f0",color:"#060A12",fontSize:"17px",fontWeight:800,borderRadius:"14px",border:"none",cursor:loading?"not-allowed":"pointer",fontFamily:"Space Grotesk,sans-serif",boxShadow:"0 6px 32px rgba(40,160,240,.4)",transition:"all .2s",letterSpacing:".01em",display:"inline-flex",alignItems:"center",gap:12 }}>
               {loading ? <RefreshCw style={{width:"20px",height:"20px",animation:"spin 1s linear infinite"}}/> : <Wallet style={{width:"20px",height:"20px"}}/>}
-              {loading ? "Connecting..." : "Connect Wallet — It's Free"}
+              {loading ? "Connecting." : "Connect Wallet. It's Free"}
             </button>
-            <div style={{ marginTop:20,fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(100,120,140,.5)",letterSpacing:".1em" }}>
+            <div style={{ marginTop:20,fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(140,160,180,.6)",letterSpacing:".1em" }}>
               SECURED WITH SIWE · EIP-4361 · NON-CUSTODIAL · ARBITRUM SEPOLIA
             </div>
           </div>
@@ -323,7 +323,7 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
             <CFOLogo size={20}/>
             <span style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:13,fontWeight:700,color:"rgba(255,255,255,.4)" }}>CFO Agent · Arbitrum Open House London 2026</span>
           </div>
-          <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(150,160,170,.35)",letterSpacing:".1em" }}>
+          <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(170,180,190,.5)",letterSpacing:".1em" }}>
             ARBITRUM SEPOLIA · ROBINHOOD CHAIN · NON-CUSTODIAL
           </div>
         </footer>
@@ -483,7 +483,7 @@ function DashboardView({ tokens, rules, txHistory, keeperLogs, chain, agentAddr,
             <div key={c.label} style={{ display:"flex", gap:"8px", fontSize:"11px", fontFamily:"JetBrains Mono,monospace" }}>
               <span style={{ color:"rgba(150,160,170,0.5)", flexShrink:0 }}>{c.label}:</span>
               <a href={c.addr.startsWith("0x")?`${chain.explorer}/address/${c.addr}`:"#"} target="_blank" rel="noreferrer" style={{ color:"rgba(40,160,240,0.8)", textDecoration:"none", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                {c.addr.startsWith("0x") ? `${c.addr.slice(0,10)}...${c.addr.slice(-6)}` : c.addr}
+                {c.addr.startsWith("0x") ? `${c.addr.slice(0,10)}.${c.addr.slice(-6)}` : c.addr}
               </a>
             </div>
           ))}
@@ -512,7 +512,7 @@ function SettingsView({ address, agentAddr, chain, chains, activeChain, switchCh
           <div key={row.key} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 0", borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
             <span style={{ fontSize:"12px", color:"rgba(150,160,170,0.6)", fontFamily:"Inter,sans-serif" }}>{row.label}</span>
             <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-              <span style={{ fontSize:"12px", fontWeight:600, color:"#f0f4f8", fontFamily:"JetBrains Mono,monospace" }}>{row.value.length>30?row.value.slice(0,14)+"..."+row.value.slice(-8):row.value}</span>
+              <span style={{ fontSize:"12px", fontWeight:600, color:"#f0f4f8", fontFamily:"JetBrains Mono,monospace" }}>{row.value.length>30?row.value.slice(0,14)+"."+row.value.slice(-8):row.value}</span>
               {row.value.startsWith("0x") && <button onClick={()=>copy(row.value,row.key)} style={{ background:"none", border:"none", cursor:"pointer", color:copied===row.key?"#10b981":"rgba(150,160,170,0.4)", padding:"2px" }}>{copied===row.key?<Check style={{width:"12px",height:"12px"}}/>:<Copy style={{width:"12px",height:"12px"}}/>}</button>}
             </div>
           </div>
@@ -529,7 +529,7 @@ function SettingsView({ address, agentAddr, chain, chains, activeChain, switchCh
                 {activeChain===key && <div style={{ fontSize:"9px", fontWeight:700, color:c.color, background:`${c.color}15`, border:`1px solid ${c.color}40`, borderRadius:"4px", padding:"2px 7px", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.1em" }}>ACTIVE</div>}
               </div>
               <div style={{ display:"flex", flexDirection:"column", gap:"4px" }}>
-                {[["Chain ID", c.id],["Factory", c.factory.slice(0,14)+"..."],["Registry", c.registry.slice(0,14)+"..."]].map(([l,v]) => (
+                {[["Chain ID", c.id],["Factory", c.factory.slice(0,14)+"."],["Registry", c.registry.slice(0,14)+"."]].map(([l,v]) => (
                   <div key={l as string} style={{ display:"flex", justifyContent:"space-between", fontSize:"10px", fontFamily:"JetBrains Mono,monospace" }}>
                     <span style={{ color:"rgba(150,160,170,0.4)" }}>{l}</span>
                     <span style={{ color:"rgba(200,209,217,0.7)" }}>{v}</span>
@@ -551,7 +551,7 @@ function SettingsView({ address, agentAddr, chain, chains, activeChain, switchCh
 export default function App() {
   const [phase, setPhase]         = useState<"auth"|"connecting"|"app"|"error">("auth");
   const [authStep, setAuthStep]   = useState("connecting");
-  const [authMsg, setAuthMsg]     = useState("Initializing...");
+  const [authMsg, setAuthMsg]     = useState("Initializing.");
   const [authErr, setAuthErr]     = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [address, setAddress]     = useState("");
@@ -589,19 +589,19 @@ export default function App() {
   const [isKeeperPolling, setIsKeeperPolling] = useState(true);
   const [keeperLogs, setKeeperLogs] = useState<KeeperLog[]>([
     { id:"l1", timestamp:Date.now()-5000, message:"Keeper bot initialized. Polling every 8.5s (simulated)", type:"info" },
-    { id:"l2", timestamp:Date.now()-3000, message:`Agent contract verified at 0xE13F...`, type:"info" },
-    { id:"l3", timestamp:Date.now()-1000, message:"Scanning RuleRegistry... 2 active rules detected.", type:"success" },
+    { id:"l2", timestamp:Date.now()-3000, message:`Agent contract verified at 0xE13F.`, type:"info" },
+    { id:"l3", timestamp:Date.now()-1000, message:"Scanning RuleRegistry. 2 active rules detected.", type:"success" },
   ]);
   const [txHistory, setTxHistory] = useState<TxLog[]>([]);
   const [toasts, setToasts] = useState<any[]>([]);
 
   const addToast = (title: string, description: string, type: string) => {
     const id = "t_" + Date.now();
-    setToasts(prev => { if(prev.some(t=>t.title===title&&Date.now()-t.timestamp<3000))return prev; return [{id,title,description,type,timestamp:Date.now()},...prev]; });
+    setToasts(prev => { if(prev.some(t=>t.title===title&&Date.now()-t.timestamp<3000))return prev; return [{id,title,description,type,timestamp:Date.now()},.prev]; });
     setTimeout(()=>setToasts(prev=>prev.filter(t=>t.id!==id)),5000);
   };
   const addLog = (message: string, type: "info"|"success"|"warn"|"error") => {
-    setKeeperLogs(prev=>[{id:"l"+Date.now()+"_"+Math.random(),timestamp:Date.now(),message,type},...prev.slice(0,99)]);
+    setKeeperLogs(prev=>[{id:"l"+Date.now()+"_"+Math.random(),timestamp:Date.now(),message,type},.prev.slice(0,99)]);
   };
 
   // Navigate without scroll jump
@@ -615,18 +615,18 @@ export default function App() {
   async function doConnect() {
     SFX.init(); setAuthLoading(true); setPhase("connecting");
     try {
-      setAuthStep("connecting"); setAuthMsg("Connecting wallet...");
+      setAuthStep("connecting"); setAuthMsg("Connecting wallet.");
       if(!hasWallet()) throw new Error("MetaMask not detected. Please install MetaMask.");
       const addr = await connectWallet(); setAddress(addr);
-      setAuthStep("signing"); setAuthMsg("Sign message to verify ownership...");
+      setAuthStep("signing"); setAuthMsg("Sign message to verify ownership.");
       await signSiwe(addr);
-      setAuthStep("checking"); setAuthMsg("Checking for existing agent...");
+      setAuthStep("checking"); setAuthMsg("Checking for existing agent.");
       const [has, total] = await Promise.all([checkHasAgent(addr), getTotalAgents()]);
       setTotalUsers(total);
       let agentAddress = "";
       if(has) { agentAddress = await getAgentAddress(addr)||""; setAgentAddr(agentAddress); }
       else {
-        setIsNew(true); setAuthStep("deploying"); setAuthMsg("Deploying your CFO Agent on Arbitrum...");
+        setIsNew(true); setAuthStep("deploying"); setAuthMsg("Deploying your CFO Agent on Arbitrum.");
         SFX.deploy();
         try { agentAddress = await deployAgent()||""; } catch { agentAddress = addr.slice(0,22)+"1e77"; }
         setAgentAddr(agentAddress);
@@ -649,7 +649,7 @@ export default function App() {
 
   async function switchChain(key: string) {
     const c = CHAINS[key]; setActiveChain(key);
-    addLog(`[CHAIN] Switching to ${c.name}...`, "info");
+    addLog(`[CHAIN] Switching to ${c.name}.`, "info");
     try {
       await (window as any).ethereum?.request({method:"wallet_switchEthereumChain",params:[{chainId:c.hex}]});
     } catch(e:any) {
@@ -665,7 +665,7 @@ export default function App() {
       if(cap&&cap.cap>0&&(cap.spent+amount)>cap.cap){
         addLog(`Blocked: '${ruleName}' exceeds daily ${token} cap.`,"error");
         addToast("Rule Blocked",`'${ruleName}' exceeds spend cap.`,"error");
-        setTxHistory(prev=>[{id:"tx"+Date.now(),timestamp:Date.now(),type,token,amount,recipient,ruleName,txHash,status:"FAILED"},...prev]);
+        setTxHistory(prev=>[{id:"tx"+Date.now(),timestamp:Date.now(),type,token,amount,recipient,ruleName,txHash,status:"FAILED"},.prev]);
         return false;
       }
     }
@@ -675,22 +675,22 @@ export default function App() {
       if(idx<0){ok=false;return prev;}
       const newBal=type==="DEPOSIT"?prev[idx].balance+amount:prev[idx].balance-amount;
       if(newBal<0&&type!=="DEPOSIT"){ok=false;return prev;}
-      const n=[...prev];n[idx]={...prev[idx],balance:newBal};return n;
+      const n=[.prev];n[idx]={.prev[idx],balance:newBal};return n;
     });
     if(!ok){
       addLog(`Failed: Insufficient ${token} for '${ruleName}'`,"error");
-      setTxHistory(prev=>[{id:"tx"+Date.now(),timestamp:Date.now(),type,token,amount,recipient,ruleName,txHash,status:"FAILED"},...prev]);
+      setTxHistory(prev=>[{id:"tx"+Date.now(),timestamp:Date.now(),type,token,amount,recipient,ruleName,txHash,status:"FAILED"},.prev]);
       return false;
     }
-    if(type==="EXECUTE_RULE")setSpendCaps(prev=>prev.map(c=>c.token===token?{...c,spent:c.spent+amount}:c));
-    setTxHistory(prev=>[{id:"tx"+Date.now(),timestamp:Date.now(),type,token,amount,recipient,ruleName,txHash,status:"SUCCESS"},...prev]);
+    if(type==="EXECUTE_RULE")setSpendCaps(prev=>prev.map(c=>c.token===token?{.c,spent:c.spent+amount}:c));
+    setTxHistory(prev=>[{id:"tx"+Date.now(),timestamp:Date.now(),type,token,amount,recipient,ruleName,txHash,status:"SUCCESS"},.prev]);
     if(type==="EXECUTE_RULE")addToast("Rule Executed",`'${ruleName}': ${amount} ${token} sent.`,"success");
     return true;
   };
 
   const handleDeposit = (sym:string,amt:number)=>{triggerTx("DEPOSIT",sym,amt);addLog(`Deposited ${amt} ${sym}.`,"success");};
   const handleWithdraw = (sym:string,amt:number)=>{if(triggerTx("WITHDRAW",sym,amt,address))addLog(`Withdrew ${amt} ${sym}.`,"success");};
-  const handleUpdateCap = (token:string,cap:number)=>{setSpendCaps(prev=>prev.map(c=>c.token===token?{...c,cap}:c));addLog(`Updated ${token} cap to ${cap}.`,"info");};
+  const handleUpdateCap = (token:string,cap:number)=>{setSpendCaps(prev=>prev.map(c=>c.token===token?{.c,cap}:c));addLog(`Updated ${token} cap to ${cap}.`,"info");};
   const handleEmergencyWithdraw = ()=>tokens.forEach(t=>{if(t.balance>0){triggerTx("EMERGENCY_WITHDRAW",t.symbol,t.balance,address);addLog(`EMERGENCY: evacuated ${t.balance} ${t.symbol}.`,"warn");}});
   const handleReset = ()=>{
     setTokens([
@@ -704,14 +704,14 @@ export default function App() {
   };
   const handleAddRule = (data:Omit<PaymentRule,"id"|"createdTime">)=>{
     const id="rule_"+Date.now();
-    setRules(prev=>[...prev,{...data,id,nextExecution:data.frequencySeconds>0?Date.now()+(data.frequencySeconds*1000):undefined,createdTime:Date.now()}]);
+    setRules(prev=>[.prev,{.data,id,nextExecution:data.frequencySeconds>0?Date.now()+(data.frequencySeconds*1000):undefined,createdTime:Date.now()}]);
     addLog(`Rule registered: ${data.name}`,"success");
   };
-  const handleToggleRule = (id:string)=>setRules(prev=>prev.map(r=>{if(r.id!==id)return r;const next=r.status===RuleStatus.ACTIVE?RuleStatus.PAUSED:RuleStatus.ACTIVE;addLog(`Rule '${r.name}' → ${next}`,"info");return{...r,status:next,nextExecution:next===RuleStatus.ACTIVE&&r.frequencySeconds>0?Date.now()+(r.frequencySeconds*1000):undefined};}));
+  const handleToggleRule = (id:string)=>setRules(prev=>prev.map(r=>{if(r.id!==id)return r;const next=r.status===RuleStatus.ACTIVE?RuleStatus.PAUSED:RuleStatus.ACTIVE;addLog(`Rule '${r.name}' → ${next}`,"info");return{.r,status:next,nextExecution:next===RuleStatus.ACTIVE&&r.frequencySeconds>0?Date.now()+(r.frequencySeconds*1000):undefined};}));
   const handleDeleteRule = (id:string)=>{const r=rules.find(x=>x.id===id);if(r){setRules(prev=>prev.filter(x=>x.id!==id));addLog(`Rule '${r.name}' removed.`,"warn");}};
   const handleExecuteNow = (id:string)=>{
     const rule=rules.find(r=>r.id===id);if(!rule)return;
-    if(isKillSwitchActive){addLog("Kill switch active — blocked.","error");return;}
+    if(isKillSwitchActive){addLog("Kill switch active. blocked.","error");return;}
     if(rule.ruleType===RuleType.SWEEP){
       const tok=tokens.find(t=>t.symbol===rule.token);
       if(tok&&tok.balance>rule.amount){const excess=tok.balance-rule.amount;if(triggerTx("EXECUTE_RULE",rule.token,excess,rule.recipient,rule.name))addLog(`[SWEEP] ${excess} ${rule.token} swept.`,"success");}
@@ -719,7 +719,7 @@ export default function App() {
     } else {
       if(triggerTx("EXECUTE_RULE",rule.token,rule.amount,rule.recipient,rule.name))addLog(`[PAYROLL] ${rule.amount} ${rule.token} → ${rule.destinationName}`,"success");
     }
-    setRules(prev=>prev.map(r=>r.id===id?{...r,lastExecuted:Date.now(),nextExecution:r.frequencySeconds>0?Date.now()+(r.frequencySeconds*1000):undefined}:r));
+    setRules(prev=>prev.map(r=>r.id===id?{.r,lastExecuted:Date.now(),nextExecution:r.frequencySeconds>0?Date.now()+(r.frequencySeconds*1000):undefined}:r));
   };
 
   // Keeper polling
@@ -727,8 +727,8 @@ export default function App() {
     if(phase!=="app"||!isKeeperPolling)return;
     const interval=setInterval(()=>{
       const now=Date.now();
-      addLog("[KEEPER] Scanning RuleRegistry on "+chain.name+"...","info");
-      if(isKillSwitchActive){addLog("[KEEPER] Kill switch active — paused.","warn");return;}
+      addLog("[KEEPER] Scanning RuleRegistry on "+chain.name+".","info");
+      if(isKillSwitchActive){addLog("[KEEPER] Kill switch active. paused.","warn");return;}
       rules.forEach(rule=>{
         if(rule.status!==RuleStatus.ACTIVE||!rule.nextExecution||now<rule.nextExecution)return;
         if(rule.ruleType===RuleType.SWEEP){
@@ -737,7 +737,7 @@ export default function App() {
         } else {
           if(triggerTx("EXECUTE_RULE",rule.token,rule.amount,rule.recipient,rule.name))addLog(`[AUTO PAYROLL] ${rule.amount} ${rule.token} → ${rule.destinationName}`,"success");
         }
-        setRules(prev=>prev.map(r=>r.id===rule.id?{...r,lastExecuted:now,nextExecution:r.frequencySeconds>0?now+(r.frequencySeconds*1000):undefined}:r));
+        setRules(prev=>prev.map(r=>r.id===rule.id?{.r,lastExecuted:now,nextExecution:r.frequencySeconds>0?now+(r.frequencySeconds*1000):undefined}:r));
       });
     },8500);
     return()=>clearInterval(interval);
@@ -764,12 +764,12 @@ export default function App() {
       case "treasury":  return <TreasuryOverview tokens={tokens} onDeposit={handleDeposit} onWithdraw={handleWithdraw} agentAddress={agentAddr||"0xE13F9e4C8d0c2Ac9fe11267597f74Fdf60A79Ba90"} ownerAddress={address}/>;
       case "rules":     return <RuleRegistryView rules={rules} onAddRule={handleAddRule} onToggleStatus={handleToggleRule} onDeleteRule={handleDeleteRule} onExecuteRuleNow={handleExecuteNow} spendCaps={spendCaps} tokens={tokens} baseGasPrice={baseGasPrice}/>;
       case "ai":        return <GeminiAgentView onRegisterRule={handleAddRule} onAddSystemLogMsg={addLog} tokens={tokens} rules={rules}/>;
-      case "keeper":    return <KeeperSimulatorView isKeeperAutoPolling={isKeeperPolling} onToggleKeeperAutoPolling={()=>{setIsKeeperPolling(v=>!v);addLog(`Keeper: ${!isKeeperPolling?"ACTIVE":"IDLE"}`,"info");}} onTriggerKeeperAuditNow={()=>{addLog("[KEEPER] Forcing audit...","info");rules.filter(r=>r.status===RuleStatus.ACTIVE).forEach(r=>handleExecuteNow(r.id));}} keeperLogs={keeperLogs} onClearKeeperLogs={()=>setKeeperLogs([])} txHistory={txHistory}/>;
+      case "keeper":    return <KeeperSimulatorView isKeeperAutoPolling={isKeeperPolling} onToggleKeeperAutoPolling={()=>{setIsKeeperPolling(v=>!v);addLog(`Keeper: ${!isKeeperPolling?"ACTIVE":"IDLE"}`,"info");}} onTriggerKeeperAuditNow={()=>{addLog("[KEEPER] Forcing audit.","info");rules.filter(r=>r.status===RuleStatus.ACTIVE).forEach(r=>handleExecuteNow(r.id));}} keeperLogs={keeperLogs} onClearKeeperLogs={()=>setKeeperLogs([])} txHistory={txHistory}/>;
       case "analytics": return <TreasuryAnalyticsView tokens={tokens} rules={rules}/>;
       case "safety":    return <SafetyAuditView isKillSwitchActive={isKillSwitchActive} onToggleKillSwitch={()=>{setIsKillSwitchActive(v=>!v);addLog(`Circuit breaker: ${!isKillSwitchActive?"ACTIVE":"INACTIVE"}`,"warn");}} spendCaps={spendCaps} onUpdateCap={handleUpdateCap} onEmergencyWithdrawAll={handleEmergencyWithdraw}/>;
       case "multisig":  return <MultiSigDashboard onAddSystemLogMsg={addLog} isKillSwitchActive={isKillSwitchActive}/>;
       case "gas":       return <GasEfficiencyMeter txCount={txHistory.length} baseGasPrice={baseGasPrice} setBaseGasPrice={(g)=>{setBaseGasPrice(g);if(g>75)addToast("High Gas",`Gas at ${g} Gwei.`,"gas");}}/>;
-      case "oracle":    return <OracleFeedSimulator tokens={tokens} onPriceChange={(sym,price)=>setTokens(prev=>prev.map(t=>t.symbol===sym?{...t,usdPrice:price}:t))} onAddSystemLogMsg={addLog}/>;
+      case "oracle":    return <OracleFeedSimulator tokens={tokens} onPriceChange={(sym,price)=>setTokens(prev=>prev.map(t=>t.symbol===sym?{.t,usdPrice:price}:t))} onAddSystemLogMsg={addLog}/>;
       case "settings":  return <SettingsView address={address} agentAddr={agentAddr} chain={chain} chains={CHAINS} activeChain={activeChain} switchChain={switchChain} totalUsers={totalUsers} isNew={isNew}/>;
       default: return null;
     }
@@ -853,7 +853,7 @@ export default function App() {
         {/* Footer */}
         <div style={{ padding:"12px 14px", borderTop:"1px solid rgba(255,255,255,0.05)", flexShrink:0 }}>
           <div style={{ fontSize:"10px", color:"rgba(150,160,170,0.4)", fontFamily:"JetBrains Mono,monospace", marginBottom:"6px", letterSpacing:"0.08em" }}>CONNECTED</div>
-          <div style={{ fontSize:"11px", fontWeight:600, color:"rgba(40,160,240,0.8)", fontFamily:"JetBrains Mono,monospace", marginBottom:"4px" }}>{truncAddr(address)||"—"}</div>
+          <div style={{ fontSize:"11px", fontWeight:600, color:"rgba(40,160,240,0.8)", fontFamily:"JetBrains Mono,monospace", marginBottom:"4px" }}>{truncAddr(address)||"-"}</div>
           <div style={{ fontSize:"10px", color:"rgba(150,160,170,0.4)", fontFamily:"JetBrains Mono,monospace", marginBottom:"10px" }}>{chain.shortName} · {totalUsers.toString()} users</div>
 
           {/* Chain switcher */}
@@ -916,10 +916,10 @@ export default function App() {
               <div style={{ position:"fixed", inset:0, zIndex:40 }} onClick={()=>setWalletDrop(false)}/>
               <div style={{ position:"absolute", top:"56px", right:"16px", width:"260px", background:"rgba(14,20,30,0.96)", backdropFilter:"blur(20px)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"12px", padding:"12px", zIndex:50, boxShadow:"0 20px 60px rgba(0,0,0,0.6)" }}>
                 <div style={{ fontSize:"9px", fontWeight:700, color:"rgba(150,160,170,0.5)", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.15em", marginBottom:"10px", paddingBottom:"8px", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>SESSION</div>
-                {[["Wallet",address||"—"],["Agent",agentAddr||"—"],["Network",chain.name],["Users",totalUsers.toString()]].map(([l,v]) => (
+                {[["Wallet",address||"-"],["Agent",agentAddr||"-"],["Network",chain.name],["Users",totalUsers.toString()]].map(([l,v]) => (
                   <div key={l} style={{ display:"flex", justifyContent:"space-between", padding:"5px 0", fontSize:"11px", fontFamily:"JetBrains Mono,monospace", borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
                     <span style={{ color:"rgba(150,160,170,0.4)" }}>{l}</span>
-                    <span style={{ color:"rgba(200,209,217,0.8)" }}>{String(v).length>20?String(v).slice(0,12)+"...":v}</span>
+                    <span style={{ color:"rgba(200,209,217,0.8)" }}>{String(v).length>20?String(v).slice(0,12)+".":v}</span>
                   </div>
                 ))}
                 <button onClick={()=>{disconnect();setWalletDrop(false);}} style={{ width:"100%", marginTop:"10px", padding:"8px", fontSize:"11px", fontWeight:700, color:"rgba(239,68,68,0.8)", background:"rgba(239,68,68,0.06)", border:"1px solid rgba(239,68,68,0.15)", borderRadius:"8px", cursor:"pointer", fontFamily:"Inter,sans-serif" }}>
@@ -930,7 +930,7 @@ export default function App() {
           </div>
         </header>
 
-        {/* Content area — NO auto-scroll */}
+        {/* Content area. NO auto-scroll */}
         <div ref={contentRef} style={{ flex:1, overflowY:"auto", padding:"24px", background:"radial-gradient(ellipse 80% 60% at 10% 0%, rgba(40,160,240,0.04) 0%, transparent 50%), #080c10" }}>
           {renderView()}
         </div>
