@@ -103,29 +103,29 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
         .fade3{animation:fadeUp .6s .3s both}
         .fade4{animation:fadeUp .6s .4s both}
         .fade5{animation:fadeUp .6s .5s both}
-        .feature-card:hover{border-color:rgba(40,160,240,...3)!important;background:rgba(16,24,36,...9)!important;transform:translateY(-2px)}
-        .step-card:hover{border-color:rgba(40,160,240,...25)!important}
-        .launch-btn:hover{background:#3ab0ff!important;box-shadow:0 8px 40px rgba(40,160,240,...5)!important;transform:translateY(-1px)}
+        .feature-card:hover{border-color:rgba(40,160,240,.3)!important;background:rgba(16,24,36,.9)!important;transform:translateY(-2px)}
+        .step-card:hover{border-color:rgba(40,160,240,.25)!important}
+        .launch-btn:hover{background:#3ab0ff!important;box-shadow:0 8px 40px rgba(40,160,240,.5)!important;transform:translateY(-1px)}
         .nav-link:hover{color:#fff!important}
         ::-webkit-scrollbar{width:4px}
-        ::-webkit-scrollbar-thumb{background:rgba(40,160,240,...2);border-radius:4px}
+        ::-webkit-scrollbar-thumb{background:rgba(40,160,240,.2);border-radius:4px}
       `}</style>
 
       {/* Scanline */}
-      <div style={{ position:"fixed",left:0,right:0,height:"1px",background:"linear-gradient(transparent,rgba(40,160,240,...25),transparent)",pointerEvents:"none",zIndex:999,top:0,animation:"scan2 8s linear infinite" }}/>
+      <div style={{ position:"fixed",left:0,right:0,height:"1px",background:"linear-gradient(transparent,rgba(40,160,240,.25),transparent)",pointerEvents:"none",zIndex:999,top:0,animation:"scan2 8s linear infinite" }}/>
 
       {/* NAV */}
-      <nav style={{ position:"fixed",top:0,left:0,right:0,zIndex:100,padding:"0 40px",height:"60px",display:"flex",alignItems:"center",justifyContent:"space-between",background:scrolled?"rgba(6,10,18,...95)":"transparent",backdropFilter:scrolled?"blur(20px)":"none",borderBottom:scrolled?"1px solid rgba(255,255,255,...06)":"none",transition:"all .3s" }}>
+      <nav style={{ position:"fixed",top:0,left:0,right:0,zIndex:100,padding:"0 clamp(24px,6vw,80px)",height:"60px",display:"flex",alignItems:"center",justifyContent:"space-between",background:scrolled?"rgba(6,10,18,.95)":"transparent",backdropFilter:scrolled?"blur(20px)":"none",borderBottom:scrolled?"1px solid rgba(255,255,255,.06)":"none",transition:"all .3s" }}>
         <div style={{ display:"flex",alignItems:"center",gap:"10px" }}>
           <CFOLogo size={28}/>
-          <span style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"17px",fontWeight:800,color:"#fff",letterSpacing:"-.01em" }}>CFO Agent</span>
-          <span style={{ fontSize:"9px",fontWeight:700,color:"#10b981",background:"rgba(16,185,129,...1)",border:"1px solid rgba(16,185,129,...25)",borderRadius:"999px",padding:"2px 8px",fontFamily:"JetBrains Mono,monospace",letterSpacing:".1em",marginLeft:4 }}>LIVE</span>
+          <span style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(17px,1.3vw,24px)",fontWeight:800,color:"#fff",letterSpacing:"-.01em" }}>CFO Agent</span>
+          <span style={{ fontSize:"clamp(9px,0.7vw,12px)",fontWeight:700,color:"#10b981",background:"rgba(16,185,129,.1)",border:"1px solid rgba(16,185,129,.25)",borderRadius:"999px",padding:"2px 8px",fontFamily:"JetBrains Mono,monospace",letterSpacing:".1em",marginLeft:4 }}>LIVE</span>
         </div>
         <div style={{ display:"flex",alignItems:"center",gap:"28px" }}>
           {["How It Works","Features","Chains"].map(l => (
-            <a key={l} href={`#${l.replace(/ /g,"-").toLowerCase()}`} className="nav-link" style={{ fontSize:"13px",fontWeight:600,color:"rgba(200,210,220,...75)",textDecoration:"none",transition:"color .2s" }}>{l}</a>
+            <a key={l} href={`#${l.replace(/ /g,"-").toLowerCase()}`} className="nav-link" style={{ fontSize:"clamp(13px,0.9vw,16px)",fontWeight:600,color:"rgba(200,210,220,.75)",textDecoration:"none",transition:"color .2s" }}>{l}</a>
           ))}
-          <button onClick={onConnect} disabled={loading} className="launch-btn" style={{ padding:"8px 20px",background:"#28a0f0",color:"#060A12",fontSize:"13px",fontWeight:800,borderRadius:"8px",border:"none",cursor:loading?"not-allowed":"pointer",fontFamily:"Space Grotesk,sans-serif",boxShadow:"0 4px 20px rgba(40,160,240,...3)",transition:"all .2s",letterSpacing:".01em",display:"flex",alignItems:"center",gap:7 }}>
+          <button onClick={onConnect} disabled={loading} className="launch-btn" style={{ padding:"8px 20px",background:"#28a0f0",color:"#060A12",fontSize:"clamp(13px,0.9vw,16px)",fontWeight:800,borderRadius:"8px",border:"none",cursor:loading?"not-allowed":"pointer",fontFamily:"Space Grotesk,sans-serif",boxShadow:"0 4px 20px rgba(40,160,240,.3)",transition:"all .2s",letterSpacing:".01em",display:"flex",alignItems:"center",gap:7 }}>
             {loading ? <RefreshCw style={{width:"13px",height:"13px",animation:"spin 1s linear infinite"}}/> : <Wallet style={{width:"13px",height:"13px"}}/>}
             {loading ? "Connecting." : "Launch App"}
           </button>
@@ -138,43 +138,43 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
         {/* HERO */}
         <section style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"120px 24px 80px",position:"relative",overflow:"hidden" }}>
           {/* Background effects */}
-          <div style={{ position:"absolute",top:"-20%",left:"50%",transform:"translateX(-50%)",width:"700px",height:"700px",background:"radial-gradient(ellipse,rgba(40,160,240,...1) 0%,transparent 65%)",pointerEvents:"none" }}/>
-          <div style={{ position:"absolute",bottom:"-10%",right:"-5%",width:"400px",height:"400px",background:"radial-gradient(ellipse,rgba(111,255,233,...05) 0%,transparent 65%)",pointerEvents:"none" }}/>
-          <div style={{ position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(40,160,240,...04) 1px,transparent 1px),linear-gradient(90deg,rgba(40,160,240,...04) 1px,transparent 1px)",backgroundSize:"44px 44px",maskImage:"radial-gradient(ellipse 80% 80% at 50% 50%,black 40%,transparent 100%)" }}/>
+          <div style={{ position:"absolute",top:"-20%",left:"50%",transform:"translateX(-50%)",width:"700px",height:"700px",background:"radial-gradient(ellipse,rgba(40,160,240,.1) 0%,transparent 65%)",pointerEvents:"none" }}/>
+          <div style={{ position:"absolute",bottom:"-10%",right:"-5%",width:"400px",height:"400px",background:"radial-gradient(ellipse,rgba(111,255,233,.05) 0%,transparent 65%)",pointerEvents:"none" }}/>
+          <div style={{ position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(40,160,240,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(40,160,240,.04) 1px,transparent 1px)",backgroundSize:"44px 44px",maskImage:"radial-gradient(ellipse 80% 80% at 50% 50%,black 40%,transparent 100%)" }}/>
 
-          <div className="fade1" style={{ display:"inline-flex",alignItems:"center",gap:8,background:"rgba(40,160,240,...1)",border:"1px solid rgba(40,160,240,...25)",borderRadius:"999px",padding:"6px 16px",marginBottom:28 }}>
+          <div className="fade1" style={{ display:"inline-flex",alignItems:"center",gap:8,background:"rgba(40,160,240,.1)",border:"1px solid rgba(40,160,240,.25)",borderRadius:"999px",padding:"6px 16px",marginBottom:28 }}>
             <div style={{ width:6,height:6,borderRadius:"50%",background:"#10b981",boxShadow:"0 0 8px #10b981",animation:"pulse2 2s infinite" }}/>
             <span style={{ fontFamily:"JetBrains Mono,monospace",fontSize:11,fontWeight:700,color:"#28a0f0",letterSpacing:".12em",textTransform:"uppercase" }}>Arbitrum Open House London · Buildathon 2026</span>
           </div>
 
-          <h1 className="fade2" style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(40px,8vw,80px)",fontWeight:900,color:"#fff",lineHeight:1.05,letterSpacing:"-.03em",marginBottom:20 }}>
+          <h1 className="fade2" style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(44px,6.5vw,104px)",fontWeight:900,color:"#fff",lineHeight:1.05,letterSpacing:"-.03em",marginBottom:20 }}>
             Your On-Chain CFO<br/>
             <span style={{ background:"linear-gradient(135deg,#28a0f0,#6FFFE9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text" }}>Never Sleeps</span>
           </h1>
 
-          <p className="fade3" style={{ fontSize:"clamp(16px,2.5vw,20px)",color:"rgba(220,228,236,...88)",lineHeight:1.75,maxWidth:580,margin:"0 auto 40px" }}>
+          <p className="fade3" style={{ fontSize:"clamp(16px,2.5vw,20px)",color:"rgba(220,228,236,.88)",lineHeight:1.75,maxWidth:680,margin:"0 auto 40px" }}>
             Set payment rules once. Your autonomous treasury agent executes them 24/7 on Arbitrum and Robinhood Chain. no manual transactions, no missed payments, no human error.
           </p>
 
           <div className="fade4" style={{ display:"flex",alignItems:"center",gap:14,flexWrap:"wrap",justifyContent:"center",marginBottom:64 }}>
-            <button onClick={onConnect} disabled={loading} className="launch-btn" style={{ padding:"16px 36px",background:"#28a0f0",color:"#060A12",fontSize:"16px",fontWeight:800,borderRadius:"12px",border:"none",cursor:loading?"not-allowed":"pointer",fontFamily:"Space Grotesk,sans-serif",boxShadow:"0 6px 28px rgba(40,160,240,...4)",transition:"all .2s",letterSpacing:".01em",display:"flex",alignItems:"center",gap:10 }}>
+            <button onClick={onConnect} disabled={loading} className="launch-btn" style={{ padding:"16px 36px",background:"#28a0f0",color:"#060A12",fontSize:"clamp(16px,1.2vw,22px)",fontWeight:800,borderRadius:"12px",border:"none",cursor:loading?"not-allowed":"pointer",fontFamily:"Space Grotesk,sans-serif",boxShadow:"0 6px 28px rgba(40,160,240,.4)",transition:"all .2s",letterSpacing:".01em",display:"flex",alignItems:"center",gap:10 }}>
               {loading ? <RefreshCw style={{width:"18px",height:"18px",animation:"spin 1s linear infinite"}}/> : <Wallet style={{width:"18px",height:"18px"}}/>}
               {loading ? "Connecting." : "Connect Wallet. Launch App"}
             </button>
-            <a href="#how-it-works" style={{ padding:"16px 28px",color:"rgba(220,228,236,...9)",fontSize:"15px",fontWeight:700,borderRadius:"12px",border:"1px solid rgba(255,255,255,...1)",background:"rgba(16,22,32,...6)",backdropFilter:"blur(8px)",textDecoration:"none",transition:"all .2s" }}>
+            <a href="#how-it-works" style={{ padding:"16px 28px",color:"rgba(220,228,236,.9)",fontSize:"clamp(15px,1.1vw,20px)",fontWeight:700,borderRadius:"12px",border:"1px solid rgba(255,255,255,.1)",background:"rgba(16,22,32,.6)",backdropFilter:"blur(8px)",textDecoration:"none",transition:"all .2s" }}>
               See How It Works ↓
             </a>
           </div>
 
           {/* Live terminal preview */}
-          <div className="fade5" style={{ width:"100%",maxWidth:760,background:"rgba(6,10,16,...98)",border:"1px solid rgba(255,255,255,...08)",borderRadius:16,overflow:"hidden",boxShadow:"0 40px 100px rgba(0,0,0,...7)",animation:"float 6s ease-in-out infinite" }}>
-            <div style={{ display:"flex",alignItems:"center",gap:8,padding:"12px 18px",background:"rgba(14,20,30,...9)",borderBottom:"1px solid rgba(255,255,255,...06)" }}>
+          <div className="fade5" style={{ width:"100%",maxWidth:"clamp(680px,70vw,1100px)",background:"rgba(6,10,16,.98)",border:"1px solid rgba(255,255,255,.08)",borderRadius:16,overflow:"hidden",boxShadow:"0 40px 100px rgba(0,0,0,.7)",animation:"float 6s ease-in-out infinite" }}>
+            <div style={{ display:"flex",alignItems:"center",gap:8,padding:"12px 18px",background:"rgba(14,20,30,.9)",borderBottom:"1px solid rgba(255,255,255,.06)" }}>
               {["#ef4444","#f59e0b","#10b981"].map(c=><div key={c} style={{width:11,height:11,borderRadius:"50%",background:c}}/>)}
-              <span style={{ flex:1,textAlign:"center",fontFamily:"JetBrains Mono,monospace",fontSize:11,fontWeight:600,color:"rgba(170,180,190,...7)",letterSpacing:".1em" }}>cfo-agent · keeper-bot · arbitrum-sepolia</span>
+              <span style={{ flex:1,textAlign:"center",fontFamily:"JetBrains Mono,monospace",fontSize:11,fontWeight:600,color:"rgba(170,180,190,.7)",letterSpacing:".1em" }}>cfo-agent · keeper-bot · arbitrum-sepolia</span>
             </div>
             <div style={{ padding:"20px 24px",textAlign:"left" }}>
               {[
-                {c:"rgba(170,180,190,...65)",p:"[SYS]",m:"keeper bot initialized · polling every 8.5s"},
+                {c:"rgba(170,180,190,.65)",p:"[SYS]",m:"keeper bot initialized · polling every 8.5s"},
                 {c:"#4a7a55",p:"[POL]",m:"scanning RuleRegistry · 2 active rules detected"},
                 {c:"#f59e0b",p:"[EXE]",m:"dequeuing job #1041 · CORE CONTRIBUTOR PAYROLL"},
                 {c:"#6FFFE9",p:"[TX ]",m:"submitted · 0x7f3a2c.b2e1 · gas 142,300"},
@@ -182,13 +182,13 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
                 {c:"#4a7a55",p:"[POL]",m:"scanning RuleRegistry · next execution in 8.5s"},
               ].map((l,i)=>(
                 <div key={i} style={{ display:"flex",gap:12,padding:"3px 0",fontFamily:"JetBrains Mono,monospace",fontSize:12,lineHeight:1.9 }}>
-                  <span style={{ color:"rgba(170,180,190,...55)",width:60,flexShrink:0 }}>{`17:4${i}:0${i*3}`}</span>
+                  <span style={{ color:"rgba(170,180,190,.55)",width:60,flexShrink:0 }}>{`17:4${i}:0${i*3}`}</span>
                   <span style={{ color:l.c,fontWeight:700,width:46,flexShrink:0 }}>{l.p}</span>
-                  <span style={{ color:l.c === "#10b981" ? "#10b981" : "rgba(220,228,236,...85)" }}>{l.m}</span>
+                  <span style={{ color:l.c === "#10b981" ? "#10b981" : "rgba(220,228,236,.85)" }}>{l.m}</span>
                 </div>
               ))}
               <div style={{ display:"flex",gap:12,padding:"3px 0",fontFamily:"JetBrains Mono,monospace",fontSize:12,lineHeight:1.9,marginTop:2 }}>
-                <span style={{ color:"rgba(170,180,190,...55)",width:60,flexShrink:0 }}>17:43:51</span>
+                <span style={{ color:"rgba(170,180,190,.55)",width:60,flexShrink:0 }}>17:43:51</span>
                 <span style={{ color:"#28a0f0",fontWeight:700 }}>$</span>
                 <span style={{ display:"inline-block",width:8,height:14,background:"#28a0f0",animation:"pulse2 .8s infinite",verticalAlign:"middle",marginLeft:4,borderRadius:1 }}/>
               </div>
@@ -197,28 +197,28 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
         </section>
 
         {/* STATS */}
-        <div style={{ borderTop:"1px solid rgba(255,255,255,...06)",borderBottom:"1px solid rgba(255,255,255,...06)",background:"rgba(10,14,22,...6)",backdropFilter:"blur(12px)",padding:"0 40px" }}>
-          <div style={{ maxWidth:1000,margin:"0 auto",display:"grid",gridTemplateColumns:"repeat(4,1fr)" }}>
+        <div style={{ borderTop:"1px solid rgba(255,255,255,.06)",borderBottom:"1px solid rgba(255,255,255,.06)",background:"rgba(10,14,22,.6)",backdropFilter:"blur(12px)",padding:"0 clamp(24px,6vw,80px)" }}>
+          <div style={{ maxWidth:1300,margin:"0 auto",display:"grid",gridTemplateColumns:"repeat(4,1fr)" }}>
             {[
               {n:"4",l:"Smart Contracts"},
               {n:"2",l:"Chains Deployed"},
               {n:"99%",l:"Gas Savings vs L1"},
               {n:"24/7",l:"Autonomous Execution"},
             ].map((s,i)=>(
-              <div key={i} style={{ textAlign:"center",padding:"28px 20px",borderRight:i<3?"1px solid rgba(255,255,255,...06)":"none" }}>
-                <div style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(28px,5vw,38px)",fontWeight:900,background:"linear-gradient(135deg,#28a0f0,#6FFFE9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",letterSpacing:"-.02em",marginBottom:4 }}>{s.n}</div>
-                <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,fontWeight:700,color:"rgba(170,180,190,...68)",letterSpacing:".15em",textTransform:"uppercase" }}>{s.l}</div>
+              <div key={i} style={{ textAlign:"center",padding:"28px 20px",borderRight:i<3?"1px solid rgba(255,255,255,.06)":"none" }}>
+                <div style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(32px,4vw,56px)",fontWeight:900,background:"linear-gradient(135deg,#28a0f0,#6FFFE9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",letterSpacing:"-.02em",marginBottom:4 }}>{s.n}</div>
+                <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,fontWeight:700,color:"rgba(170,180,190,.68)",letterSpacing:".15em",textTransform:"uppercase" }}>{s.l}</div>
               </div>
             ))}
           </div>
         </div>
 
         {/* HOW IT WORKS */}
-        <section id="how-it-works" style={{ padding:"100px 40px",maxWidth:1100,margin:"0 auto" }}>
+        <section id="how-it-works" style={{ padding:"clamp(60px,8vw,140px) clamp(24px,6vw,80px)",maxWidth:1400,margin:"0 auto" }}>
           <div style={{ textAlign:"center",marginBottom:60 }}>
             <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:11,fontWeight:700,color:"#28a0f0",letterSpacing:".2em",textTransform:"uppercase",marginBottom:12 }}>// HOW IT WORKS</div>
-            <h2 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(28px,5vw,46px)",fontWeight:900,color:"#fff",letterSpacing:"-.02em",lineHeight:1.1,marginBottom:14 }}>Three steps to<br/>autonomous treasury</h2>
-            <p style={{ fontSize:16,color:"rgba(220,228,236,...85)",lineHeight:1.75,maxWidth:500,margin:"0 auto" }}>From natural language to on-chain execution in under 60 seconds.</p>
+            <h2 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(32px,4vw,64px)",fontWeight:900,color:"#fff",letterSpacing:"-.02em",lineHeight:1.1,marginBottom:14 }}>Three steps to<br/>autonomous treasury</h2>
+            <p style={{ fontSize:16,color:"rgba(220,228,236,.85)",lineHeight:1.75,maxWidth:600,margin:"0 auto" }}>From natural language to on-chain execution in under 60 seconds.</p>
           </div>
           <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:20 }}>
             {[
@@ -226,37 +226,37 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
               {n:"02",icon:"ai",t:"Describe in English",d:'Type "Pay dev lead 500 USDC weekly" and our AI parses it into a production-ready on-chain payment rule. No code. No ABI. No manual transactions.',tag:"AI Copilot"},
               {n:"03",icon:"keeper",t:"Keeper Executes Forever",d:"The keeper bot polls your RuleRegistry every 8.5 seconds. When conditions are met, it fires on-chain transactions automatically with full audit trails.",tag:"ExecutionSequencer.sol"},
             ].map((s,i)=>(
-              <div key={i} className="step-card" style={{ background:"rgba(14,20,30,...8)",backdropFilter:"blur(16px)",border:"1px solid rgba(255,255,255,...07)",borderRadius:16,padding:"28px",transition:"all .25s",position:"relative",overflow:"hidden" }}>
-                <div style={{ position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba(40,160,240,...4),transparent)" }}/>
+              <div key={i} className="step-card" style={{ background:"rgba(14,20,30,.8)",backdropFilter:"blur(16px)",border:"1px solid rgba(255,255,255,.07)",borderRadius:16,padding:"clamp(20px,2.5vw,40px)",transition:"all .25s",position:"relative",overflow:"hidden" }}>
+                <div style={{ position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba(40,160,240,.4),transparent)" }}/>
                 <div style={{ display:"flex",alignItems:"center",gap:10,marginBottom:18 }}>
-                  <span style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,fontWeight:700,color:"rgba(40,160,240,...5)",letterSpacing:".15em" }}>STEP {s.n}</span>
-                  <div style={{ flex:1,height:1,background:"rgba(40,160,240,...15)" }}/>
+                  <span style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,fontWeight:700,color:"rgba(40,160,240,.5)",letterSpacing:".15em" }}>STEP {s.n}</span>
+                  <div style={{ flex:1,height:1,background:"rgba(40,160,240,.15)" }}/>
                 </div>
-                <div style={{ fontSize:28,marginBottom:14 }}>{s.icon}</div>
+                <div style={{ fontSize:"clamp(28px,2vw,40px)",marginBottom:14 }}>{s.icon}</div>
                 <h3 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:18,fontWeight:800,color:"#fff",marginBottom:10,letterSpacing:"-.01em" }}>{s.t}</h3>
-                <p style={{ fontSize:13,color:"rgba(220,228,236,...85)",lineHeight:1.75,marginBottom:16 }}>{s.d}</p>
-                <span style={{ display:"inline-flex",alignItems:"center",gap:5,fontFamily:"JetBrains Mono,monospace",fontSize:10,fontWeight:700,color:"#28a0f0",background:"rgba(40,160,240,...08)",border:"1px solid rgba(40,160,240,...15)",borderRadius:6,padding:"4px 10px",letterSpacing:".06em" }}>{s.tag}</span>
+                <p style={{ fontSize:13,color:"rgba(220,228,236,.85)",lineHeight:1.75,marginBottom:16 }}>{s.d}</p>
+                <span style={{ display:"inline-flex",alignItems:"center",gap:5,fontFamily:"JetBrains Mono,monospace",fontSize:10,fontWeight:700,color:"#28a0f0",background:"rgba(40,160,240,.08)",border:"1px solid rgba(40,160,240,.15)",borderRadius:6,padding:"4px 10px",letterSpacing:".06em" }}>{s.tag}</span>
               </div>
             ))}
           </div>
         </section>
 
         {/* FEATURES */}
-        <section id="features" style={{ padding:"0 40px 100px",maxWidth:1100,margin:"0 auto" }}>
+        <section id="features" style={{ padding:"0 clamp(24px,6vw,80px) clamp(60px,8vw,120px)",maxWidth:1400,margin:"0 auto" }}>
           <div style={{ textAlign:"center",marginBottom:60 }}>
             <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:11,fontWeight:700,color:"#28a0f0",letterSpacing:".2em",textTransform:"uppercase",marginBottom:12 }}>// FEATURES</div>
-            <h2 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(28px,5vw,46px)",fontWeight:900,color:"#fff",letterSpacing:"-.02em",lineHeight:1.1 }}>Everything your treasury<br/>needs to run itself</h2>
+            <h2 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(32px,4vw,64px)",fontWeight:900,color:"#fff",letterSpacing:"-.02em",lineHeight:1.1 }}>Everything your treasury<br/>needs to run itself</h2>
           </div>
           <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:14 }}>
             {[
-              {icon:"rules",c:"rgba(40,160,240,...1)",b:"rgba(40,160,240,...2)",t:"Rule Registry",d:"Create scheduled payroll, conditional sweeps, and recurring transfers stored on-chain and executed trustlessly."},
-              {icon:"shield",c:"rgba(16,185,129,...1)",b:"rgba(16,185,129,...2)",t:"Daily Spend Caps",d:"Per-token daily limits block over-execution. Emergency kill switch halts all activity instantly."},
-              {icon:"brain",c:"rgba(168,85,247,...1)",b:"rgba(168,85,247,...2)",t:"AI Rule Copilot",d:"Describe payment needs in plain English. AI generates smart contract-compatible rule configurations instantly."},
-              {icon:"keeper",c:"rgba(245,158,11,...1)",b:"rgba(245,158,11,...2)",t:"Gas Efficiency",d:"Arbitrum L2 reduces costs by 99% vs Ethereum mainnet. Robinhood Chain drops costs to near-zero."},
-              {icon:"chain",c:"rgba(111,255,233,...1)",b:"rgba(111,255,233,...2)",t:"Multi-Chain",d:"Deployed on Arbitrum Sepolia and Robinhood Chain. Switch networks in one click, same architecture."},
-              {icon:"chart",c:"rgba(239,68,68,...1)",b:"rgba(239,68,68,...2)",t:"Treasury Analytics",d:"Real-time runway projections, burn rate tracking, oracle price feeds, and full audit sheet export."},
+              {icon:"rules",c:"rgba(40,160,240,.1)",b:"rgba(40,160,240,.2)",t:"Rule Registry",d:"Create scheduled payroll, conditional sweeps, and recurring transfers stored on-chain and executed trustlessly."},
+              {icon:"shield",c:"rgba(16,185,129,.1)",b:"rgba(16,185,129,.2)",t:"Daily Spend Caps",d:"Per-token daily limits block over-execution. Emergency kill switch halts all activity instantly."},
+              {icon:"brain",c:"rgba(168,85,247,.1)",b:"rgba(168,85,247,.2)",t:"AI Rule Copilot",d:"Describe payment needs in plain English. AI generates smart contract-compatible rule configurations instantly."},
+              {icon:"keeper",c:"rgba(245,158,11,.1)",b:"rgba(245,158,11,.2)",t:"Gas Efficiency",d:"Arbitrum L2 reduces costs by 99% vs Ethereum mainnet. Robinhood Chain drops costs to near-zero."},
+              {icon:"chain",c:"rgba(111,255,233,.1)",b:"rgba(111,255,233,.2)",t:"Multi-Chain",d:"Deployed on Arbitrum Sepolia and Robinhood Chain. Switch networks in one click, same architecture."},
+              {icon:"chart",c:"rgba(239,68,68,.1)",b:"rgba(239,68,68,.2)",t:"Treasury Analytics",d:"Real-time runway projections, burn rate tracking, oracle price feeds, and full audit sheet export."},
             ].map((f,i)=>(
-              <div key={i} className="feature-card" style={{ background:"rgba(14,20,30,...75)",backdropFilter:"blur(14px)",border:"1px solid rgba(255,255,255,...07)",borderRadius:14,padding:"22px",display:"flex",gap:16,transition:"all .25s" }}>
+              <div key={i} className="feature-card" style={{ background:"rgba(14,20,30,.75)",backdropFilter:"blur(14px)",border:"1px solid rgba(255,255,255,.07)",borderRadius:14,padding:"clamp(16px,1.8vw,32px)",display:"flex",gap:16,transition:"all .25s" }}>
                 <div style={{ width:42,height:42,borderRadius:10,background:f.c,border:`1px solid ${f.b}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:f.b.replace(",.2)",",.8)") }}>
                   {f.icon==="rules" ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                   : f.icon==="shield" ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -267,7 +267,7 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
                 </div>
                 <div>
                   <div style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:15,fontWeight:700,color:"#fff",marginBottom:6,letterSpacing:"-.01em" }}>{f.t}</div>
-                  <div style={{ fontSize:13,color:"rgba(220,228,236,...8)",lineHeight:1.7 }}>{f.d}</div>
+                  <div style={{ fontSize:13,color:"rgba(220,228,236,.8)",lineHeight:1.7 }}>{f.d}</div>
                 </div>
               </div>
             ))}
@@ -275,27 +275,27 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
         </section>
 
         {/* CHAINS */}
-        <section id="chains" style={{ padding:"0 40px 100px",maxWidth:1100,margin:"0 auto" }}>
+        <section id="chains" style={{ padding:"0 clamp(24px,6vw,80px) clamp(60px,8vw,120px)",maxWidth:1400,margin:"0 auto" }}>
           <div style={{ textAlign:"center",marginBottom:48 }}>
             <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:11,fontWeight:700,color:"#28a0f0",letterSpacing:".2em",textTransform:"uppercase",marginBottom:12 }}>// DEPLOYED CONTRACTS</div>
-            <h2 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(28px,5vw,46px)",fontWeight:900,color:"#fff",letterSpacing:"-.02em",lineHeight:1.1 }}>Live on two chains</h2>
+            <h2 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(32px,4vw,64px)",fontWeight:900,color:"#fff",letterSpacing:"-.02em",lineHeight:1.1 }}>Live on two chains</h2>
           </div>
           <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:16 }}>
             {[
               {name:"Arbitrum Sepolia",id:"421614",color:"#28a0f0",logo:<svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#2D374B"/><path d="M16 4L6 20.5L16 28L26 20.5Z" fill="#28a0f0" opacity=".9"/><path d="M16 4L11 20.5L16 28V4Z" fill="#96BEDC"/></svg>,factory:"0xF1EE2CC9741547cAf04FE99ed2ad8Ff072AEe900",registry:"0x5eadac819B2206B960a30978eFCEf3E1351C6b10",sequencer:"0xA6a5A3364c8A169c9F38768df67Ad89AA33f14e2",explorer:"https://sepolia.arbiscan.io",status:"ACTIVE"},
               {name:"Robinhood Chain",id:"46630",color:"#00C805",logo:<svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#00C805"/><path d="M10 8h7c3.3 0 6 2.7 6 6s-2.7 6-6 6h-2l4 4h-4l-4-4V8z" fill="white"/><rect x="10" y="8" width="3" height="12" fill="white"/></svg>,factory:"0xcd75Ad7AC9C9325105f798c476E84176648F391A",registry:"0xbfce6B877Ebff977bB6e80B24FbBb7bC4eBcA4df",sequencer:"0x6d5a4D246617d711595a1657c55B17B97e20bdda",explorer:"https://explorer.testnet.chain.robinhood.com",status:"DEPLOYED"},
             ].map((c,i)=>(
-              <div key={i} style={{ background:"rgba(14,20,30,...8)",backdropFilter:"blur(16px)",border:`1px solid rgba(255,255,255,...08)`,borderRadius:16,padding:"24px",position:"relative",overflow:"hidden" }}>
+              <div key={i} style={{ background:"rgba(14,20,30,.8)",backdropFilter:"blur(16px)",border:`1px solid rgba(255,255,255,.08)`,borderRadius:16,padding:"clamp(18px,2vw,36px)",position:"relative",overflow:"hidden" }}>
                 <div style={{ position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${c.color}60,transparent)` }}/>
                 <div style={{ display:"flex",alignItems:"center",gap:12,marginBottom:16 }}>
                   {c.logo}
                   <div>
                     <div style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:17,fontWeight:800,color:"#fff",marginBottom:2 }}>{c.name}</div>
-                    <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(170,180,190,...65)",letterSpacing:".1em" }}>CHAIN ID: {c.id}</div>
+                    <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(170,180,190,.65)",letterSpacing:".1em" }}>CHAIN ID: {c.id}</div>
                   </div>
                   <div style={{ marginLeft:"auto",fontSize:9,fontWeight:700,color:c.color,background:`${c.color}15`,border:`1px solid ${c.color}40`,borderRadius:6,padding:"3px 9px",fontFamily:"JetBrains Mono,monospace",letterSpacing:".1em" }}>{c.status}</div>
                 </div>
-                <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(170,180,190,...65)",lineHeight:2.2,marginBottom:14 }}>
+                <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(170,180,190,.65)",lineHeight:2.2,marginBottom:14 }}>
                   <div>Factory:&nbsp;&nbsp; {c.factory.slice(0,18)}.</div>
                   <div>Registry:&nbsp; {c.registry.slice(0,18)}.</div>
                   <div>Sequencer: {c.sequencer.slice(0,18)}.</div>
@@ -309,28 +309,28 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
         </section>
 
         {/* FINAL CTA */}
-        <section style={{ padding:"80px 24px 100px",textAlign:"center",position:"relative",overflow:"hidden" }}>
-          <div style={{ position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:600,height:300,background:"radial-gradient(ellipse,rgba(40,160,240,...1) 0%,transparent 65%)",pointerEvents:"none" }}/>
+        <section style={{ padding:"clamp(60px,8vw,120px) clamp(24px,4vw,48px)",textAlign:"center",position:"relative",overflow:"hidden" }}>
+          <div style={{ position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:600,height:300,background:"radial-gradient(ellipse,rgba(40,160,240,.1) 0%,transparent 65%)",pointerEvents:"none" }}/>
           <div style={{ position:"relative",zIndex:1 }}>
-            <h2 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(30px,6vw,54px)",fontWeight:900,color:"#fff",letterSpacing:"-.02em",marginBottom:14,lineHeight:1.1 }}>Ready to automate<br/>your treasury?</h2>
-            <p style={{ fontSize:17,color:"rgba(220,228,236,...85)",lineHeight:1.75,marginBottom:40,maxWidth:480,margin:"0 auto 40px" }}>Connect your wallet and deploy your personal CFO Agent in under 60 seconds. Non-custodial. No setup fees.</p>
-            <button onClick={onConnect} disabled={loading} className="launch-btn" style={{ padding:"18px 44px",background:"#28a0f0",color:"#060A12",fontSize:"17px",fontWeight:800,borderRadius:"14px",border:"none",cursor:loading?"not-allowed":"pointer",fontFamily:"Space Grotesk,sans-serif",boxShadow:"0 6px 32px rgba(40,160,240,...4)",transition:"all .2s",letterSpacing:".01em",display:"inline-flex",alignItems:"center",gap:12 }}>
+            <h2 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(34px,5vw,72px)",fontWeight:900,color:"#fff",letterSpacing:"-.02em",marginBottom:14,lineHeight:1.1 }}>Ready to automate<br/>your treasury?</h2>
+            <p style={{ fontSize:17,color:"rgba(220,228,236,.85)",lineHeight:1.75,marginBottom:40,maxWidth:560,margin:"0 auto 40px" }}>Connect your wallet and deploy your personal CFO Agent in under 60 seconds. Non-custodial. No setup fees.</p>
+            <button onClick={onConnect} disabled={loading} className="launch-btn" style={{ padding:"18px 44px",background:"#28a0f0",color:"#060A12",fontSize:"clamp(17px,1.3vw,24px)",fontWeight:800,borderRadius:"14px",border:"none",cursor:loading?"not-allowed":"pointer",fontFamily:"Space Grotesk,sans-serif",boxShadow:"0 6px 32px rgba(40,160,240,.4)",transition:"all .2s",letterSpacing:".01em",display:"inline-flex",alignItems:"center",gap:12 }}>
               {loading ? <RefreshCw style={{width:"20px",height:"20px",animation:"spin 1s linear infinite"}}/> : <Wallet style={{width:"20px",height:"20px"}}/>}
               {loading ? "Connecting." : "Connect Wallet. It's Free"}
             </button>
-            <div style={{ marginTop:20,fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(140,160,180,...6)",letterSpacing:".1em" }}>
+            <div style={{ marginTop:20,fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(140,160,180,.6)",letterSpacing:".1em" }}>
               SECURED WITH SIWE · EIP-4361 · NON-CUSTODIAL · ARBITRUM SEPOLIA
             </div>
           </div>
         </section>
 
         {/* FOOTER */}
-        <footer style={{ borderTop:"1px solid rgba(255,255,255,...06)",padding:"24px 40px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,background:"rgba(6,10,16,...8)" }}>
+        <footer style={{ borderTop:"1px solid rgba(255,255,255,.06)",padding:"clamp(16px,2vw,32px) clamp(24px,6vw,80px)",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,background:"rgba(6,10,16,.8)" }}>
           <div style={{ display:"flex",alignItems:"center",gap:10 }}>
             <CFOLogo size={20}/>
-            <span style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:13,fontWeight:700,color:"rgba(255,255,255,...4)" }}>CFO Agent · Arbitrum Open House London 2026</span>
+            <span style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:13,fontWeight:700,color:"rgba(255,255,255,.4)" }}>CFO Agent · Arbitrum Open House London 2026</span>
           </div>
-          <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(170,180,190,...5)",letterSpacing:".1em" }}>
+          <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(170,180,190,.5)",letterSpacing:".1em" }}>
             ARBITRUM SEPOLIA · ROBINHOOD CHAIN · NON-CUSTODIAL
           </div>
         </footer>
@@ -349,15 +349,15 @@ function ConnectingScreen({ step, msg }: { step: string; msg: string }) {
   ];
   const idx = steps.findIndex(s => s.key === step);
   return (
-    <div style={{ minHeight:"100vh", background:"#080c10", display:"flex", alignItems:"center", justifyContent:"center", padding:"24px" }}>
-      <div style={{ width:"100%", maxWidth:"380px" }}>
+    <div style={{ minHeight:"100vh", background:"#080c10", display:"flex", alignItems:"center", justifyContent:"center", padding:"clamp(18px,2vw,36px)" }}>
+      <div style={{ width:"100%", maxWidth:"440px" }}>
         <div style={{ textAlign:"center", marginBottom:"40px" }}>
           <div style={{ width:"56px", height:"56px", borderRadius:"16px", background:"rgba(40,160,240,0.1)", border:"1px solid rgba(40,160,240,0.3)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
             <CFOLogo size={28}/>
           </div>
           <h2 style={{ fontSize:"22px", fontWeight:800, color:"#fff", fontFamily:"Space Grotesk,sans-serif" }}>Setting up your agent</h2>
         </div>
-        <div style={{ background:"rgba(16,22,32,0.8)", backdropFilter:"blur(20px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"16px", padding:"24px", marginBottom:"20px" }}>
+        <div style={{ background:"rgba(16,22,32,0.8)", backdropFilter:"blur(20px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"16px", padding:"clamp(18px,2vw,36px)", marginBottom:"20px" }}>
           {steps.map((s, i) => {
             const done = i < idx;
             const active = i === idx;
@@ -366,7 +366,7 @@ function ConnectingScreen({ step, msg }: { step: string; msg: string }) {
                 <div style={{ width:"28px", height:"28px", borderRadius:"50%", border:`2px solid ${done?"#10b981":active?"#28a0f0":"rgba(255,255,255,0.1)"}`, background:done?"rgba(16,185,129,0.15)":active?"rgba(40,160,240,0.1)":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.3s" }}>
                   {done ? <Check style={{ width:"14px", height:"14px", color:"#10b981" }}/> : active ? <RefreshCw style={{ width:"12px", height:"12px", color:"#28a0f0", animation:"spin 1s linear infinite" }}/> : <span style={{ width:"8px", height:"8px", borderRadius:"50%", background:"rgba(255,255,255,0.1)", display:"block" }}/>}
                 </div>
-                <span style={{ fontSize:"13px", fontWeight:600, color:done?"#10b981":active?"#fff":"rgba(255,255,255,0.3)", fontFamily:"Inter,sans-serif", transition:"color 0.3s" }}>{s.label}</span>
+                <span style={{ fontSize:"clamp(13px,0.9vw,16px)", fontWeight:600, color:done?"#10b981":active?"#fff":"rgba(255,255,255,0.3)", fontFamily:"Inter,sans-serif", transition:"color 0.3s" }}>{s.label}</span>
               </div>
             );
           })}
@@ -374,7 +374,7 @@ function ConnectingScreen({ step, msg }: { step: string; msg: string }) {
         <div style={{ height:"2px", background:"rgba(255,255,255,0.06)", borderRadius:"1px", overflow:"hidden", marginBottom:"16px" }}>
           <div style={{ height:"100%", background:"#28a0f0", borderRadius:"1px", width:`${Math.max(8,(idx/(steps.length-1))*100)}%`, transition:"width 0.6s ease", boxShadow:"0 0 12px #28a0f0" }}/>
         </div>
-        <p style={{ textAlign:"center", fontSize:"12px", color:"rgba(150,160,170,0.6)", fontFamily:"JetBrains Mono,monospace" }}>{msg}</p>
+        <p style={{ textAlign:"center", fontSize:"clamp(12px,0.85vw,15px)", color:"rgba(150,160,170,0.6)", fontFamily:"JetBrains Mono,monospace" }}>{msg}</p>
       </div>
       <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
     </div>
@@ -387,11 +387,11 @@ function StatCard({ label, value, sub, accent, icon: Icon }: any) {
     <div style={{ background:"rgba(16,22,32,0.7)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"14px", padding:"20px", position:"relative", overflow:"hidden" }}>
       <div style={{ position:"absolute", top:0, left:0, right:0, height:"1px", background:"linear-gradient(90deg,transparent,rgba(40,160,240,0.4),transparent)" }}/>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"12px" }}>
-        <span style={{ fontSize:"10px", fontWeight:700, color:"rgba(150,160,170,0.7)", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.15em", textTransform:"uppercase" }}>{label}</span>
+        <span style={{ fontSize:"clamp(10px,0.75vw,13px)", fontWeight:700, color:"rgba(150,160,170,0.7)", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.15em", textTransform:"uppercase" }}>{label}</span>
         {Icon && <div style={{ width:"28px", height:"28px", borderRadius:"8px", background:"rgba(40,160,240,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon style={{ width:"14px", height:"14px", color:"#28a0f0" }}/></div>}
       </div>
       <div style={{ fontSize:"28px", fontWeight:800, color:accent?"#28a0f0":"#f0f4f8", fontFamily:"Space Grotesk,sans-serif", letterSpacing:"-0.02em", marginBottom:"4px", textShadow:accent?"0 0 24px rgba(40,160,240,0.4)":"none" }}>{value}</div>
-      {sub && <div style={{ fontSize:"11px", color:"rgba(150,160,170,0.6)", fontFamily:"Inter,sans-serif" }}>{sub}</div>}
+      {sub && <div style={{ fontSize:"clamp(11px,0.8vw,14px)", color:"rgba(150,160,170,0.6)", fontFamily:"Inter,sans-serif" }}>{sub}</div>}
     </div>
   );
 }
@@ -411,14 +411,14 @@ function DashboardView({ tokens, rules, txHistory, keeperLogs, chain, agentAddr,
           <CFOLogo size={24}/>
         </div>
         <div style={{ flex:1 }}>
-          <div style={{ fontSize:"18px", fontWeight:800, color:"#fff", fontFamily:"Space Grotesk,sans-serif", marginBottom:"4px" }}>Your CFO Agent is running autonomously</div>
-          <div style={{ fontSize:"12px", color:"rgba(150,160,170,0.7)", fontFamily:"Inter,sans-serif" }}>
+          <div style={{ fontSize:"clamp(18px,1.4vw,26px)", fontWeight:800, color:"#fff", fontFamily:"Space Grotesk,sans-serif", marginBottom:"4px" }}>Your CFO Agent is running autonomously</div>
+          <div style={{ fontSize:"clamp(12px,0.85vw,15px)", color:"rgba(150,160,170,0.7)", fontFamily:"Inter,sans-serif" }}>
             Wallet {truncAddr(address)} · Agent {truncAddr(agentAddr) || "pending"} · {chain.name} · {totalUsers.toString()} total agents deployed
           </div>
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:"6px", background:"rgba(16,185,129,0.1)", border:"1px solid rgba(16,185,129,0.25)", borderRadius:"8px", padding:"6px 12px", flexShrink:0 }}>
           <div style={{ width:"6px", height:"6px", borderRadius:"50%", background:"#10b981", boxShadow:"0 0 8px #10b981", animation:"pulse 2s infinite" }}/>
-          <span style={{ fontSize:"11px", fontWeight:700, color:"#10b981", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.1em" }}>LIVE</span>
+          <span style={{ fontSize:"clamp(11px,0.8vw,14px)", fontWeight:700, color:"#10b981", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.1em" }}>LIVE</span>
         </div>
       </div>
 
@@ -435,19 +435,19 @@ function DashboardView({ tokens, rules, txHistory, keeperLogs, chain, agentAddr,
         {/* Tokens */}
         <div style={{ background:"rgba(16,22,32,0.7)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"14px", padding:"20px", position:"relative", overflow:"hidden" }}>
           <div style={{ position:"absolute", top:0, left:0, right:0, height:"1px", background:"linear-gradient(90deg,transparent,rgba(40,160,240,0.3),transparent)" }}/>
-          <div style={{ fontSize:"12px", fontWeight:700, color:"rgba(150,160,170,0.7)", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:"16px" }}>Token Holdings</div>
+          <div style={{ fontSize:"clamp(12px,0.85vw,15px)", fontWeight:700, color:"rgba(150,160,170,0.7)", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:"16px" }}>Token Holdings</div>
           <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
             {tokens.map((t: TreasuryToken) => (
               <div key={t.symbol} style={{ display:"flex", alignItems:"center", gap:"12px" }}>
-                <div style={{ width:"32px", height:"32px", borderRadius:"9px", background:"rgba(40,160,240,0.1)", border:"1px solid rgba(40,160,240,0.15)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", fontWeight:700, color:"#28a0f0", flexShrink:0 }}>{t.logo}</div>
+                <div style={{ width:"32px", height:"32px", borderRadius:"9px", background:"rgba(40,160,240,0.1)", border:"1px solid rgba(40,160,240,0.15)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"clamp(13px,0.9vw,16px)", fontWeight:700, color:"#28a0f0", flexShrink:0 }}>{t.logo}</div>
                 <div style={{ flex:1 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <span style={{ fontSize:"13px", fontWeight:700, color:"#f0f4f8", fontFamily:"Inter,sans-serif" }}>{t.symbol}</span>
-                    <span style={{ fontSize:"13px", fontWeight:700, color:"#f0f4f8", fontFamily:"JetBrains Mono,monospace" }}>{t.balance.toLocaleString()}</span>
+                    <span style={{ fontSize:"clamp(13px,0.9vw,16px)", fontWeight:700, color:"#f0f4f8", fontFamily:"Inter,sans-serif" }}>{t.symbol}</span>
+                    <span style={{ fontSize:"clamp(13px,0.9vw,16px)", fontWeight:700, color:"#f0f4f8", fontFamily:"JetBrains Mono,monospace" }}>{t.balance.toLocaleString()}</span>
                   </div>
                   <div style={{ display:"flex", justifyContent:"space-between" }}>
-                    <span style={{ fontSize:"11px", color:"rgba(150,160,170,0.5)", fontFamily:"Inter,sans-serif" }}>{t.name}</span>
-                    <span style={{ fontSize:"11px", color:"#28a0f0", fontFamily:"JetBrains Mono,monospace" }}>${(t.balance*t.usdPrice).toLocaleString(undefined,{maximumFractionDigits:0})}</span>
+                    <span style={{ fontSize:"clamp(11px,0.8vw,14px)", color:"rgba(150,160,170,0.5)", fontFamily:"Inter,sans-serif" }}>{t.name}</span>
+                    <span style={{ fontSize:"clamp(11px,0.8vw,14px)", color:"#28a0f0", fontFamily:"JetBrains Mono,monospace" }}>${(t.balance*t.usdPrice).toLocaleString(undefined,{maximumFractionDigits:0})}</span>
                   </div>
                 </div>
               </div>
@@ -458,28 +458,28 @@ function DashboardView({ tokens, rules, txHistory, keeperLogs, chain, agentAddr,
         {/* Recent tx */}
         <div style={{ background:"rgba(16,22,32,0.7)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"14px", padding:"20px", position:"relative", overflow:"hidden" }}>
           <div style={{ position:"absolute", top:0, left:0, right:0, height:"1px", background:"linear-gradient(90deg,transparent,rgba(40,160,240,0.3),transparent)" }}/>
-          <div style={{ fontSize:"12px", fontWeight:700, color:"rgba(150,160,170,0.7)", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:"16px" }}>Recent Transactions</div>
+          <div style={{ fontSize:"clamp(12px,0.85vw,15px)", fontWeight:700, color:"rgba(150,160,170,0.7)", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:"16px" }}>Recent Transactions</div>
           <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
             {txHistory.slice(0,5).map((tx: TxLog) => (
               <div key={tx.id} style={{ display:"flex", alignItems:"center", gap:"10px", padding:"8px 10px", background:"rgba(5,8,14,0.5)", borderRadius:"8px", border:"1px solid rgba(255,255,255,0.04)" }}>
                 <div style={{ width:"6px", height:"6px", borderRadius:"50%", background:tx.status==="SUCCESS"?"#10b981":"#ef4444", flexShrink:0 }}/>
                 <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:"12px", fontWeight:600, color:"#f0f4f8", fontFamily:"Inter,sans-serif", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{tx.ruleName || tx.type}</div>
-                  <div style={{ fontSize:"10px", color:"rgba(150,160,170,0.5)", fontFamily:"JetBrains Mono,monospace" }}>{new Date(tx.timestamp).toLocaleTimeString()}</div>
+                  <div style={{ fontSize:"clamp(12px,0.85vw,15px)", fontWeight:600, color:"#f0f4f8", fontFamily:"Inter,sans-serif", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{tx.ruleName || tx.type}</div>
+                  <div style={{ fontSize:"clamp(10px,0.75vw,13px)", color:"rgba(150,160,170,0.5)", fontFamily:"JetBrains Mono,monospace" }}>{new Date(tx.timestamp).toLocaleTimeString()}</div>
                 </div>
-                <span style={{ fontSize:"12px", fontWeight:700, color:tx.type==="DEPOSIT"?"#10b981":"#28a0f0", fontFamily:"JetBrains Mono,monospace", flexShrink:0 }}>
+                <span style={{ fontSize:"clamp(12px,0.85vw,15px)", fontWeight:700, color:tx.type==="DEPOSIT"?"#10b981":"#28a0f0", fontFamily:"JetBrains Mono,monospace", flexShrink:0 }}>
                   {tx.type==="DEPOSIT"?"+":"-"}{tx.amount} {tx.token}
                 </span>
               </div>
             ))}
-            {txHistory.length === 0 && <div style={{ textAlign:"center", padding:"20px", fontSize:"12px", color:"rgba(150,160,170,0.4)", fontFamily:"Inter,sans-serif" }}>No transactions yet</div>}
+            {txHistory.length === 0 && <div style={{ textAlign:"center", padding:"20px", fontSize:"clamp(12px,0.85vw,15px)", color:"rgba(150,160,170,0.4)", fontFamily:"Inter,sans-serif" }}>No transactions yet</div>}
           </div>
         </div>
       </div>
 
       {/* Architecture */}
       <div style={{ background:"linear-gradient(135deg,rgba(16,22,32,0.9),rgba(10,14,20,0.9))", border:"1px solid rgba(255,255,255,0.06)", borderRadius:"14px", padding:"20px 24px" }}>
-        <div style={{ fontSize:"11px", fontWeight:700, color:"#28a0f0", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.15em", textTransform:"uppercase", marginBottom:"14px" }}> Arbitrum Open House London · Buildathon</div>
+        <div style={{ fontSize:"clamp(11px,0.8vw,14px)", fontWeight:700, color:"#28a0f0", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.15em", textTransform:"uppercase", marginBottom:"14px" }}> Arbitrum Open House London · Buildathon</div>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
           {[
             { label:"Factory",   addr:chain.factory   },
@@ -487,7 +487,7 @@ function DashboardView({ tokens, rules, txHistory, keeperLogs, chain, agentAddr,
             { label:"Sequencer", addr:chain.sequencer },
             { label:"Network",   addr:chain.name      },
           ].map(c => (
-            <div key={c.label} style={{ display:"flex", gap:"8px", fontSize:"11px", fontFamily:"JetBrains Mono,monospace" }}>
+            <div key={c.label} style={{ display:"flex", gap:"8px", fontSize:"clamp(11px,0.8vw,14px)", fontFamily:"JetBrains Mono,monospace" }}>
               <span style={{ color:"rgba(150,160,170,0.5)", flexShrink:0 }}>{c.label}:</span>
               <a href={c.addr.startsWith("0x")?`${chain.explorer}/address/${c.addr}`:"#"} target="_blank" rel="noreferrer" style={{ color:"rgba(40,160,240,0.8)", textDecoration:"none", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                 {c.addr.startsWith("0x") ? `${c.addr.slice(0,10)}.${c.addr.slice(-6)}` : c.addr}
@@ -507,9 +507,9 @@ function SettingsView({ address, agentAddr, chain, chains, activeChain, switchCh
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:"16px" }}>
-      <div style={{ background:"rgba(16,22,32,0.7)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"14px", padding:"24px", position:"relative", overflow:"hidden" }}>
+      <div style={{ background:"rgba(16,22,32,0.7)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"14px", padding:"clamp(18px,2vw,36px)", position:"relative", overflow:"hidden" }}>
         <div style={{ position:"absolute", top:0, left:0, right:0, height:"1px", background:"linear-gradient(90deg,transparent,rgba(40,160,240,0.4),transparent)" }}/>
-        <div style={{ fontSize:"12px", fontWeight:700, color:"rgba(150,160,170,0.7)", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:"20px" }}>Session Info</div>
+        <div style={{ fontSize:"clamp(12px,0.85vw,15px)", fontWeight:700, color:"rgba(150,160,170,0.7)", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:"20px" }}>Session Info</div>
         {[
           { label:"Your Wallet", value:address, key:"wallet" },
           { label:"CFO Agent Contract", value:agentAddr||"Not deployed", key:"agent" },
@@ -517,33 +517,33 @@ function SettingsView({ address, agentAddr, chain, chains, activeChain, switchCh
           { label:"Total Agents Deployed", value:totalUsers.toString()+" agents worldwide", key:"users" },
         ].map(row => (
           <div key={row.key} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 0", borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
-            <span style={{ fontSize:"12px", color:"rgba(150,160,170,0.6)", fontFamily:"Inter,sans-serif" }}>{row.label}</span>
+            <span style={{ fontSize:"clamp(12px,0.85vw,15px)", color:"rgba(150,160,170,0.6)", fontFamily:"Inter,sans-serif" }}>{row.label}</span>
             <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-              <span style={{ fontSize:"12px", fontWeight:600, color:"#f0f4f8", fontFamily:"JetBrains Mono,monospace" }}>{row.value.length>30?row.value.slice(0,14)+"."+row.value.slice(-8):row.value}</span>
+              <span style={{ fontSize:"clamp(12px,0.85vw,15px)", fontWeight:600, color:"#f0f4f8", fontFamily:"JetBrains Mono,monospace" }}>{row.value.length>30?row.value.slice(0,14)+"."+row.value.slice(-8):row.value}</span>
               {row.value.startsWith("0x") && <button onClick={()=>copy(row.value,row.key)} style={{ background:"none", border:"none", cursor:"pointer", color:copied===row.key?"#10b981":"rgba(150,160,170,0.4)", padding:"2px" }}>{copied===row.key?<Check style={{width:"12px",height:"12px"}}/>:<Copy style={{width:"12px",height:"12px"}}/>}</button>}
             </div>
           </div>
         ))}
       </div>
-      <div style={{ background:"rgba(16,22,32,0.7)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"14px", padding:"24px", position:"relative", overflow:"hidden" }}>
+      <div style={{ background:"rgba(16,22,32,0.7)", backdropFilter:"blur(16px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"14px", padding:"clamp(18px,2vw,36px)", position:"relative", overflow:"hidden" }}>
         <div style={{ position:"absolute", top:0, left:0, right:0, height:"1px", background:"linear-gradient(90deg,transparent,rgba(40,160,240,0.4),transparent)" }}/>
-        <div style={{ fontSize:"12px", fontWeight:700, color:"rgba(150,160,170,0.7)", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:"20px" }}>Deployed Chains</div>
+        <div style={{ fontSize:"clamp(12px,0.85vw,15px)", fontWeight:700, color:"rgba(150,160,170,0.7)", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:"20px" }}>Deployed Chains</div>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:"12px" }}>
           {Object.entries(chains).map(([key, c]: any) => (
             <div key={key} onClick={()=>switchChain(key)} style={{ background:activeChain===key?"rgba(40,160,240,0.08)":"rgba(5,8,14,0.6)", border:`1px solid ${activeChain===key?c.color:"rgba(255,255,255,0.06)"}`, borderRadius:"12px", padding:"16px", cursor:"pointer", transition:"all 0.2s" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"10px" }}>
-                <div style={{ fontSize:"13px", fontWeight:700, color:activeChain===key?c.color:"#f0f4f8", fontFamily:"Space Grotesk,sans-serif" }}>{c.name}</div>
-                {activeChain===key && <div style={{ fontSize:"9px", fontWeight:700, color:c.color, background:`${c.color}15`, border:`1px solid ${c.color}40`, borderRadius:"4px", padding:"2px 7px", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.1em" }}>ACTIVE</div>}
+                <div style={{ fontSize:"clamp(13px,0.9vw,16px)", fontWeight:700, color:activeChain===key?c.color:"#f0f4f8", fontFamily:"Space Grotesk,sans-serif" }}>{c.name}</div>
+                {activeChain===key && <div style={{ fontSize:"clamp(9px,0.7vw,12px)", fontWeight:700, color:c.color, background:`${c.color}15`, border:`1px solid ${c.color}40`, borderRadius:"4px", padding:"2px 7px", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.1em" }}>ACTIVE</div>}
               </div>
               <div style={{ display:"flex", flexDirection:"column", gap:"4px" }}>
                 {[["Chain ID", c.id],["Factory", c.factory.slice(0,14)+"."],["Registry", c.registry.slice(0,14)+"."]].map(([l,v]) => (
-                  <div key={l as string} style={{ display:"flex", justifyContent:"space-between", fontSize:"10px", fontFamily:"JetBrains Mono,monospace" }}>
+                  <div key={l as string} style={{ display:"flex", justifyContent:"space-between", fontSize:"clamp(10px,0.75vw,13px)", fontFamily:"JetBrains Mono,monospace" }}>
                     <span style={{ color:"rgba(150,160,170,0.4)" }}>{l}</span>
                     <span style={{ color:"rgba(200,209,217,0.7)" }}>{v}</span>
                   </div>
                 ))}
               </div>
-              <a href={`${c.explorer}/address/${c.factory}`} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{ display:"flex", alignItems:"center", gap:"4px", marginTop:"10px", fontSize:"10px", fontWeight:600, color:c.color, fontFamily:"JetBrains Mono,monospace", textDecoration:"none" }}>
+              <a href={`${c.explorer}/address/${c.factory}`} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{ display:"flex", alignItems:"center", gap:"4px", marginTop:"10px", fontSize:"clamp(10px,0.75vw,13px)", fontWeight:600, color:c.color, fontFamily:"JetBrains Mono,monospace", textDecoration:"none" }}>
                 <ExternalLink style={{width:"10px",height:"10px"}}/> View on Explorer
               </a>
             </div>
@@ -755,9 +755,9 @@ export default function App() {
   if(phase==="error") return (
     <div style={{minHeight:"100vh",background:"#080c10",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"16px"}}>
       <AlertTriangle style={{width:"40px",height:"40px",color:"#ef4444"}}/>
-      <div style={{fontSize:"16px",fontWeight:700,color:"#ef4444",fontFamily:"Space Grotesk,sans-serif"}}>Connection Failed</div>
-      <div style={{fontSize:"13px",color:"rgba(200,209,217,0.6)",fontFamily:"Inter,sans-serif",maxWidth:"360px",textAlign:"center"}}>{authErr}</div>
-      <button onClick={()=>setPhase("auth")} style={{padding:"12px 28px",background:"#28a0f0",color:"#080c10",borderRadius:"10px",border:"none",cursor:"pointer",fontSize:"14px",fontWeight:700,fontFamily:"Space Grotesk,sans-serif"}}>Try Again</button>
+      <div style={{fontSize:"clamp(16px,1.2vw,22px)",fontWeight:700,color:"#ef4444",fontFamily:"Space Grotesk,sans-serif"}}>Connection Failed</div>
+      <div style={{fontSize:"clamp(13px,0.9vw,16px)",color:"rgba(200,209,217,0.6)",fontFamily:"Inter,sans-serif",maxWidth:"360px",textAlign:"center"}}>{authErr}</div>
+      <button onClick={()=>setPhase("auth")} style={{padding:"12px 28px",background:"#28a0f0",color:"#080c10",borderRadius:"10px",border:"none",cursor:"pointer",fontSize:"clamp(14px,1vw,18px)",fontWeight:700,fontFamily:"Space Grotesk,sans-serif"}}>Try Again</button>
     </div>
   );
 
@@ -796,16 +796,33 @@ export default function App() {
         * { box-sizing: border-box; }
         ::-webkit-scrollbar { width: 4px; }
         /* Layout */
-        .app-root { grid-template-columns: 240px 1fr; }
-        .app-sidebar { position: relative; width: 240px; transform: translateX(0); transition: transform 0.25s ease; }
+        .app-root { grid-template-columns: clamp(220px,15vw,280px) 1fr; }
+        .app-sidebar { position: relative; width: clamp(220px,15vw,280px); transform: translateX(0); transition: transform 0.25s ease; }
+
+        /* 4K / Large screens */
+        @media (min-width: 2560px) {
+          html { font-size: 18px; }
+          .app-sidebar { width: clamp(260px,14vw,320px) !important; }
+          nav button, nav a { font-size: 15px !important; }
+        }
+        @media (min-width: 3840px) {
+          html { font-size: 22px; }
+          .app-sidebar { width: clamp(300px,12vw,360px) !important; }
+        }
+
         /* Mobile */
         @media (max-width: 768px) {
           .app-root { grid-template-columns: 1fr; }
-          .app-sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 240px; transform: translateX(-100%); }
-          .app-sidebar.open { transform: translateX(0); box-shadow: 4px 0 40px rgba(0,0,0,0.7); }
+          .app-sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: min(280px,85vw); transform: translateX(-100%); }
+          .app-sidebar.open { transform: translateX(0); box-shadow: 4px 0 60px rgba(0,0,0,.8); }
           .mobile-menu-btn { display: flex !important; }
           .mobile-overlay { display: block !important; }
         }
+
+        /* Smooth everything */
+        * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        img, svg { max-width: 100%; }
+        ::selection { background: rgba(40,160,240,.3); color: #fff; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 999px; }
         /* Override Gemini component styles for consistency */
@@ -830,10 +847,10 @@ export default function App() {
               <CFOLogo size={18}/>
             </div>
             <div>
-              <div style={{ fontSize:"15px", fontWeight:800, color:"#fff", fontFamily:"Space Grotesk,sans-serif", letterSpacing:"-0.01em" }}>CFO Agent</div>
+              <div style={{ fontSize:"clamp(15px,1.1vw,20px)", fontWeight:800, color:"#fff", fontFamily:"Space Grotesk,sans-serif", letterSpacing:"-0.01em" }}>CFO Agent</div>
               <div style={{ display:"flex", alignItems:"center", gap:"5px", marginTop:"2px" }}>
                 <div style={{ width:"5px", height:"5px", borderRadius:"50%", background:"#10b981", boxShadow:"0 0 6px #10b981", animation:"pulse 2s infinite" }}/>
-                <span style={{ fontSize:"10px", fontWeight:700, color:"#10b981", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.1em" }}>AUTONOMOUS</span>
+                <span style={{ fontSize:"clamp(10px,0.75vw,13px)", fontWeight:700, color:"#10b981", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.1em" }}>AUTONOMOUS</span>
               </div>
             </div>
           </div>
@@ -848,10 +865,10 @@ export default function App() {
               <button key={item.id} onClick={()=>navigate(item.id)} style={{ display:"flex", alignItems:"center", gap:"10px", padding:"9px 12px", borderRadius:"9px", border:"none", cursor:"pointer", width:"100%", textAlign:"left", background:active?"rgba(40,160,240,0.1)":"transparent", transition:"all 0.15s", position:"relative" }}>
                 {active && <div style={{ position:"absolute", left:0, top:"6px", bottom:"6px", width:"2px", borderRadius:"1px", background:"#28a0f0", boxShadow:"0 0 8px #28a0f0" }}/>}
                 <Icon style={{ width:"15px", height:"15px", color:active?"#28a0f0":"rgba(150,160,170,0.5)", flexShrink:0 }}/>
-                <span style={{ fontSize:"13px", fontWeight:active?700:500, color:active?"#fff":"rgba(180,190,200,0.6)", fontFamily:"Inter,sans-serif", flex:1 }}>{item.label}</span>
+                <span style={{ fontSize:"clamp(13px,0.9vw,16px)", fontWeight:active?700:500, color:active?"#fff":"rgba(180,190,200,0.6)", fontFamily:"Inter,sans-serif", flex:1 }}>{item.label}</span>
                 {item.badge==="live" && <span style={{ fontSize:"8px", fontWeight:700, color:"#10b981", background:"rgba(16,185,129,0.1)", border:"1px solid rgba(16,185,129,0.25)", borderRadius:"4px", padding:"1px 5px", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.08em" }}>LIVE</span>}
                 {item.badge==="ai" && <span style={{ fontSize:"8px", fontWeight:700, color:"#28a0f0", background:"rgba(40,160,240,0.1)", border:"1px solid rgba(40,160,240,0.25)", borderRadius:"4px", padding:"1px 5px", fontFamily:"JetBrains Mono,monospace" }}>AI</span>}
-                {item.badge==="rules" && rules.length>0 && <span style={{ fontSize:"9px", fontWeight:700, color:"rgba(150,160,170,0.6)", background:"rgba(255,255,255,0.06)", borderRadius:"4px", padding:"1px 6px", fontFamily:"JetBrains Mono,monospace" }}>{activeRules}</span>}
+                {item.badge==="rules" && rules.length>0 && <span style={{ fontSize:"clamp(9px,0.7vw,12px)", fontWeight:700, color:"rgba(150,160,170,0.6)", background:"rgba(255,255,255,0.06)", borderRadius:"4px", padding:"1px 6px", fontFamily:"JetBrains Mono,monospace" }}>{activeRules}</span>}
               </button>
             );
           })}
@@ -859,20 +876,20 @@ export default function App() {
 
         {/* Footer */}
         <div style={{ padding:"12px 14px", borderTop:"1px solid rgba(255,255,255,0.05)", flexShrink:0 }}>
-          <div style={{ fontSize:"10px", color:"rgba(150,160,170,0.4)", fontFamily:"JetBrains Mono,monospace", marginBottom:"6px", letterSpacing:"0.08em" }}>CONNECTED</div>
-          <div style={{ fontSize:"11px", fontWeight:600, color:"rgba(40,160,240,0.8)", fontFamily:"JetBrains Mono,monospace", marginBottom:"4px" }}>{truncAddr(address)||"-"}</div>
-          <div style={{ fontSize:"10px", color:"rgba(150,160,170,0.4)", fontFamily:"JetBrains Mono,monospace", marginBottom:"10px" }}>{chain.shortName} · {totalUsers.toString()} users</div>
+          <div style={{ fontSize:"clamp(10px,0.75vw,13px)", color:"rgba(150,160,170,0.4)", fontFamily:"JetBrains Mono,monospace", marginBottom:"6px", letterSpacing:"0.08em" }}>CONNECTED</div>
+          <div style={{ fontSize:"clamp(11px,0.8vw,14px)", fontWeight:600, color:"rgba(40,160,240,0.8)", fontFamily:"JetBrains Mono,monospace", marginBottom:"4px" }}>{truncAddr(address)||"-"}</div>
+          <div style={{ fontSize:"clamp(10px,0.75vw,13px)", color:"rgba(150,160,170,0.4)", fontFamily:"JetBrains Mono,monospace", marginBottom:"10px" }}>{chain.shortName} · {totalUsers.toString()} users</div>
 
           {/* Chain switcher */}
           <div style={{ display:"flex", gap:"4px", marginBottom:"8px" }}>
             {Object.entries(CHAINS).map(([key,c]:any) => (
-              <button key={key} onClick={()=>switchChain(key)} style={{ flex:1, padding:"5px 0", fontSize:"9px", fontWeight:700, fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.1em", border:`1px solid ${activeChain===key?c.color:"rgba(255,255,255,0.08)"}`, borderRadius:"6px", background:activeChain===key?`${c.color}15`:"transparent", color:activeChain===key?c.color:"rgba(150,160,170,0.4)", cursor:"pointer", transition:"all 0.15s" }}>
+              <button key={key} onClick={()=>switchChain(key)} style={{ flex:1, padding:"5px 0", fontSize:"clamp(9px,0.7vw,12px)", fontWeight:700, fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.1em", border:`1px solid ${activeChain===key?c.color:"rgba(255,255,255,0.08)"}`, borderRadius:"6px", background:activeChain===key?`${c.color}15`:"transparent", color:activeChain===key?c.color:"rgba(150,160,170,0.4)", cursor:"pointer", transition:"all 0.15s" }}>
                 {c.tag}
               </button>
             ))}
           </div>
 
-          <button onClick={disconnect} style={{ width:"100%", padding:"8px", fontSize:"11px", fontWeight:700, fontFamily:"Inter,sans-serif", color:"rgba(239,68,68,0.7)", background:"rgba(239,68,68,0.06)", border:"1px solid rgba(239,68,68,0.15)", borderRadius:"8px", cursor:"pointer", transition:"all 0.15s", letterSpacing:"0.01em" }}>
+          <button onClick={disconnect} style={{ width:"100%", padding:"8px", fontSize:"clamp(11px,0.8vw,14px)", fontWeight:700, fontFamily:"Inter,sans-serif", color:"rgba(239,68,68,0.7)", background:"rgba(239,68,68,0.06)", border:"1px solid rgba(239,68,68,0.15)", borderRadius:"8px", cursor:"pointer", transition:"all 0.15s", letterSpacing:"0.01em" }}>
             Disconnect
           </button>
         </div>
@@ -888,10 +905,10 @@ export default function App() {
               {sideOpen ? <X style={{width:"16px",height:"16px"}}/> : <Menu style={{width:"16px",height:"16px"}}/>}
             </button>
             <div>
-              <span style={{ fontSize:"15px", fontWeight:700, color:"#f0f4f8", fontFamily:"Space Grotesk,sans-serif" }}>{currentNav?.label}</span>
+              <span style={{ fontSize:"clamp(15px,1.1vw,20px)", fontWeight:700, color:"#f0f4f8", fontFamily:"Space Grotesk,sans-serif" }}>{currentNav?.label}</span>
             </div>
             <div style={{ height:"16px", width:"1px", background:"rgba(255,255,255,0.08)" }}/>
-            <div style={{ display:"flex", alignItems:"center", gap:"6px", fontSize:"11px", fontWeight:600, color:"rgba(150,160,170,0.6)", fontFamily:"JetBrains Mono,monospace" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:"6px", fontSize:"clamp(11px,0.8vw,14px)", fontWeight:600, color:"rgba(150,160,170,0.6)", fontFamily:"JetBrains Mono,monospace" }}>
               <div style={{ width:"5px", height:"5px", borderRadius:"50%", background:chain.color, boxShadow:`0 0 6px ${chain.color}` }}/>
               {chain.name}
             </div>
@@ -899,12 +916,12 @@ export default function App() {
 
           <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
             {/* Treasury total */}
-            <div style={{ fontSize:"13px", fontWeight:700, color:"#f0f4f8", fontFamily:"JetBrains Mono,monospace", background:"rgba(16,22,32,0.8)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"8px", padding:"6px 12px" }}>
-              ${totalUSD.toLocaleString(undefined,{maximumFractionDigits:0})} <span style={{ color:"rgba(150,160,170,0.5)", fontSize:"11px" }}>USD</span>
+            <div style={{ fontSize:"clamp(13px,0.9vw,16px)", fontWeight:700, color:"#f0f4f8", fontFamily:"JetBrains Mono,monospace", background:"rgba(16,22,32,0.8)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"8px", padding:"6px 12px" }}>
+              ${totalUSD.toLocaleString(undefined,{maximumFractionDigits:0})} <span style={{ color:"rgba(150,160,170,0.5)", fontSize:"clamp(11px,0.8vw,14px)" }}>USD</span>
             </div>
 
             {/* Reset */}
-            <button onClick={handleReset} style={{ padding:"6px 12px", fontSize:"11px", fontWeight:600, color:"rgba(150,160,170,0.6)", background:"rgba(16,22,32,0.6)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"8px", cursor:"pointer", fontFamily:"Inter,sans-serif", transition:"all 0.15s" }}>
+            <button onClick={handleReset} style={{ padding:"6px 12px", fontSize:"clamp(11px,0.8vw,14px)", fontWeight:600, color:"rgba(150,160,170,0.6)", background:"rgba(16,22,32,0.6)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"8px", cursor:"pointer", fontFamily:"Inter,sans-serif", transition:"all 0.15s" }}>
               Reset Vault
             </button>
 
@@ -914,7 +931,7 @@ export default function App() {
             </button>
 
             {/* Wallet */}
-            <button onClick={()=>setWalletDrop(!walletDrop)} style={{ display:"flex", alignItems:"center", gap:"7px", padding:"6px 12px", fontSize:"11px", fontWeight:600, color:"rgba(200,209,217,0.8)", background:"rgba(16,22,32,0.8)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"8px", cursor:"pointer", fontFamily:"JetBrains Mono,monospace", transition:"all 0.15s", position:"relative" }}>
+            <button onClick={()=>setWalletDrop(!walletDrop)} style={{ display:"flex", alignItems:"center", gap:"7px", padding:"6px 12px", fontSize:"clamp(11px,0.8vw,14px)", fontWeight:600, color:"rgba(200,209,217,0.8)", background:"rgba(16,22,32,0.8)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"8px", cursor:"pointer", fontFamily:"JetBrains Mono,monospace", transition:"all 0.15s", position:"relative" }}>
               <div style={{ width:"6px", height:"6px", borderRadius:"50%", background:"#10b981", boxShadow:"0 0 6px #10b981", animation:"pulse 2s infinite" }}/>
               {truncAddr(address)||"Connected"}
               <ChevronDown style={{ width:"12px", height:"12px", color:"rgba(150,160,170,0.5)" }}/>
@@ -922,14 +939,14 @@ export default function App() {
             {walletDrop && <>
               <div style={{ position:"fixed", inset:0, zIndex:40 }} onClick={()=>setWalletDrop(false)}/>
               <div style={{ position:"absolute", top:"56px", right:"16px", width:"260px", background:"rgba(14,20,30,0.96)", backdropFilter:"blur(20px)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"12px", padding:"12px", zIndex:50, boxShadow:"0 20px 60px rgba(0,0,0,0.6)" }}>
-                <div style={{ fontSize:"9px", fontWeight:700, color:"rgba(150,160,170,0.5)", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.15em", marginBottom:"10px", paddingBottom:"8px", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>SESSION</div>
+                <div style={{ fontSize:"clamp(9px,0.7vw,12px)", fontWeight:700, color:"rgba(150,160,170,0.5)", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.15em", marginBottom:"10px", paddingBottom:"8px", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>SESSION</div>
                 {[["Wallet",address||"-"],["Agent",agentAddr||"-"],["Network",chain.name],["Users",totalUsers.toString()]].map(([l,v]) => (
-                  <div key={l} style={{ display:"flex", justifyContent:"space-between", padding:"5px 0", fontSize:"11px", fontFamily:"JetBrains Mono,monospace", borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
+                  <div key={l} style={{ display:"flex", justifyContent:"space-between", padding:"5px 0", fontSize:"clamp(11px,0.8vw,14px)", fontFamily:"JetBrains Mono,monospace", borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
                     <span style={{ color:"rgba(150,160,170,0.4)" }}>{l}</span>
                     <span style={{ color:"rgba(200,209,217,0.8)" }}>{String(v).length>20?String(v).slice(0,12)+".":v}</span>
                   </div>
                 ))}
-                <button onClick={()=>{disconnect();setWalletDrop(false);}} style={{ width:"100%", marginTop:"10px", padding:"8px", fontSize:"11px", fontWeight:700, color:"rgba(239,68,68,0.8)", background:"rgba(239,68,68,0.06)", border:"1px solid rgba(239,68,68,0.15)", borderRadius:"8px", cursor:"pointer", fontFamily:"Inter,sans-serif" }}>
+                <button onClick={()=>{disconnect();setWalletDrop(false);}} style={{ width:"100%", marginTop:"10px", padding:"8px", fontSize:"clamp(11px,0.8vw,14px)", fontWeight:700, color:"rgba(239,68,68,0.8)", background:"rgba(239,68,68,0.06)", border:"1px solid rgba(239,68,68,0.15)", borderRadius:"8px", cursor:"pointer", fontFamily:"Inter,sans-serif" }}>
                   Disconnect Wallet
                 </button>
               </div>
@@ -938,7 +955,7 @@ export default function App() {
         </header>
 
         {/* Content area. NO auto-scroll */}
-        <div ref={contentRef} style={{ flex:1, overflowY:"auto", padding:"24px", background:"radial-gradient(ellipse 80% 60% at 10% 0%, rgba(40,160,240,0.04) 0%, transparent 50%), #080c10" }}>
+        <div ref={contentRef} style={{ flex:1, overflowY:"auto", padding:"clamp(18px,2vw,36px)", background:"radial-gradient(ellipse 100% 80% at 10% 0%, rgba(40,160,240,0.07) 0%, transparent 55%), radial-gradient(ellipse 60% 60% at 90% 100%, rgba(111,255,233,0.04) 0%, transparent 55%), #060a12" }}>
           {renderView()}
         </div>
       </div>
@@ -953,10 +970,10 @@ export default function App() {
             <div key={toast.id} className="toast-in" style={{ background:isSuccess?"rgba(10,20,16,0.97)":isError?"rgba(20,10,10,0.97)":isWarn?"rgba(20,16,10,0.97)":"rgba(10,14,22,0.97)", backdropFilter:"blur(16px)", border:`1px solid ${isSuccess?"rgba(16,185,129,0.3)":isError?"rgba(239,68,68,0.3)":isWarn?"rgba(245,158,11,0.3)":"rgba(40,160,240,0.3)"}`, borderRadius:"12px", padding:"14px 16px", boxShadow:"0 12px 40px rgba(0,0,0,0.6)", pointerEvents:"auto", display:"flex", gap:"12px", alignItems:"flex-start", position:"relative", overflow:"hidden" }}>
               <div style={{ width:"6px", height:"6px", borderRadius:"50%", background:isSuccess?"#10b981":isError?"#ef4444":isWarn?"#f59e0b":"#28a0f0", marginTop:"4px", flexShrink:0, boxShadow:`0 0 8px ${isSuccess?"#10b981":isError?"#ef4444":isWarn?"#f59e0b":"#28a0f0"}` }}/>
               <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontSize:"12px", fontWeight:800, color:"#fff", fontFamily:"Space Grotesk,sans-serif", marginBottom:"3px", textTransform:"uppercase", letterSpacing:"0.03em" }}>{toast.title}</div>
-                <div style={{ fontSize:"11px", color:"rgba(200,209,217,0.6)", fontFamily:"Inter,sans-serif", lineHeight:"1.5" }}>{toast.description}</div>
+                <div style={{ fontSize:"clamp(12px,0.85vw,15px)", fontWeight:800, color:"#fff", fontFamily:"Space Grotesk,sans-serif", marginBottom:"3px", textTransform:"uppercase", letterSpacing:"0.03em" }}>{toast.title}</div>
+                <div style={{ fontSize:"clamp(11px,0.8vw,14px)", color:"rgba(200,209,217,0.6)", fontFamily:"Inter,sans-serif", lineHeight:"1.5" }}>{toast.description}</div>
               </div>
-              <button onClick={()=>setToasts(prev=>prev.filter((t:any)=>t.id!==toast.id))} style={{ background:"none", border:"none", cursor:"pointer", color:"rgba(150,160,170,0.4)", fontSize:"14px", lineHeight:1, flexShrink:0, padding:0, pointerEvents:"auto" }}>x</button>
+              <button onClick={()=>setToasts(prev=>prev.filter((t:any)=>t.id!==toast.id))} style={{ background:"none", border:"none", cursor:"pointer", color:"rgba(150,160,170,0.4)", fontSize:"clamp(14px,1vw,18px)", lineHeight:1, flexShrink:0, padding:0, pointerEvents:"auto" }}>x</button>
               <div className="timer-shrink" style={{ position:"absolute", bottom:0, left:0, height:"2px", background:isSuccess?"#10b981":isError?"#ef4444":isWarn?"#f59e0b":"#28a0f0", borderRadius:"1px" }}/>
             </div>
           );
