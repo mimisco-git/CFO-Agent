@@ -79,49 +79,255 @@ const NAV = [
   { id: "settings",   label: "Settings",       icon: Settings,        badge: null },
 ];
 
-// ---- AUTH SCREEN ----
+// ---- LANDING + AUTH SCREEN ----
 function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: boolean }) {
-  return (
-    <div style={{ minHeight:"100vh", background:"#080c10", display:"flex", alignItems:"center", justifyContent:"center", padding:"24px", position:"relative", overflow:"hidden" }}>
-      <div style={{ position:"absolute", top:"-30%", left:"50%", transform:"translateX(-50%)", width:"800px", height:"800px", background:"radial-gradient(ellipse, rgba(40,160,240,0.07) 0%, transparent 60%)", pointerEvents:"none" }}/>
-      <div style={{ width:"100%", maxWidth:"420px", position:"relative", zIndex:1 }}>
-        {/* Logo */}
-        <div style={{ textAlign:"center", marginBottom:"40px" }}>
-          <div style={{ width:"72px", height:"72px", borderRadius:"22px", background:"linear-gradient(135deg,rgba(40,160,240,0.2),rgba(40,160,240,0.05))", border:"1px solid rgba(40,160,240,0.35)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px", boxShadow:"0 0 60px rgba(40,160,240,0.12)" }}>
-            <CFOLogo size={36}/>
-          </div>
-          <h1 style={{ fontSize:"32px", fontWeight:900, color:"#fff", fontFamily:"Space Grotesk,sans-serif", letterSpacing:"-0.02em", marginBottom:"8px" }}>CFO Agent</h1>
-          <p style={{ fontSize:"12px", fontWeight:700, color:"#28a0f0", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.15em", textTransform:"uppercase" }}>Autonomous Treasury OS · Arbitrum</p>
-        </div>
+  const [scrolled, setScrolled] = React.useState(false);
+  React.useEffect(() => {
+    const el = document.getElementById("auth-scroll");
+    if (!el) return;
+    const handler = () => setScrolled(el.scrollTop > 40);
+    el.addEventListener("scroll", handler);
+    return () => el.removeEventListener("scroll", handler);
+  }, []);
 
-        {/* Glass card */}
-        <div style={{ background:"rgba(16,22,32,0.8)", backdropFilter:"blur(24px)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:"20px", padding:"32px", boxShadow:"0 32px 80px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.06)", marginBottom:"16px" }}>
-          <p style={{ fontSize:"14px", color:"rgba(200,209,217,0.75)", lineHeight:"1.75", marginBottom:"28px", fontFamily:"Inter,sans-serif" }}>
-            Your on-chain CFO that holds treasury funds and executes payment rules 24/7 — autonomously, transparently, and without human intervention.
+  return (
+    <div style={{ height:"100vh", background:"#060A12", overflow:"hidden", display:"flex", flexDirection:"column", fontFamily:"Inter,sans-serif" }}>
+      <style>{`
+        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+        @keyframes pulse2 { 0%,100%{opacity:1} 50%{opacity:.3} }
+        @keyframes scan2 { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+        .fade1{animation:fadeUp .6s .1s both}
+        .fade2{animation:fadeUp .6s .2s both}
+        .fade3{animation:fadeUp .6s .3s both}
+        .fade4{animation:fadeUp .6s .4s both}
+        .fade5{animation:fadeUp .6s .5s both}
+        .feature-card:hover{border-color:rgba(40,160,240,.3)!important;background:rgba(16,24,36,.9)!important;transform:translateY(-2px)}
+        .step-card:hover{border-color:rgba(40,160,240,.25)!important}
+        .launch-btn:hover{background:#3ab0ff!important;box-shadow:0 8px 40px rgba(40,160,240,.5)!important;transform:translateY(-1px)}
+        .nav-link:hover{color:#fff!important}
+        ::-webkit-scrollbar{width:4px}
+        ::-webkit-scrollbar-thumb{background:rgba(40,160,240,.2);border-radius:4px}
+      `}</style>
+
+      {/* Scanline */}
+      <div style={{ position:"fixed",left:0,right:0,height:"1px",background:"linear-gradient(transparent,rgba(40,160,240,.25),transparent)",pointerEvents:"none",zIndex:999,top:0,animation:"scan2 8s linear infinite" }}/>
+
+      {/* NAV */}
+      <nav style={{ position:"fixed",top:0,left:0,right:0,zIndex:100,padding:"0 40px",height:"60px",display:"flex",alignItems:"center",justifyContent:"space-between",background:scrolled?"rgba(6,10,18,.95)":"transparent",backdropFilter:scrolled?"blur(20px)":"none",borderBottom:scrolled?"1px solid rgba(255,255,255,.06)":"none",transition:"all .3s" }}>
+        <div style={{ display:"flex",alignItems:"center",gap:"10px" }}>
+          <CFOLogo size={28}/>
+          <span style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"17px",fontWeight:800,color:"#fff",letterSpacing:"-.01em" }}>CFO Agent</span>
+          <span style={{ fontSize:"9px",fontWeight:700,color:"#10b981",background:"rgba(16,185,129,.1)",border:"1px solid rgba(16,185,129,.25)",borderRadius:"999px",padding:"2px 8px",fontFamily:"JetBrains Mono,monospace",letterSpacing:".1em",marginLeft:4 }}>LIVE</span>
+        </div>
+        <div style={{ display:"flex",alignItems:"center",gap:"28px" }}>
+          {["How It Works","Features","Chains"].map(l => (
+            <a key={l} href={`#${l.replace(/ /g,"-").toLowerCase()}`} className="nav-link" style={{ fontSize:"13px",fontWeight:600,color:"rgba(180,190,200,.6)",textDecoration:"none",transition:"color .2s" }}>{l}</a>
+          ))}
+          <button onClick={onConnect} disabled={loading} className="launch-btn" style={{ padding:"8px 20px",background:"#28a0f0",color:"#060A12",fontSize:"13px",fontWeight:800,borderRadius:"8px",border:"none",cursor:loading?"not-allowed":"pointer",fontFamily:"Space Grotesk,sans-serif",boxShadow:"0 4px 20px rgba(40,160,240,.3)",transition:"all .2s",letterSpacing:".01em",display:"flex",alignItems:"center",gap:7 }}>
+            {loading ? <RefreshCw style={{width:"13px",height:"13px",animation:"spin 1s linear infinite"}}/> : <Wallet style={{width:"13px",height:"13px"}}/>}
+            {loading ? "Connecting..." : "Launch App"}
+          </button>
+        </div>
+      </nav>
+
+      {/* SCROLLABLE CONTENT */}
+      <div id="auth-scroll" style={{ flex:1,overflowY:"auto",overflowX:"hidden" }}>
+
+        {/* HERO */}
+        <section style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"120px 24px 80px",position:"relative",overflow:"hidden" }}>
+          {/* Background effects */}
+          <div style={{ position:"absolute",top:"-20%",left:"50%",transform:"translateX(-50%)",width:"700px",height:"700px",background:"radial-gradient(ellipse,rgba(40,160,240,.1) 0%,transparent 65%)",pointerEvents:"none" }}/>
+          <div style={{ position:"absolute",bottom:"-10%",right:"-5%",width:"400px",height:"400px",background:"radial-gradient(ellipse,rgba(111,255,233,.05) 0%,transparent 65%)",pointerEvents:"none" }}/>
+          <div style={{ position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(40,160,240,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(40,160,240,.04) 1px,transparent 1px)",backgroundSize:"44px 44px",maskImage:"radial-gradient(ellipse 80% 80% at 50% 50%,black 40%,transparent 100%)" }}/>
+
+          <div className="fade1" style={{ display:"inline-flex",alignItems:"center",gap:8,background:"rgba(40,160,240,.1)",border:"1px solid rgba(40,160,240,.25)",borderRadius:"999px",padding:"6px 16px",marginBottom:28 }}>
+            <div style={{ width:6,height:6,borderRadius:"50%",background:"#10b981",boxShadow:"0 0 8px #10b981",animation:"pulse2 2s infinite" }}/>
+            <span style={{ fontFamily:"JetBrains Mono,monospace",fontSize:11,fontWeight:700,color:"#28a0f0",letterSpacing:".12em",textTransform:"uppercase" }}>Arbitrum Open House London · Buildathon 2026</span>
+          </div>
+
+          <h1 className="fade2" style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(40px,8vw,80px)",fontWeight:900,color:"#fff",lineHeight:1.05,letterSpacing:"-.03em",marginBottom:20 }}>
+            Your On-Chain CFO<br/>
+            <span style={{ background:"linear-gradient(135deg,#28a0f0,#6FFFE9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text" }}>Never Sleeps</span>
+          </h1>
+
+          <p className="fade3" style={{ fontSize:"clamp(16px,2.5vw,20px)",color:"rgba(200,209,217,.75)",lineHeight:1.75,maxWidth:580,margin:"0 auto 40px" }}>
+            Set payment rules once. Your autonomous treasury agent executes them 24/7 on Arbitrum and Robinhood Chain — no manual transactions, no missed payments, no human error.
           </p>
-          <div style={{ display:"flex", flexDirection:"column", gap:"10px", marginBottom:"28px" }}>
+
+          <div className="fade4" style={{ display:"flex",alignItems:"center",gap:14,flexWrap:"wrap",justifyContent:"center",marginBottom:64 }}>
+            <button onClick={onConnect} disabled={loading} className="launch-btn" style={{ padding:"16px 36px",background:"#28a0f0",color:"#060A12",fontSize:"16px",fontWeight:800,borderRadius:"12px",border:"none",cursor:loading?"not-allowed":"pointer",fontFamily:"Space Grotesk,sans-serif",boxShadow:"0 6px 28px rgba(40,160,240,.4)",transition:"all .2s",letterSpacing:".01em",display:"flex",alignItems:"center",gap:10 }}>
+              {loading ? <RefreshCw style={{width:"18px",height:"18px",animation:"spin 1s linear infinite"}}/> : <Wallet style={{width:"18px",height:"18px"}}/>}
+              {loading ? "Connecting..." : "Connect Wallet — Launch App"}
+            </button>
+            <a href="#how-it-works" style={{ padding:"16px 28px",color:"rgba(200,209,217,.8)",fontSize:"15px",fontWeight:700,borderRadius:"12px",border:"1px solid rgba(255,255,255,.1)",background:"rgba(16,22,32,.6)",backdropFilter:"blur(8px)",textDecoration:"none",transition:"all .2s" }}>
+              See How It Works ↓
+            </a>
+          </div>
+
+          {/* Live terminal preview */}
+          <div className="fade5" style={{ width:"100%",maxWidth:760,background:"rgba(6,10,16,.98)",border:"1px solid rgba(255,255,255,.08)",borderRadius:16,overflow:"hidden",boxShadow:"0 40px 100px rgba(0,0,0,.7)",animation:"float 6s ease-in-out infinite" }}>
+            <div style={{ display:"flex",alignItems:"center",gap:8,padding:"12px 18px",background:"rgba(14,20,30,.9)",borderBottom:"1px solid rgba(255,255,255,.06)" }}>
+              {["#ef4444","#f59e0b","#10b981"].map(c=><div key={c} style={{width:11,height:11,borderRadius:"50%",background:c}}/>)}
+              <span style={{ flex:1,textAlign:"center",fontFamily:"JetBrains Mono,monospace",fontSize:11,fontWeight:600,color:"rgba(150,160,170,.6)",letterSpacing:".1em" }}>cfo-agent · keeper-bot · arbitrum-sepolia</span>
+            </div>
+            <div style={{ padding:"20px 24px",textAlign:"left" }}>
+              {[
+                {c:"rgba(150,160,170,.5)",p:"[SYS]",m:"keeper bot initialized · polling every 8.5s"},
+                {c:"#4a7a55",p:"[POL]",m:"scanning RuleRegistry · 2 active rules detected"},
+                {c:"#f59e0b",p:"[EXE]",m:"dequeuing job #1041 · CORE CONTRIBUTOR PAYROLL"},
+                {c:"#6FFFE9",p:"[TX ]",m:"submitted · 0x7f3a2c...b2e1 · gas 142,300"},
+                {c:"#10b981",p:"[OK ]",m:"confirmed · 200 USDC → dev lead · block #21,814,965"},
+                {c:"#4a7a55",p:"[POL]",m:"scanning RuleRegistry · next execution in 8.5s"},
+              ].map((l,i)=>(
+                <div key={i} style={{ display:"flex",gap:12,padding:"3px 0",fontFamily:"JetBrains Mono,monospace",fontSize:12,lineHeight:1.9 }}>
+                  <span style={{ color:"rgba(150,160,170,.4)",width:60,flexShrink:0 }}>{`17:4${i}:0${i*3}`}</span>
+                  <span style={{ color:l.c,fontWeight:700,width:46,flexShrink:0 }}>{l.p}</span>
+                  <span style={{ color:l.c === "#10b981" ? "#10b981" : "rgba(200,209,217,.7)" }}>{l.m}</span>
+                </div>
+              ))}
+              <div style={{ display:"flex",gap:12,padding:"3px 0",fontFamily:"JetBrains Mono,monospace",fontSize:12,lineHeight:1.9,marginTop:2 }}>
+                <span style={{ color:"rgba(150,160,170,.4)",width:60,flexShrink:0 }}>17:43:51</span>
+                <span style={{ color:"#28a0f0",fontWeight:700 }}>$</span>
+                <span style={{ display:"inline-block",width:8,height:14,background:"#28a0f0",animation:"pulse2 .8s infinite",verticalAlign:"middle",marginLeft:4,borderRadius:1 }}/>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* STATS */}
+        <div style={{ borderTop:"1px solid rgba(255,255,255,.06)",borderBottom:"1px solid rgba(255,255,255,.06)",background:"rgba(10,14,22,.6)",backdropFilter:"blur(12px)",padding:"0 40px" }}>
+          <div style={{ maxWidth:1000,margin:"0 auto",display:"grid",gridTemplateColumns:"repeat(4,1fr)" }}>
             {[
-              "Personal CFOAgent contract deployed per wallet",
-              "Payment rules executed by on-chain keeper bot",
-              "Multi-chain: Arbitrum Sepolia + Robinhood Chain",
-              "AI-powered rule generation from plain English",
-            ].map((f, i) => (
-              <div key={i} style={{ display:"flex", alignItems:"center", gap:"10px", fontSize:"13px", color:"rgba(200,209,217,0.65)", fontFamily:"Inter,sans-serif" }}>
-                <div style={{ width:"5px", height:"5px", borderRadius:"50%", background:"#28a0f0", flexShrink:0, boxShadow:"0 0 6px #28a0f0" }}/>
-                {f}
+              {n:"4",l:"Smart Contracts"},
+              {n:"2",l:"Chains Deployed"},
+              {n:"99%",l:"Gas Savings vs L1"},
+              {n:"24/7",l:"Autonomous Execution"},
+            ].map((s,i)=>(
+              <div key={i} style={{ textAlign:"center",padding:"28px 20px",borderRight:i<3?"1px solid rgba(255,255,255,.06)":"none" }}>
+                <div style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(28px,5vw,38px)",fontWeight:900,background:"linear-gradient(135deg,#28a0f0,#6FFFE9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",letterSpacing:"-.02em",marginBottom:4 }}>{s.n}</div>
+                <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,fontWeight:700,color:"rgba(150,160,170,.55)",letterSpacing:".15em",textTransform:"uppercase" }}>{s.l}</div>
               </div>
             ))}
           </div>
-          <button onClick={onConnect} disabled={loading} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:"10px", padding:"15px 24px", background: loading ? "#1a2a3a" : "#28a0f0", color: loading ? "#4a6a8a" : "#080c10", fontSize:"15px", fontWeight:800, borderRadius:"12px", border:"none", cursor: loading ? "not-allowed" : "pointer", fontFamily:"Space Grotesk,sans-serif", boxShadow: loading ? "none" : "0 4px 24px rgba(40,160,240,0.35)", letterSpacing:"0.01em" }}>
-            {loading ? <RefreshCw style={{ width:"18px", height:"18px", animation:"spin 1s linear infinite" }}/> : <Wallet style={{ width:"18px", height:"18px" }}/>}
-            {loading ? "Connecting..." : "Connect MetaMask"}
-          </button>
         </div>
-        <p style={{ textAlign:"center", fontSize:"10px", color:"rgba(100,120,140,0.6)", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.1em" }}>
-          SECURED WITH SIWE · EIP-4361 · NON-CUSTODIAL
-        </p>
+
+        {/* HOW IT WORKS */}
+        <section id="how-it-works" style={{ padding:"100px 40px",maxWidth:1100,margin:"0 auto" }}>
+          <div style={{ textAlign:"center",marginBottom:60 }}>
+            <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:11,fontWeight:700,color:"#28a0f0",letterSpacing:".2em",textTransform:"uppercase",marginBottom:12 }}>// HOW IT WORKS</div>
+            <h2 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(28px,5vw,46px)",fontWeight:900,color:"#fff",letterSpacing:"-.02em",lineHeight:1.1,marginBottom:14 }}>Three steps to<br/>autonomous treasury</h2>
+            <p style={{ fontSize:16,color:"rgba(200,209,217,.7)",lineHeight:1.75,maxWidth:500,margin:"0 auto" }}>From natural language to on-chain execution in under 60 seconds.</p>
+          </div>
+          <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:20 }}>
+            {[
+              {n:"01",icon:"🔐",t:"Connect & Deploy",d:"Sign in with MetaMask using SIWE. Your personal CFOAgent smart contract is automatically deployed on Arbitrum — one per wallet, non-custodial, fully yours.",tag:"AgentFactory.sol"},
+              {n:"02",icon:"🤖",t:"Describe in English",d:'Type "Pay dev lead 500 USDC weekly" and our AI parses it into a production-ready on-chain payment rule. No code. No ABI. No manual transactions.',tag:"AI Copilot"},
+              {n:"03",icon:"⚡",t:"Keeper Executes Forever",d:"The keeper bot polls your RuleRegistry every 8.5 seconds. When conditions are met, it fires on-chain transactions automatically with full audit trails.",tag:"ExecutionSequencer.sol"},
+            ].map((s,i)=>(
+              <div key={i} className="step-card" style={{ background:"rgba(14,20,30,.8)",backdropFilter:"blur(16px)",border:"1px solid rgba(255,255,255,.07)",borderRadius:16,padding:"28px",transition:"all .25s",position:"relative",overflow:"hidden" }}>
+                <div style={{ position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba(40,160,240,.4),transparent)" }}/>
+                <div style={{ display:"flex",alignItems:"center",gap:10,marginBottom:18 }}>
+                  <span style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,fontWeight:700,color:"rgba(40,160,240,.5)",letterSpacing:".15em" }}>STEP {s.n}</span>
+                  <div style={{ flex:1,height:1,background:"rgba(40,160,240,.15)" }}/>
+                </div>
+                <div style={{ fontSize:28,marginBottom:14 }}>{s.icon}</div>
+                <h3 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:18,fontWeight:800,color:"#fff",marginBottom:10,letterSpacing:"-.01em" }}>{s.t}</h3>
+                <p style={{ fontSize:13,color:"rgba(200,209,217,.65)",lineHeight:1.75,marginBottom:16 }}>{s.d}</p>
+                <span style={{ display:"inline-flex",alignItems:"center",gap:5,fontFamily:"JetBrains Mono,monospace",fontSize:10,fontWeight:700,color:"#28a0f0",background:"rgba(40,160,240,.08)",border:"1px solid rgba(40,160,240,.15)",borderRadius:6,padding:"4px 10px",letterSpacing:".06em" }}>{s.tag}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* FEATURES */}
+        <section id="features" style={{ padding:"0 40px 100px",maxWidth:1100,margin:"0 auto" }}>
+          <div style={{ textAlign:"center",marginBottom:60 }}>
+            <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:11,fontWeight:700,color:"#28a0f0",letterSpacing:".2em",textTransform:"uppercase",marginBottom:12 }}>// FEATURES</div>
+            <h2 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(28px,5vw,46px)",fontWeight:900,color:"#fff",letterSpacing:"-.02em",lineHeight:1.1 }}>Everything your treasury<br/>needs to run itself</h2>
+          </div>
+          <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:14 }}>
+            {[
+              {icon:"📋",c:"rgba(40,160,240,.1)",b:"rgba(40,160,240,.2)",t:"Rule Registry",d:"Create scheduled payroll, conditional sweeps, and recurring transfers stored on-chain and executed trustlessly."},
+              {icon:"🛡️",c:"rgba(16,185,129,.1)",b:"rgba(16,185,129,.2)",t:"Daily Spend Caps",d:"Per-token daily limits block over-execution. Emergency kill switch halts all activity instantly."},
+              {icon:"🧠",c:"rgba(168,85,247,.1)",b:"rgba(168,85,247,.2)",t:"AI Rule Copilot",d:"Describe payment needs in plain English. AI generates smart contract-compatible rule configurations instantly."},
+              {icon:"⚡",c:"rgba(245,158,11,.1)",b:"rgba(245,158,11,.2)",t:"Gas Efficiency",d:"Arbitrum L2 reduces costs by 99% vs Ethereum mainnet. Robinhood Chain drops costs to near-zero."},
+              {icon:"🔗",c:"rgba(111,255,233,.1)",b:"rgba(111,255,233,.2)",t:"Multi-Chain",d:"Deployed on Arbitrum Sepolia and Robinhood Chain. Switch networks in one click, same architecture."},
+              {icon:"📊",c:"rgba(239,68,68,.1)",b:"rgba(239,68,68,.2)",t:"Treasury Analytics",d:"Real-time runway projections, burn rate tracking, oracle price feeds, and full audit sheet export."},
+            ].map((f,i)=>(
+              <div key={i} className="feature-card" style={{ background:"rgba(14,20,30,.75)",backdropFilter:"blur(14px)",border:"1px solid rgba(255,255,255,.07)",borderRadius:14,padding:"22px",display:"flex",gap:16,transition:"all .25s" }}>
+                <div style={{ width:42,height:42,borderRadius:10,background:f.c,border:`1px solid ${f.b}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0 }}>{f.icon}</div>
+                <div>
+                  <div style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:15,fontWeight:700,color:"#fff",marginBottom:6,letterSpacing:"-.01em" }}>{f.t}</div>
+                  <div style={{ fontSize:13,color:"rgba(200,209,217,.6)",lineHeight:1.7 }}>{f.d}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* CHAINS */}
+        <section id="chains" style={{ padding:"0 40px 100px",maxWidth:1100,margin:"0 auto" }}>
+          <div style={{ textAlign:"center",marginBottom:48 }}>
+            <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:11,fontWeight:700,color:"#28a0f0",letterSpacing:".2em",textTransform:"uppercase",marginBottom:12 }}>// DEPLOYED CONTRACTS</div>
+            <h2 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(28px,5vw,46px)",fontWeight:900,color:"#fff",letterSpacing:"-.02em",lineHeight:1.1 }}>Live on two chains</h2>
+          </div>
+          <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:16 }}>
+            {[
+              {name:"Arbitrum Sepolia",id:"421614",color:"#28a0f0",logo:<svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#2D374B"/><path d="M16 4L6 20.5L16 28L26 20.5Z" fill="#28a0f0" opacity=".9"/><path d="M16 4L11 20.5L16 28V4Z" fill="#96BEDC"/></svg>,factory:"0xF1EE2CC9741547cAf04FE99ed2ad8Ff072AEe900",registry:"0x5eadac819B2206B960a30978eFCEf3E1351C6b10",sequencer:"0xA6a5A3364c8A169c9F38768df67Ad89AA33f14e2",explorer:"https://sepolia.arbiscan.io",status:"ACTIVE"},
+              {name:"Robinhood Chain",id:"46630",color:"#00C805",logo:<svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#00C805"/><path d="M10 8h7c3.3 0 6 2.7 6 6s-2.7 6-6 6h-2l4 4h-4l-4-4V8z" fill="white"/><rect x="10" y="8" width="3" height="12" fill="white"/></svg>,factory:"0xcd75Ad7AC9C9325105f798c476E84176648F391A",registry:"0xbfce6B877Ebff977bB6e80B24FbBb7bC4eBcA4df",sequencer:"0x6d5a4D246617d711595a1657c55B17B97e20bdda",explorer:"https://explorer.testnet.chain.robinhood.com",status:"DEPLOYED"},
+            ].map((c,i)=>(
+              <div key={i} style={{ background:"rgba(14,20,30,.8)",backdropFilter:"blur(16px)",border:`1px solid rgba(255,255,255,.08)`,borderRadius:16,padding:"24px",position:"relative",overflow:"hidden" }}>
+                <div style={{ position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${c.color}60,transparent)` }}/>
+                <div style={{ display:"flex",alignItems:"center",gap:12,marginBottom:16 }}>
+                  {c.logo}
+                  <div>
+                    <div style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:17,fontWeight:800,color:"#fff",marginBottom:2 }}>{c.name}</div>
+                    <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(150,160,170,.5)",letterSpacing:".1em" }}>CHAIN ID: {c.id}</div>
+                  </div>
+                  <div style={{ marginLeft:"auto",fontSize:9,fontWeight:700,color:c.color,background:`${c.color}15`,border:`1px solid ${c.color}40`,borderRadius:6,padding:"3px 9px",fontFamily:"JetBrains Mono,monospace",letterSpacing:".1em" }}>{c.status}</div>
+                </div>
+                <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(150,160,170,.5)",lineHeight:2.2,marginBottom:14 }}>
+                  <div>Factory:&nbsp;&nbsp; {c.factory.slice(0,18)}...</div>
+                  <div>Registry:&nbsp; {c.registry.slice(0,18)}...</div>
+                  <div>Sequencer: {c.sequencer.slice(0,18)}...</div>
+                </div>
+                <a href={`${c.explorer}/address/${c.factory}`} target="_blank" rel="noreferrer" style={{ display:"flex",alignItems:"center",gap:5,fontFamily:"JetBrains Mono,monospace",fontSize:10,fontWeight:700,color:c.color,textDecoration:"none",letterSpacing:".06em" }}>
+                  <ExternalLink style={{width:10,height:10}}/> View on Explorer
+                </a>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* FINAL CTA */}
+        <section style={{ padding:"80px 24px 100px",textAlign:"center",position:"relative",overflow:"hidden" }}>
+          <div style={{ position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:600,height:300,background:"radial-gradient(ellipse,rgba(40,160,240,.1) 0%,transparent 65%)",pointerEvents:"none" }}/>
+          <div style={{ position:"relative",zIndex:1 }}>
+            <h2 style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:"clamp(30px,6vw,54px)",fontWeight:900,color:"#fff",letterSpacing:"-.02em",marginBottom:14,lineHeight:1.1 }}>Ready to automate<br/>your treasury?</h2>
+            <p style={{ fontSize:17,color:"rgba(200,209,217,.7)",lineHeight:1.75,marginBottom:40,maxWidth:480,margin:"0 auto 40px" }}>Connect your wallet and deploy your personal CFO Agent in under 60 seconds. Non-custodial. No setup fees.</p>
+            <button onClick={onConnect} disabled={loading} className="launch-btn" style={{ padding:"18px 44px",background:"#28a0f0",color:"#060A12",fontSize:"17px",fontWeight:800,borderRadius:"14px",border:"none",cursor:loading?"not-allowed":"pointer",fontFamily:"Space Grotesk,sans-serif",boxShadow:"0 6px 32px rgba(40,160,240,.4)",transition:"all .2s",letterSpacing:".01em",display:"inline-flex",alignItems:"center",gap:12 }}>
+              {loading ? <RefreshCw style={{width:"20px",height:"20px",animation:"spin 1s linear infinite"}}/> : <Wallet style={{width:"20px",height:"20px"}}/>}
+              {loading ? "Connecting..." : "Connect Wallet — It's Free"}
+            </button>
+            <div style={{ marginTop:20,fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(100,120,140,.5)",letterSpacing:".1em" }}>
+              SECURED WITH SIWE · EIP-4361 · NON-CUSTODIAL · ARBITRUM SEPOLIA
+            </div>
+          </div>
+        </section>
+
+        {/* FOOTER */}
+        <footer style={{ borderTop:"1px solid rgba(255,255,255,.06)",padding:"24px 40px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,background:"rgba(6,10,16,.8)" }}>
+          <div style={{ display:"flex",alignItems:"center",gap:10 }}>
+            <CFOLogo size={20}/>
+            <span style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:13,fontWeight:700,color:"rgba(255,255,255,.4)" }}>CFO Agent · Arbitrum Open House London 2026</span>
+          </div>
+          <div style={{ fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"rgba(150,160,170,.35)",letterSpacing:".1em" }}>
+            ARBITRUM SEPOLIA · ROBINHOOD CHAIN · NON-CUSTODIAL
+          </div>
+        </footer>
       </div>
-      <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
     </div>
   );
 }
