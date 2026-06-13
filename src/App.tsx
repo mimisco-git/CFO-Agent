@@ -222,9 +222,9 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
           </div>
           <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:20 }}>
             {[
-              {n:"01",icon:"🔐",t:"Connect & Deploy",d:"Sign in with MetaMask using SIWE. Your personal CFOAgent smart contract is automatically deployed on Arbitrum: one per wallet, non-custodial, fully yours.",tag:"AgentFactory.sol"},
-              {n:"02",icon:"🤖",t:"Describe in English",d:'Type "Pay dev lead 500 USDC weekly" and our AI parses it into a production-ready on-chain payment rule. No code. No ABI. No manual transactions.',tag:"AI Copilot"},
-              {n:"03",icon:"⚡",t:"Keeper Executes Forever",d:"The keeper bot polls your RuleRegistry every 8.5 seconds. When conditions are met, it fires on-chain transactions automatically with full audit trails.",tag:"ExecutionSequencer.sol"},
+              {n:"01",icon:"connect",t:"Connect & Deploy",d:"Sign in with MetaMask using SIWE. Your personal CFOAgent smart contract is automatically deployed on Arbitrum: one per wallet, non-custodial, fully yours.",tag:"AgentFactory.sol"},
+              {n:"02",icon:"ai",t:"Describe in English",d:'Type "Pay dev lead 500 USDC weekly" and our AI parses it into a production-ready on-chain payment rule. No code. No ABI. No manual transactions.',tag:"AI Copilot"},
+              {n:"03",icon:"keeper",t:"Keeper Executes Forever",d:"The keeper bot polls your RuleRegistry every 8.5 seconds. When conditions are met, it fires on-chain transactions automatically with full audit trails.",tag:"ExecutionSequencer.sol"},
             ].map((s,i)=>(
               <div key={i} className="step-card" style={{ background:"rgba(14,20,30,...8)",backdropFilter:"blur(16px)",border:"1px solid rgba(255,255,255,...07)",borderRadius:16,padding:"28px",transition:"all .25s",position:"relative",overflow:"hidden" }}>
                 <div style={{ position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba(40,160,240,...4),transparent)" }}/>
@@ -249,15 +249,22 @@ function AuthScreen({ onConnect, loading }: { onConnect: () => void; loading: bo
           </div>
           <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:14 }}>
             {[
-              {icon:"📋",c:"rgba(40,160,240,...1)",b:"rgba(40,160,240,...2)",t:"Rule Registry",d:"Create scheduled payroll, conditional sweeps, and recurring transfers stored on-chain and executed trustlessly."},
-              {icon:"🛡️",c:"rgba(16,185,129,...1)",b:"rgba(16,185,129,...2)",t:"Daily Spend Caps",d:"Per-token daily limits block over-execution. Emergency kill switch halts all activity instantly."},
-              {icon:"🧠",c:"rgba(168,85,247,...1)",b:"rgba(168,85,247,...2)",t:"AI Rule Copilot",d:"Describe payment needs in plain English. AI generates smart contract-compatible rule configurations instantly."},
-              {icon:"⚡",c:"rgba(245,158,11,...1)",b:"rgba(245,158,11,...2)",t:"Gas Efficiency",d:"Arbitrum L2 reduces costs by 99% vs Ethereum mainnet. Robinhood Chain drops costs to near-zero."},
-              {icon:"🔗",c:"rgba(111,255,233,...1)",b:"rgba(111,255,233,...2)",t:"Multi-Chain",d:"Deployed on Arbitrum Sepolia and Robinhood Chain. Switch networks in one click, same architecture."},
-              {icon:"📊",c:"rgba(239,68,68,...1)",b:"rgba(239,68,68,...2)",t:"Treasury Analytics",d:"Real-time runway projections, burn rate tracking, oracle price feeds, and full audit sheet export."},
+              {icon:"rules",c:"rgba(40,160,240,...1)",b:"rgba(40,160,240,...2)",t:"Rule Registry",d:"Create scheduled payroll, conditional sweeps, and recurring transfers stored on-chain and executed trustlessly."},
+              {icon:"shield",c:"rgba(16,185,129,...1)",b:"rgba(16,185,129,...2)",t:"Daily Spend Caps",d:"Per-token daily limits block over-execution. Emergency kill switch halts all activity instantly."},
+              {icon:"brain",c:"rgba(168,85,247,...1)",b:"rgba(168,85,247,...2)",t:"AI Rule Copilot",d:"Describe payment needs in plain English. AI generates smart contract-compatible rule configurations instantly."},
+              {icon:"keeper",c:"rgba(245,158,11,...1)",b:"rgba(245,158,11,...2)",t:"Gas Efficiency",d:"Arbitrum L2 reduces costs by 99% vs Ethereum mainnet. Robinhood Chain drops costs to near-zero."},
+              {icon:"chain",c:"rgba(111,255,233,...1)",b:"rgba(111,255,233,...2)",t:"Multi-Chain",d:"Deployed on Arbitrum Sepolia and Robinhood Chain. Switch networks in one click, same architecture."},
+              {icon:"chart",c:"rgba(239,68,68,...1)",b:"rgba(239,68,68,...2)",t:"Treasury Analytics",d:"Real-time runway projections, burn rate tracking, oracle price feeds, and full audit sheet export."},
             ].map((f,i)=>(
               <div key={i} className="feature-card" style={{ background:"rgba(14,20,30,...75)",backdropFilter:"blur(14px)",border:"1px solid rgba(255,255,255,...07)",borderRadius:14,padding:"22px",display:"flex",gap:16,transition:"all .25s" }}>
-                <div style={{ width:42,height:42,borderRadius:10,background:f.c,border:`1px solid ${f.b}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0 }}>{f.icon}</div>
+                <div style={{ width:42,height:42,borderRadius:10,background:f.c,border:`1px solid ${f.b}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:f.b.replace(",.2)",",.8)") }}>
+                  {f.icon==="rules" ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  : f.icon==="shield" ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  : f.icon==="brain" ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 01-4.96-.46 2.5 2.5 0 01-1.07-4.74 3 3 0 01.17-5.55A2.5 2.5 0 019.5 2z"/><path d="M14.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 004.96-.46 2.5 2.5 0 001.07-4.74 3 3 0 00-.17-5.55A2.5 2.5 0 0014.5 2z"/></svg>
+                  : f.icon==="keeper" ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  : f.icon==="chain" ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                  : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>}
+                </div>
                 <div>
                   <div style={{ fontFamily:"Space Grotesk,sans-serif",fontSize:15,fontWeight:700,color:"#fff",marginBottom:6,letterSpacing:"-.01em" }}>{f.t}</div>
                   <div style={{ fontSize:13,color:"rgba(220,228,236,...8)",lineHeight:1.7 }}>{f.d}</div>
@@ -472,7 +479,7 @@ function DashboardView({ tokens, rules, txHistory, keeperLogs, chain, agentAddr,
 
       {/* Architecture */}
       <div style={{ background:"linear-gradient(135deg,rgba(16,22,32,0.9),rgba(10,14,20,0.9))", border:"1px solid rgba(255,255,255,0.06)", borderRadius:"14px", padding:"20px 24px" }}>
-        <div style={{ fontSize:"11px", fontWeight:700, color:"#28a0f0", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.15em", textTransform:"uppercase", marginBottom:"14px" }}>🏆 Arbitrum Open House London · Buildathon</div>
+        <div style={{ fontSize:"11px", fontWeight:700, color:"#28a0f0", fontFamily:"JetBrains Mono,monospace", letterSpacing:"0.15em", textTransform:"uppercase", marginBottom:"14px" }}> Arbitrum Open House London · Buildathon</div>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
           {[
             { label:"Factory",   addr:chain.factory   },
@@ -576,7 +583,7 @@ export default function App() {
     { symbol:"USDC", name:"USD Coin",   decimals:6,  balance:0, usdPrice:1.0,    logo:"＄", contractAddress:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831" },
     { symbol:"ETH",  name:"Ethereum",   decimals:18, balance:0, usdPrice:3500.0, logo:"Ξ",  contractAddress:"0x82aF49447D8a07e3bd95BD0d56f352415231daa1" },
     { symbol:"USDT", name:"Tether USD", decimals:6,  balance:0, usdPrice:1.0,    logo:"₮",  contractAddress:"0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9" },
-    { symbol:"ARB",  name:"Arbitrum",   decimals:18, balance:0, usdPrice:1.25,   logo:"⚬",  contractAddress:"0x912CE5c1150c221414429260d87deCdCc4788193" },
+    { symbol:"ARB",  name:"Arbitrum",   decimals:18, balance:0, usdPrice:1.25,   logo:"ARB",  contractAddress:"0x912CE5c1150c221414429260d87deCdCc4788193" },
   ]);
   const [rules, setRules] = useState<PaymentRule[]>([]);
   const [spendCaps, setSpendCaps] = useState<SpendCap[]>([
@@ -697,7 +704,7 @@ export default function App() {
       {symbol:"USDC",name:"USD Coin",decimals:6,balance:0,usdPrice:1.0,logo:"＄",contractAddress:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831"},
       {symbol:"ETH",name:"Ethereum",decimals:18,balance:0,usdPrice:3500.0,logo:"Ξ",contractAddress:"0x82aF49447D8a07e3bd95BD0d56f352415231daa1"},
       {symbol:"USDT",name:"Tether USD",decimals:6,balance:0,usdPrice:1.0,logo:"₮",contractAddress:"0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"},
-      {symbol:"ARB",name:"Arbitrum",decimals:18,balance:0,usdPrice:1.25,logo:"⚬",contractAddress:"0x912CE5c1150c221414429260d87deCdCc4788193"},
+      {symbol:"ARB",name:"Arbitrum",decimals:18,balance:0,usdPrice:1.25,logo:"ARB",contractAddress:"0x912CE5c1150c221414429260d87deCdCc4788193"},
     ]);
     setSpendCaps([{token:"USDC",cap:250,spent:0,enabled:true},{token:"ETH",cap:1.5,spent:0,enabled:true},{token:"USDT",cap:500,spent:0,enabled:true},{token:"ARB",cap:1000,spent:0,enabled:true}]);
     addLog("Treasury reset to defaults.","success");
@@ -949,7 +956,7 @@ export default function App() {
                 <div style={{ fontSize:"12px", fontWeight:800, color:"#fff", fontFamily:"Space Grotesk,sans-serif", marginBottom:"3px", textTransform:"uppercase", letterSpacing:"0.03em" }}>{toast.title}</div>
                 <div style={{ fontSize:"11px", color:"rgba(200,209,217,0.6)", fontFamily:"Inter,sans-serif", lineHeight:"1.5" }}>{toast.description}</div>
               </div>
-              <button onClick={()=>setToasts(prev=>prev.filter((t:any)=>t.id!==toast.id))} style={{ background:"none", border:"none", cursor:"pointer", color:"rgba(150,160,170,0.4)", fontSize:"14px", lineHeight:1, flexShrink:0, padding:0, pointerEvents:"auto" }}>✕</button>
+              <button onClick={()=>setToasts(prev=>prev.filter((t:any)=>t.id!==toast.id))} style={{ background:"none", border:"none", cursor:"pointer", color:"rgba(150,160,170,0.4)", fontSize:"14px", lineHeight:1, flexShrink:0, padding:0, pointerEvents:"auto" }}>x</button>
               <div className="timer-shrink" style={{ position:"absolute", bottom:0, left:0, height:"2px", background:isSuccess?"#10b981":isError?"#ef4444":isWarn?"#f59e0b":"#28a0f0", borderRadius:"1px" }}/>
             </div>
           );
